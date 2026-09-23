@@ -5,6 +5,7 @@ from app.api.schemas import (
     ReturnRequestResponse,
 )
 from app.db.models import QuestionRequestRecord, ReturnCaseRecord, ReturnRequestRecord
+from app.observability.metrics import DECISIONS
 
 REPLIES = {
     "eligible": "Based on the information provided, this item is eligible for return.",
@@ -20,6 +21,10 @@ def present_case(
     question: QuestionRequestRecord | None = None,
     return_request: ReturnRequestRecord | None = None,
 ) -> CaseResponse:
+    if case.decision:
+        DECISIONS.labels(
+            decision=case.decision, reason_code=case.decision_reason or "UNKNOWN"
+        ).inc()
     question_response = None
     if question:
         question_response = QuestionResponse(

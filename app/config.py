@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://returnflow:returnflow@localhost:5432/returnflow"
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
     question_ttl_minutes: int = 10
+    question_cleanup_interval_seconds: int = 60
     llm_provider: str = "rules"
     llm_model: str = "qwen3:4b"
     llm_base_url: str = "http://localhost:11434/v1"
