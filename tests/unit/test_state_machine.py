@@ -45,4 +45,3 @@ def test_confirmation_only_offers_confirm_or_cancel():
     question = build_question("confirm_return", case_version=1)
     assert [option.value for option in question.options] == ["confirm", "cancel"]
     assert question.allow_free_text is False
-

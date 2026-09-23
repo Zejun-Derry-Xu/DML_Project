@@ -125,4 +125,3 @@ class ReturnRequestResult(BaseModel):
     rma_number: str
     status: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-

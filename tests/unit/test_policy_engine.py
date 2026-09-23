@@ -19,7 +19,9 @@ def make_order(*, status: str = "delivered", delivered_days_ago: int | None = 5)
         customer_email="test@example.com",
         status=status,
         ordered_at=NOW - timedelta(days=10),
-        delivered_at=None if delivered_days_ago is None else NOW - timedelta(days=delivered_days_ago),
+        delivered_at=None
+        if delivered_days_ago is None
+        else NOW - timedelta(days=delivered_days_ago),
         items=[item],
     )
 
@@ -27,15 +29,69 @@ def make_order(*, status: str = "delivered", delivered_days_ago: int | None = 5)
 @pytest.mark.parametrize(
     ("mutate", "reason", "used", "expected_decision", "expected_code"),
     [
-        (lambda order, item: setattr(order, "status", "shipped"), ReturnReason.CHANGED_MIND, False, ReturnDecision.INELIGIBLE, ReasonCode.ORDER_NOT_DELIVERED),
-        (lambda order, item: setattr(order, "delivered_at", NOW - timedelta(days=31)), ReturnReason.CHANGED_MIND, False, ReturnDecision.INELIGIBLE, ReasonCode.OUTSIDE_RETURN_WINDOW),
-        (lambda order, item: setattr(item, "final_sale", True), ReturnReason.CHANGED_MIND, False, ReturnDecision.INELIGIBLE, ReasonCode.FINAL_SALE),
-        (lambda order, item: setattr(item, "return_status", "requested"), ReturnReason.CHANGED_MIND, False, ReturnDecision.INELIGIBLE, ReasonCode.ORDER_ALREADY_RETURNED),
-        (lambda order, item: None, None, None, ReturnDecision.NEED_MORE_INFORMATION, ReasonCode.MISSING_RETURN_REASON),
-        (lambda order, item: None, ReturnReason.CHANGED_MIND, None, ReturnDecision.NEED_MORE_INFORMATION, ReasonCode.MISSING_USAGE_STATUS),
-        (lambda order, item: None, ReturnReason.DEFECTIVE, None, ReturnDecision.HUMAN_REVIEW, ReasonCode.DEFECT_REQUIRES_REVIEW),
-        (lambda order, item: None, ReturnReason.CHANGED_MIND, True, ReturnDecision.INELIGIBLE, ReasonCode.USED_ITEM),
-        (lambda order, item: None, ReturnReason.CHANGED_MIND, False, ReturnDecision.ELIGIBLE, ReasonCode.ELIGIBLE),
+        (
+            lambda order, item: setattr(order, "status", "shipped"),
+            ReturnReason.CHANGED_MIND,
+            False,
+            ReturnDecision.INELIGIBLE,
+            ReasonCode.ORDER_NOT_DELIVERED,
+        ),
+        (
+            lambda order, item: setattr(order, "delivered_at", NOW - timedelta(days=31)),
+            ReturnReason.CHANGED_MIND,
+            False,
+            ReturnDecision.INELIGIBLE,
+            ReasonCode.OUTSIDE_RETURN_WINDOW,
+        ),
+        (
+            lambda order, item: setattr(item, "final_sale", True),
+            ReturnReason.CHANGED_MIND,
+            False,
+            ReturnDecision.INELIGIBLE,
+            ReasonCode.FINAL_SALE,
+        ),
+        (
+            lambda order, item: setattr(item, "return_status", "requested"),
+            ReturnReason.CHANGED_MIND,
+            False,
+            ReturnDecision.INELIGIBLE,
+            ReasonCode.ORDER_ALREADY_RETURNED,
+        ),
+        (
+            lambda order, item: None,
+            None,
+            None,
+            ReturnDecision.NEED_MORE_INFORMATION,
+            ReasonCode.MISSING_RETURN_REASON,
+        ),
+        (
+            lambda order, item: None,
+            ReturnReason.CHANGED_MIND,
+            None,
+            ReturnDecision.NEED_MORE_INFORMATION,
+            ReasonCode.MISSING_USAGE_STATUS,
+        ),
+        (
+            lambda order, item: None,
+            ReturnReason.DEFECTIVE,
+            None,
+            ReturnDecision.HUMAN_REVIEW,
+            ReasonCode.DEFECT_REQUIRES_REVIEW,
+        ),
+        (
+            lambda order, item: None,
+            ReturnReason.CHANGED_MIND,
+            True,
+            ReturnDecision.INELIGIBLE,
+            ReasonCode.USED_ITEM,
+        ),
+        (
+            lambda order, item: None,
+            ReturnReason.CHANGED_MIND,
+            False,
+            ReturnDecision.ELIGIBLE,
+            ReasonCode.ELIGIBLE,
+        ),
     ],
 )
 def test_policy_outcomes(mutate, reason, used, expected_decision, expected_code):
@@ -59,4 +115,3 @@ def test_exactly_thirty_days_is_inside_window():
         now=NOW,
     )
     assert result.decision == ReturnDecision.ELIGIBLE
-

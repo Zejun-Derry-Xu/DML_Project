@@ -77,4 +77,3 @@ def evaluate_return(
         decision=ReturnDecision.ELIGIBLE,
         reason_code=ReasonCode.ELIGIBLE,
     )
-
