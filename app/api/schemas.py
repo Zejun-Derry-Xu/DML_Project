@@ -72,6 +72,12 @@ class EvaluateRequest(BaseModel):
     wants_human: bool = False
 
 
+class ChatRequest(BaseModel):
+    session_id: UUID = Field(default_factory=uuid4)
+    message: str = Field(min_length=1, max_length=4000)
+    customer_email: str | None = None
+
+
 class AnswerRequest(BaseModel):
     session_id: UUID
     selected_value: str | None = None

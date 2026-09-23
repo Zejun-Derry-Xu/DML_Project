@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.api.v1.chat import router as chat_router
 from app.api.v1.orders import router as orders_router
 from app.api.v1.questions import router as questions_router
 from app.api.v1.returns import router as returns_router
@@ -30,6 +31,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    application.include_router(chat_router, prefix="/api/v1")
     application.include_router(orders_router, prefix="/api/v1")
     application.include_router(questions_router, prefix="/api/v1")
     application.include_router(returns_router, prefix="/api/v1")
