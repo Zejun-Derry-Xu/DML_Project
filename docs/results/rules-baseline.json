@@ -1,0 +1,22 @@
+{
+  "provider": "rules",
+  "measured_at": "2026-09-23",
+  "extraction": {
+    "case_count": 50,
+    "labeled_slot_accuracy": 1.0,
+    "labeled_exact_match": 1.0,
+    "over_extraction_rate": 0.1176,
+    "failure_count": 0
+  },
+  "question_efficiency": {
+    "scenario_count": 10,
+    "fixed_form_average_questions": 4.0,
+    "adaptive_average_questions": 0.9,
+    "question_reduction_percent": 77.5
+  },
+  "notes": [
+    "Accuracy is computed only over labeled fields; labels may intentionally omit other explicit facts.",
+    "Question efficiency is a controlled seed-scenario baseline, not a production user study.",
+    "Latency is intentionally omitted because it is hardware and warm-up dependent; reproduce locally."
+  ]
+}

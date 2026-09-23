@@ -194,6 +194,13 @@ class CaseService:
         case = self.returns.case_by_session(session_id)
         if case is None:
             raise AppError("CASE_NOT_FOUND", "The return case could not be found.", 404)
+        if case.status in {
+            CaseStatus.RETURN_CREATED.value,
+            CaseStatus.CLOSED.value,
+            CaseStatus.ESCALATED.value,
+            CaseStatus.CANCELLED.value,
+        }:
+            return case, None, case.return_request
         pending = self.returns.pending_question(session_id)
         if pending:
             expires_at = pending.expires_at
