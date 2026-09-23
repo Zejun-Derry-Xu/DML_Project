@@ -1,0 +1,13 @@
+[
+  {"order_number":"ORD-1001","email":"alice@example.com","name":"Alice Carter","status":"delivered","ordered_days_ago":10,"delivered_days_ago":5,"items":[{"product_name":"Wireless Mouse","price":"39.99","final_sale":false}]},
+  {"order_number":"ORD-1002","email":"ben@example.com","name":"Ben Ortiz","status":"delivered","ordered_days_ago":34,"delivered_days_ago":29,"items":[{"product_name":"Running Shoes","price":"89.00","final_sale":false}]},
+  {"order_number":"ORD-1003","email":"cora@example.com","name":"Cora Lin","status":"delivered","ordered_days_ago":40,"delivered_days_ago":31,"items":[{"product_name":"Travel Backpack","price":"79.50","final_sale":false}]},
+  {"order_number":"ORD-1004","email":"dev@example.com","name":"Dev Singh","status":"delivered","ordered_days_ago":12,"delivered_days_ago":7,"items":[{"product_name":"Clearance Jacket","price":"49.00","final_sale":true}]},
+  {"order_number":"ORD-1005","email":"emma@example.com","name":"Emma Wilson","status":"delivered","ordered_days_ago":8,"delivered_days_ago":4,"items":[{"product_name":"Noise-Cancelling Headphones","price":"199.00","final_sale":false},{"product_name":"USB-C Cable","price":"14.99","final_sale":false}]},
+  {"order_number":"ORD-1006","email":"farah@example.com","name":"Farah Khan","status":"delivered","ordered_days_ago":9,"delivered_days_ago":3,"items":[{"product_name":"Electric Kettle","price":"44.00","final_sale":false}]},
+  {"order_number":"ORD-1007","email":"gabe@example.com","name":"Gabe Brown","status":"shipped","ordered_days_ago":3,"delivered_days_ago":null,"items":[{"product_name":"Desk Lamp","price":"35.00","final_sale":false}]},
+  {"order_number":"ORD-1008","email":"hana@example.com","name":"Hana Sato","status":"delivered","ordered_days_ago":11,"delivered_days_ago":6,"items":[{"product_name":"Yoga Mat","price":"30.00","final_sale":false,"return_status":"requested"}]},
+  {"order_number":"ORD-1009","email":"ivan@example.com","name":"Ivan Petrov","status":"delivered","ordered_days_ago":14,"delivered_days_ago":8,"items":[{"product_name":"Coffee Grinder","price":"68.00","final_sale":false}]},
+  {"order_number":"ORD-1010","email":"june@example.com","name":"June Park","status":"delivered","ordered_days_ago":6,"delivered_days_ago":2,"items":[{"product_name":"Linen Shirt","price":"55.00","final_sale":false}]}
+]
+
