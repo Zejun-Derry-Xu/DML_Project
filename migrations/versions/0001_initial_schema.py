@@ -17,10 +17,11 @@ def upgrade() -> None:
         sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column("email", sa.String(320), nullable=False),
         sa.Column("name", sa.String(200), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.UniqueConstraint("email"),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
-    op.create_index("ix_customers_email", "customers", ["email"])
+    op.create_index("ix_customers_email", "customers", ["email"], unique=True)
     op.create_table(
         "orders",
         sa.Column("id", sa.Uuid(), primary_key=True),
@@ -29,11 +30,14 @@ def upgrade() -> None:
         sa.Column("status", sa.String(30), nullable=False),
         sa.Column("ordered_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("delivered_at", sa.DateTime(timezone=True)),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.UniqueConstraint("order_number"),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
-    op.create_index("ix_orders_order_number", "orders", ["order_number"])
+    op.create_index("ix_orders_order_number", "orders", ["order_number"], unique=True)
     op.create_index("ix_orders_customer_id", "orders", ["customer_id"])
     op.create_table(
         "order_items",
@@ -64,18 +68,23 @@ def upgrade() -> None:
         sa.Column("decision_reason", sa.String(60)),
         sa.Column("status", sa.String(30), nullable=False),
         sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.UniqueConstraint("session_id"),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
-    op.create_index("ix_return_cases_session_id", "return_cases", ["session_id"])
+    op.create_index("ix_return_cases_session_id", "return_cases", ["session_id"], unique=True)
     op.create_table(
         "messages",
         sa.Column("id", sa.Uuid(), primary_key=True),
         sa.Column("session_id", sa.Uuid(), nullable=False),
         sa.Column("role", sa.String(20), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
     op.create_index("ix_messages_session_id", "messages", ["session_id"])
     op.create_table(
@@ -93,7 +102,9 @@ def upgrade() -> None:
         sa.Column("case_version", sa.Integer(), nullable=False),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("answered_at", sa.DateTime(timezone=True)),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
     op.create_index("ix_question_requests_session_id", "question_requests", ["session_id"])
     op.create_index("ix_question_requests_return_case_id", "question_requests", ["return_case_id"])
@@ -108,7 +119,9 @@ def upgrade() -> None:
         sa.Column("success", sa.Boolean(), nullable=False),
         sa.Column("latency_ms", sa.Integer(), nullable=False),
         sa.Column("error_code", sa.String(60)),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
     op.create_index("ix_tool_calls_session_id", "tool_calls", ["session_id"])
     op.create_table(
@@ -120,14 +133,17 @@ def upgrade() -> None:
         sa.Column("item_id", sa.Uuid(), sa.ForeignKey("order_items.id"), nullable=False),
         sa.Column("status", sa.String(30), nullable=False),
         sa.Column("idempotency_key", sa.String(200), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.UniqueConstraint("rma_number"),
-        sa.UniqueConstraint("return_case_id"),
-        sa.UniqueConstraint("idempotency_key"),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
-    op.create_index("ix_return_requests_rma_number", "return_requests", ["rma_number"])
-    op.create_index("ix_return_requests_return_case_id", "return_requests", ["return_case_id"])
-    op.create_index("ix_return_requests_idempotency_key", "return_requests", ["idempotency_key"])
+    op.create_index("ix_return_requests_rma_number", "return_requests", ["rma_number"], unique=True)
+    op.create_index(
+        "ix_return_requests_return_case_id", "return_requests", ["return_case_id"], unique=True
+    )
+    op.create_index(
+        "ix_return_requests_idempotency_key", "return_requests", ["idempotency_key"], unique=True
+    )
 
 
 def downgrade() -> None:
