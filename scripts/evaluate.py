@@ -7,7 +7,7 @@ from time import perf_counter
 from uuid import uuid4
 
 from app.domain.models import ReturnCase
-from app.extractors.base import FactExtractor
+from app.extractors.base import ExtractorError, FactExtractor
 from app.extractors.ollama import OllamaExtractor
 from app.extractors.rules import RuleBasedExtractor
 
@@ -29,8 +29,12 @@ def meaningful(data: dict[str, object]) -> dict[str, object]:
     }
 
 
-async def evaluate_extractor(extractor: FactExtractor) -> dict[str, object]:
+async def evaluate_extractor(
+    extractor: FactExtractor, limit: int | None = None
+) -> dict[str, object]:
     cases = json.loads(FIXTURE.read_text())
+    if limit is not None:
+        cases = cases[:limit]
     labeled_correct = 0
     labeled_total = 0
     exact = 0
@@ -41,9 +45,15 @@ async def evaluate_extractor(extractor: FactExtractor) -> dict[str, object]:
 
     for case in cases:
         started = perf_counter()
-        result = await extractor.extract(
-            case["text"], ReturnCase(session_id=uuid4()), case.get("pending_question")
-        )
+        try:
+            result = await extractor.extract(
+                case["text"], ReturnCase(session_id=uuid4()), case.get("pending_question")
+            )
+        except ExtractorError:
+            latencies.append((perf_counter() - started) * 1000)
+            labeled_total += len(case["expected"])
+            failures.append({"text": case["text"], "error": "PROVIDER_FAILURE"})
+            continue
         latencies.append((perf_counter() - started) * 1000)
         actual = result.model_dump(mode="json")
         expected = case["expected"]
@@ -92,6 +102,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--provider", choices=["rules", "ollama"], default="rules")
     parser.add_argument("--model", default="qwen3:4b")
     parser.add_argument("--base-url", default="http://localhost:11434/v1")
+    parser.add_argument("--limit", type=int)
     return parser.parse_args()
 
 
@@ -110,7 +121,7 @@ async def main() -> None:
     output = {
         "provider": args.provider,
         "model": args.model if args.provider == "ollama" else None,
-        "extraction": await evaluate_extractor(extractor),
+        "extraction": await evaluate_extractor(extractor, args.limit),
         "question_efficiency": question_efficiency(),
     }
     print(json.dumps(output, indent=2))

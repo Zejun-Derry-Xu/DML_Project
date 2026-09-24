@@ -1,0 +1,37 @@
+{
+  "provider": "ollama",
+  "model": "qwen3:4b",
+  "measured_at": "2026-09-24",
+  "configuration": {
+    "api": "ollama_native_chat",
+    "structured_output": true,
+    "thinking": false,
+    "temperature": 0,
+    "max_output_tokens": 300
+  },
+  "extraction": {
+    "case_count": 50,
+    "labeled_slot_accuracy": 0.5616,
+    "labeled_exact_match": 0.48,
+    "over_extraction_rate": 0.5607,
+    "mean_latency_ms": 1102.11,
+    "p95_latency_ms": 1418.602,
+    "failure_count": 26
+  },
+  "question_efficiency": {
+    "scenario_count": 10,
+    "fixed_form_average_questions": 4.0,
+    "adaptive_average_questions": 0.9,
+    "question_reduction_percent": 77.5
+  },
+  "observed_failure_categories": [
+    "omitted item names",
+    "incorrect return-reason categories",
+    "omitted used, opened, or damaged facts"
+  ],
+  "notes": [
+    "Accuracy is computed only over labeled fields; labels may intentionally omit other explicit facts.",
+    "Latency is a single local run on Apple Silicon and includes the provider request.",
+    "The measured model quality supports rules-first hybrid routing rather than model-owned policy."
+  ]
+}

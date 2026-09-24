@@ -29,8 +29,9 @@ React/Vite UI -> FastAPI -> Conversation service -> Rule/model extractor
 ```
 
 The local default is the deterministic rules extractor. Set `LLM_PROVIDER=ollama` to enable the
-hybrid rules + Qwen path. The service calls Ollama's OpenAI-compatible API; a cloud-compatible
-endpoint can be selected with `LLM_PROVIDER=openai_compatible` and the same configuration fields.
+hybrid rules + Qwen path. The Ollama adapter uses its native structured-output API so model thinking
+can be disabled; a cloud-compatible endpoint can be selected with `LLM_PROVIDER=openai_compatible`
+and the same configuration fields.
 
 ## Fastest start: Docker Compose
 
@@ -98,6 +99,10 @@ duplicate protection, identity checks, multi-item selection, fact conflicts, and
 conversations. The labeled extraction set contains 50 held-out phrases. CI uses rules/fake parsing
 and never downloads a model.
 
+Measured outputs are checked in under `docs/results/`. On the 50-case set, the rules baseline reached
+100% labeled-slot accuracy; local Qwen3:4B reached 56.16%. These are partial-label, offline results,
+not production claims, and they support keeping deterministic rules as the primary path.
+
 ## API flow
 
 1. `POST /api/v1/chat` with `session_id`, `customer_email`, and a free-text `message`.
@@ -128,4 +133,3 @@ docs/         Architecture, API, decisions, and experiment artifacts
 Logs contain request/session metadata and latency, but not raw messages, complete emails, secrets,
 or model credentials. The database stores messages for the auditable demo flow. Do not put API keys
 in the repository. No endpoint performs a real refund, payment action, or shipping-label creation.
-

@@ -2,7 +2,7 @@ import json
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
-from uuid import NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from sqlalchemy import select
 
@@ -12,7 +12,7 @@ from app.db.session import SessionLocal
 DATA_FILE = Path(__file__).parents[1] / "data" / "seed_orders.json"
 
 
-def stable_id(kind: str, value: str):
+def stable_id(kind: str, value: str) -> UUID:
     return uuid5(NAMESPACE_URL, f"returnflow:{kind}:{value}")
 
 
