@@ -1,0 +1,186 @@
+{
+  "provider": "rules",
+  "model": null,
+  "pilot": "data/abcd_pilot/pilot.json",
+  "result": {
+    "evaluated_utterances": 28,
+    "metrics": {
+      "intent": {
+        "tp": 28,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "reason": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 14,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "latency_ms": {
+      "mean": 0.03,
+      "p95": 0.02
+    },
+    "failures": [
+      {
+        "convo_id": "223",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "505",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "515",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "551",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "732",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "129",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "533",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "165",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "396",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "420",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "660",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "726",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "1408",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      },
+      {
+        "convo_id": "573",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": null
+        }
+      }
+    ]
+  }
+}

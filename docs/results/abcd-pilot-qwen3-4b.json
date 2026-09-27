@@ -1,0 +1,263 @@
+{
+  "provider": "ollama",
+  "model": "qwen3:4b",
+  "pilot": "data/abcd_pilot/pilot.json",
+  "result": {
+    "evaluated_utterances": 28,
+    "metrics": {
+      "intent": {
+        "tp": 28,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "reason": {
+        "tp": 1,
+        "fp": 21,
+        "fn": 13,
+        "precision": 0.0455,
+        "recall": 0.0714,
+        "f1": 0.0556
+      }
+    },
+    "latency_ms": {
+      "mean": 1173.13,
+      "p95": 1523.05
+    },
+    "failures": [
+      {
+        "convo_id": "223",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "505",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "changed_mind"
+        }
+      },
+      {
+        "convo_id": "515",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "551",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "732",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "129",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "533",
+        "expected": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "127",
+        "expected": {
+          "intent": "return",
+          "reason": null
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "232",
+        "expected": {
+          "intent": "return",
+          "reason": null
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "318",
+        "expected": {
+          "intent": "return",
+          "reason": null
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "517",
+        "expected": {
+          "intent": "return",
+          "reason": null
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "546",
+        "expected": {
+          "intent": "return",
+          "reason": null
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "625",
+        "expected": {
+          "intent": "return",
+          "reason": null
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "365",
+        "expected": {
+          "intent": "return",
+          "reason": null
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "165",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        }
+      },
+      {
+        "convo_id": "396",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "changed_mind"
+        }
+      },
+      {
+        "convo_id": "420",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "changed_mind"
+        }
+      },
+      {
+        "convo_id": "660",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "does_not_fit"
+        }
+      },
+      {
+        "convo_id": "726",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "changed_mind"
+        }
+      },
+      {
+        "convo_id": "834",
+        "expected": {
+          "intent": "return",
+          "reason": null
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "wrong_item"
+        }
+      },
+      {
+        "convo_id": "573",
+        "expected": {
+          "intent": "return",
+          "reason": "defective"
+        },
+        "predicted": {
+          "intent": "return",
+          "reason": "changed_mind"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,424 @@
+{
+  "source": "asappresearch/abcd data/abcd_v1.1.json.gz",
+  "source_revision": "6b8700ce67c6b37b062dd7a60abc76d7ef832a97",
+  "source_sha256": "2bdf53ac359543dcdc38d55bc6513e78df120363f8f44870716e909f4606de15",
+  "selection": "lowest convo_id per subflow and original split; 8 train, 1 dev, 1 test",
+  "rows": [
+    {
+      "split": "train",
+      "convo_id": 223,
+      "subflow": "return_size",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 505,
+      "subflow": "return_size",
+      "turn_index": 2,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 515,
+      "subflow": "return_size",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 551,
+      "subflow": "return_size",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 732,
+      "subflow": "return_size",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 815,
+      "subflow": "return_size",
+      "turn_index": 2,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 843,
+      "subflow": "return_size",
+      "turn_index": 2,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 851,
+      "subflow": "return_size",
+      "turn_index": null,
+      "status": "excluded",
+      "reasons": [
+        "no_explicit_return_request"
+      ]
+    },
+    {
+      "split": "dev",
+      "convo_id": 129,
+      "subflow": "return_size",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "test",
+      "convo_id": 533,
+      "subflow": "return_size",
+      "turn_index": 2,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 127,
+      "subflow": "return_color",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "reason_outside_returnflow_taxonomy",
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 232,
+      "subflow": "return_color",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "reason_outside_returnflow_taxonomy",
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 318,
+      "subflow": "return_color",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 517,
+      "subflow": "return_color",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "reason_outside_returnflow_taxonomy",
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 546,
+      "subflow": "return_color",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "reason_outside_returnflow_taxonomy",
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 560,
+      "subflow": "return_color",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 589,
+      "subflow": "return_color",
+      "turn_index": 2,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 625,
+      "subflow": "return_color",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "reason_outside_returnflow_taxonomy",
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "dev",
+      "convo_id": 365,
+      "subflow": "return_color",
+      "turn_index": 3,
+      "status": "review",
+      "reasons": [
+        "reason_outside_returnflow_taxonomy",
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "test",
+      "convo_id": 389,
+      "subflow": "return_color",
+      "turn_index": null,
+      "status": "excluded",
+      "reasons": [
+        "no_explicit_return_request"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 112,
+      "subflow": "return_stain",
+      "turn_index": 2,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 165,
+      "subflow": "return_stain",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 396,
+      "subflow": "return_stain",
+      "turn_index": 3,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 420,
+      "subflow": "return_stain",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 656,
+      "subflow": "return_stain",
+      "turn_index": 2,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 660,
+      "subflow": "return_stain",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 726,
+      "subflow": "return_stain",
+      "turn_index": 7,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 834,
+      "subflow": "return_stain",
+      "turn_index": 26,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "dev",
+      "convo_id": 1408,
+      "subflow": "return_stain",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "test",
+      "convo_id": 573,
+      "subflow": "return_stain",
+      "turn_index": 1,
+      "status": "review",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 222,
+      "subflow": "refund_initiate",
+      "turn_index": 8,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 231,
+      "subflow": "refund_initiate",
+      "turn_index": 2,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 631,
+      "subflow": "refund_initiate",
+      "turn_index": 1,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 778,
+      "subflow": "refund_initiate",
+      "turn_index": 1,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 945,
+      "subflow": "refund_initiate",
+      "turn_index": 1,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 1038,
+      "subflow": "refund_initiate",
+      "turn_index": 2,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 1061,
+      "subflow": "refund_initiate",
+      "turn_index": 1,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "train",
+      "convo_id": 1098,
+      "subflow": "refund_initiate",
+      "turn_index": 1,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "dev",
+      "convo_id": 2162,
+      "subflow": "refund_initiate",
+      "turn_index": 1,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    },
+    {
+      "split": "test",
+      "convo_id": 1064,
+      "subflow": "refund_initiate",
+      "turn_index": 3,
+      "status": "out_of_scope",
+      "reasons": [
+        "order_id_not_stated_in_selected_turn",
+        "refund_before_return_scope_mismatch"
+      ]
+    }
+  ]
+}
