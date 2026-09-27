@@ -1,0 +1,49 @@
+{
+  "version": "mvp-1.0.0",
+  "source": "app/domain/policy_engine.py and the four MVP rules in ReturnFlow_MVP_Project_Plan.md",
+  "scope": "ReturnFlow demo orders only; simulated return requests, no real refunds",
+  "clauses": [
+    {
+      "id": "RF-01",
+      "text": "The order must have delivered status and a known delivery timestamp before a return can be approved.",
+      "terms": ["delivered", "delivery", "shipping", "shipped", "order status"],
+      "reason_codes": ["ORDER_NOT_DELIVERED"],
+      "decisions": ["ineligible"]
+    },
+    {
+      "id": "RF-02",
+      "text": "A return request must be made within 30 days after delivery. Exactly 30 days is within the window; later is outside it.",
+      "terms": ["30 days", "return window", "deadline", "late", "delivery date", "time limit"],
+      "reason_codes": ["OUTSIDE_RETURN_WINDOW"],
+      "decisions": ["ineligible"]
+    },
+    {
+      "id": "RF-03",
+      "text": "An item marked final sale cannot be returned under the MVP policy.",
+      "terms": ["final sale", "nonreturnable", "final-sale"],
+      "reason_codes": ["FINAL_SALE"],
+      "decisions": ["ineligible"]
+    },
+    {
+      "id": "RF-04",
+      "text": "For non-quality return reasons, the item must be unused. If usage is unknown, the service asks before deciding.",
+      "terms": ["used", "unused", "worn", "usage", "opened", "condition"],
+      "reason_codes": ["USED_ITEM", "MISSING_USAGE_STATUS"],
+      "decisions": ["ineligible", "need_more_information"]
+    },
+    {
+      "id": "RF-05",
+      "text": "Defects, damage, and a wrong item require review by a human support specialist.",
+      "terms": ["defect", "defective", "damaged", "broken", "wrong item", "quality"],
+      "reason_codes": ["DEFECT_REQUIRES_REVIEW"],
+      "decisions": ["human_review"]
+    },
+    {
+      "id": "RF-06",
+      "text": "A previously returned item cannot receive another return request.",
+      "terms": ["already returned", "duplicate", "another return"],
+      "reason_codes": ["ORDER_ALREADY_RETURNED"],
+      "decisions": ["ineligible"]
+    }
+  ]
+}

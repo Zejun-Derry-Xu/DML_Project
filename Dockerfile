@@ -14,6 +14,7 @@ COPY app ./app
 COPY migrations ./migrations
 COPY scripts ./scripts
 COPY data ./data
+COPY docs/policy ./docs/policy
 COPY alembic.ini README.md ./
 RUN uv sync --frozen --no-dev
 
@@ -23,4 +24,3 @@ USER returnflow
 
 EXPOSE 8000
 CMD ["sh", "-c", "alembic upgrade head && python -m scripts.seed_data && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
-

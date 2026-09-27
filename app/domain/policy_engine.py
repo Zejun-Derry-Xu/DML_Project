@@ -10,6 +10,7 @@ from app.domain.models import (
 from app.domain.reason_codes import ReasonCode
 
 RETURN_WINDOW = timedelta(days=30)
+POLICY_VERSION = "mvp-1.0.0"
 
 
 def evaluate_return(

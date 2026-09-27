@@ -116,6 +116,18 @@ not production claims, and they support keeping deterministic rules as the prima
 See [docs/api.md](docs/api.md) for request examples and [docs/architecture.md](docs/architecture.md)
 for trust boundaries and state progression.
 
+## Current research extensions
+
+The [ABCD pilot report](docs/results/abcd-pilot-report.md) describes a reproducible
+40-conversation screen and a 28-utterance extraction comparison. It is an extraction
+feasibility study, not an eligibility or end-to-end benchmark. The source corpus and
+derived utterance/evidence file are intentionally kept out of Git.
+
+The [versioned MVP policy](docs/policy/README.md) supports local clause retrieval and
+cited explanations at `POST /api/v1/policy/explain`. Saved eligibility still comes only
+from the deterministic policy engine. A case-specific explanation requires the case's
+`session_id` and matching customer email.
+
 ## Repository layout
 
 ```text
