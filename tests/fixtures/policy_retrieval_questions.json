@@ -1,0 +1,14 @@
+[
+  {"question": "How many days after delivery can I request a return?", "expected_ids": ["P-WINDOW"]},
+  {"question": "Does a shipped but not delivered order qualify?", "expected_ids": ["P-DELIVERED"]},
+  {"question": "Are final sale items returnable?", "expected_ids": ["P-FINAL-SALE"]},
+  {"question": "I have already started a return for this item. Can I make another?", "expected_ids": ["P-ALREADY-RETURNED"]},
+  {"question": "Do I have to tell you why I want to send it back?", "expected_ids": ["P-REASON"]},
+  {"question": "Why do you ask for the order email?", "expected_ids": ["P-IDENTITY"]},
+  {"question": "What happens if the product is broken?", "expected_ids": ["P-HUMAN-REVIEW"]},
+  {"question": "Can I return a worn item?", "expected_ids": ["P-USAGE"]},
+  {"question": "Do you create a real refund or shipping label?", "expected_ids": ["P-APPROVAL"]},
+  {"question": "Can I return a final sale item 31 days after delivery?", "expected_ids": ["P-FINAL-SALE", "P-WINDOW"]},
+  {"question": "What are your store opening hours?", "expected_ids": []},
+  {"question": "Can I exchange my item?", "expected_ids": []}
+]

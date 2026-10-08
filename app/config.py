@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -18,6 +19,14 @@ class Settings(BaseSettings):
     llm_base_url: str = "http://localhost:11434/v1"
     llm_api_key: str = ""
     llm_timeout_seconds: float = 15.0
+    policy_retriever: Literal["lexical", "qdrant"] = "lexical"
+    policy_generator: Literal["extractive", "ollama"] = "extractive"
+    policy_qdrant_url: str = "http://localhost:6333"
+    policy_qdrant_collection: str = "returnflow_policy_mvp_1"
+    policy_qdrant_api_key: str = ""
+    policy_ollama_url: str = "http://localhost:11434"
+    policy_embedding_model: str = "embeddinggemma"
+    policy_min_vector_score: float = 0.45
     log_level: str = "INFO"
 
 

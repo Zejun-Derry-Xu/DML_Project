@@ -14,6 +14,7 @@ from starlette.middleware.base import RequestResponseEndpoint
 
 from app.api.v1.chat import router as chat_router
 from app.api.v1.orders import router as orders_router
+from app.api.v1.policy import router as policy_router
 from app.api.v1.questions import router as questions_router
 from app.api.v1.returns import router as returns_router
 from app.config import get_settings
@@ -54,6 +55,7 @@ def create_app() -> FastAPI:
     )
     application.include_router(chat_router, prefix="/api/v1")
     application.include_router(orders_router, prefix="/api/v1")
+    application.include_router(policy_router, prefix="/api/v1")
     application.include_router(questions_router, prefix="/api/v1")
     application.include_router(returns_router, prefix="/api/v1")
 

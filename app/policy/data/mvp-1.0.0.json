@@ -1,0 +1,69 @@
+{
+  "version": "mvp-1.0.0",
+  "title": "ReturnFlow simulated return policy",
+  "clauses": [
+    {
+      "id": "P-DELIVERED",
+      "scope": "eligibility",
+      "content": "An order must have delivered status and a recorded delivery date before a return can be approved.",
+      "keywords": ["delivered", "delivery", "shipped", "not delivered"],
+      "reason_codes": ["ORDER_NOT_DELIVERED"]
+    },
+    {
+      "id": "P-WINDOW",
+      "scope": "eligibility",
+      "content": "A return request must be made within 30 days after the recorded delivery date. Day 30 is inside the return window; after day 30 is outside it.",
+      "keywords": ["days", "deadline", "window", "late", "thirty", "30"],
+      "reason_codes": ["OUTSIDE_RETURN_WINDOW"]
+    },
+    {
+      "id": "P-FINAL-SALE",
+      "scope": "eligibility",
+      "content": "An item marked final sale cannot be returned under the simulated MVP policy.",
+      "keywords": ["final sale", "clearance", "nonreturnable"],
+      "reason_codes": ["FINAL_SALE"]
+    },
+    {
+      "id": "P-ALREADY-RETURNED",
+      "scope": "eligibility",
+      "content": "An item with an existing return request must not create a second return request.",
+      "keywords": ["already returned", "already started", "existing return", "duplicate"],
+      "reason_codes": ["ORDER_ALREADY_RETURNED"]
+    },
+    {
+      "id": "P-REASON",
+      "scope": "intake",
+      "content": "The return reason is required before the system can finish evaluating a return request.",
+      "keywords": ["reason", "why", "explain"],
+      "reason_codes": ["MISSING_RETURN_REASON"]
+    },
+    {
+      "id": "P-IDENTITY",
+      "scope": "intake",
+      "content": "The requester must identify the order using the matching customer email before the system reveals order details or evaluates that customer's return.",
+      "keywords": ["email", "identity", "ownership", "account"],
+      "reason_codes": ["IDENTITY_MISMATCH", "MISSING_ORDER_ID"]
+    },
+    {
+      "id": "P-HUMAN-REVIEW",
+      "scope": "eligibility",
+      "content": "Defective or wrong-item claims, reported damage, conflicting facts, and explicit requests for a person go to human review rather than automatic approval.",
+      "keywords": ["defect", "broken", "wrong item", "damaged", "human", "conflict"],
+      "reason_codes": ["DEFECT_REQUIRES_REVIEW", "INFORMATION_CONFLICT", "USER_REQUESTED_HUMAN"]
+    },
+    {
+      "id": "P-USAGE",
+      "scope": "eligibility",
+      "content": "For a non-defective return, the item must be unused. If use status is unknown, the system asks before deciding; a used item is not eligible for automatic return.",
+      "keywords": ["used", "worn", "opened", "unused", "use status"],
+      "reason_codes": ["MISSING_USAGE_STATUS", "USED_ITEM"]
+    },
+    {
+      "id": "P-APPROVAL",
+      "scope": "process",
+      "content": "Meeting the MVP policy conditions makes the item eligible, but the system creates only a simulated return request after the customer explicitly confirms it. No real refund or shipping label is issued.",
+      "keywords": ["eligible", "approve", "confirmation", "refund", "label", "request"],
+      "reason_codes": ["ELIGIBLE"]
+    }
+  ]
+}

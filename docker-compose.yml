@@ -24,6 +24,13 @@ services:
       LLM_MODEL: ${LLM_MODEL:-qwen3:4b}
       LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:11434/v1}
       LLM_API_KEY: ${LLM_API_KEY:-}
+      POLICY_RETRIEVER: ${POLICY_RETRIEVER:-lexical}
+      POLICY_GENERATOR: ${POLICY_GENERATOR:-extractive}
+      POLICY_QDRANT_URL: http://qdrant:6333
+      POLICY_QDRANT_COLLECTION: ${POLICY_QDRANT_COLLECTION:-returnflow_policy_mvp_1}
+      POLICY_QDRANT_API_KEY: ${POLICY_QDRANT_API_KEY:-}
+      POLICY_OLLAMA_URL: http://host.docker.internal:11434
+      POLICY_EMBEDDING_MODEL: ${POLICY_EMBEDDING_MODEL:-embeddinggemma}
     ports:
       - "8000:8000"
     depends_on:
@@ -43,6 +50,14 @@ services:
       api:
         condition: service_healthy
 
+  qdrant:
+    image: qdrant/qdrant:v1.17.1
+    profiles: ["rag"]
+    ports:
+      - "127.0.0.1:6333:6333"
+    volumes:
+      - returnflow-qdrant:/qdrant/storage
+
 volumes:
   returnflow-db:
-
+  returnflow-qdrant:

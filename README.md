@@ -33,6 +33,12 @@ hybrid rules + Qwen path. The Ollama adapter uses its native structured-output A
 can be disabled; a cloud-compatible endpoint can be selected with `LLM_PROVIDER=openai_compatible`
 and the same configuration fields.
 
+An experimental, read-only policy question-answering endpoint is available at
+`POST /api/v1/policy/ask`. It cites clauses from a versioned simulated MVP policy. The default
+lexical/extractive path needs no vector database or model; Qdrant + Ollama embeddings can be enabled
+separately. It does not decide a customer's return or alter the existing case flow. See
+[the policy retrieval spike](docs/policy-rag-spike.md) for setup, scope, and limitations.
+
 ## Fastest start: Docker Compose
 
 Requirements: Docker Desktop with Compose.
