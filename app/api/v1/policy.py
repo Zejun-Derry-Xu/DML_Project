@@ -6,6 +6,7 @@ import httpx
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
+from app.api.schemas import PolicyCitation
 from app.config import get_settings
 from app.policy.answering import (
     ExtractivePolicyGenerator,
@@ -27,13 +28,6 @@ router = APIRouter(prefix="/policy", tags=["policy"])
 class PolicyQuestion(BaseModel):
     question: str = Field(min_length=3, max_length=500)
     scope: Literal["eligibility", "intake", "process"] | None = None
-
-
-class PolicyCitation(BaseModel):
-    clause_id: str
-    policy_version: str
-    scope: str
-    content: str
 
 
 class PolicyExplanation(BaseModel):

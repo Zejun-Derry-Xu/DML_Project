@@ -22,6 +22,13 @@ export type ReturnRequest = {
   created_at: string;
 };
 
+export type PolicyCitation = {
+  clause_id: string;
+  policy_version: string;
+  scope: string;
+  content: string;
+};
+
 export type CaseResponse = {
   session_id: string;
   state: string;
@@ -30,6 +37,9 @@ export type CaseResponse = {
   reply: string;
   question: Question | null;
   return_request: ReturnRequest | null;
+  policy_version: string | null;
+  policy_evidence: PolicyCitation[];
+  policy_warning: string | null;
   request_id: string;
 };
 
@@ -38,4 +48,3 @@ export type ChatMessage = {
   role: "assistant" | "user";
   content: string;
 };
-

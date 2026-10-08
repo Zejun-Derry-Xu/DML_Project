@@ -49,6 +49,7 @@ def test_conflicting_fact_escalates_to_human_review(client):
         },
     )
     assert first.json()["reason_code"] == "USED_ITEM"
+    assert first.json()["policy_evidence"][0]["clause_id"] == "P-USAGE"
 
     second = client.post(
         "/api/v1/chat",
@@ -60,6 +61,7 @@ def test_conflicting_fact_escalates_to_human_review(client):
     )
     assert second.json()["decision"] == "human_review"
     assert second.json()["reason_code"] == "INFORMATION_CONFLICT"
+    assert second.json()["policy_evidence"][0]["clause_id"] == "P-HUMAN-REVIEW"
 
 
 def test_item_name_selects_only_real_order_item(client):

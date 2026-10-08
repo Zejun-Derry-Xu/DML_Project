@@ -135,6 +135,8 @@ export default function App() {
           )}
 
           {current && terminal && <ResultCard value={current} />}
+          {current && current.policy_evidence.length > 0 && <PolicyEvidence value={current} />}
+          {current?.policy_warning && <p className="policy-warning">{current.policy_warning}</p>}
           {loading && <div className="typing"><span /><span /><span /></div>}
           <div ref={endRef} />
         </div>
@@ -170,6 +172,22 @@ export default function App() {
 
       <footer>ReturnFlow · Secure demo environment · No real refunds are processed</footer>
     </main>
+  );
+}
+
+function PolicyEvidence({ value }: { value: CaseResponse }) {
+  return (
+    <aside className="policy-evidence" aria-label="Policy basis">
+      <p className="card-label">POLICY BASIS · {value.policy_version}</p>
+      <p className="policy-note">Simulated MVP policy; the return decision is made by verified case rules.</p>
+      <ul>
+        {value.policy_evidence.map((clause) => (
+          <li key={clause.clause_id}>
+            <strong>{clause.clause_id}</strong> {clause.content}
+          </li>
+        ))}
+      </ul>
+    </aside>
   );
 }
 

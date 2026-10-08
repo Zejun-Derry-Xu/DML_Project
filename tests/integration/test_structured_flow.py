@@ -24,6 +24,7 @@ def test_complete_structured_return_flow(client):
     )
     assert response.status_code == 200
     assert response.json()["question"]["field"] == "reason"
+    assert response.json()["policy_evidence"][0]["clause_id"] == "P-REASON"
 
     response = answer(client, response, session_id, "does_not_fit")
     assert response.json()["question"]["field"] == "used"
@@ -31,6 +32,7 @@ def test_complete_structured_return_flow(client):
     response = answer(client, response, session_id, "no")
     assert response.json()["decision"] == "eligible"
     assert response.json()["question"]["field"] == "confirm_return"
+    assert response.json()["policy_evidence"][0]["clause_id"] == "P-APPROVAL"
 
     confirm_id = response.json()["question"]["question_id"]
     response = answer(client, response, session_id, "confirm")
@@ -62,6 +64,24 @@ def test_final_sale_short_circuits_questions(client):
     assert response.json()["decision"] == "ineligible"
     assert response.json()["reason_code"] == "FINAL_SALE"
     assert response.json()["question"] is None
+    assert response.json()["policy_version"] == "mvp-1.0.0"
+    assert response.json()["policy_evidence"][0]["clause_id"] == "P-FINAL-SALE"
+
+
+def test_policy_document_failure_does_not_change_case_decision(client, monkeypatch):
+    def unavailable():
+        raise OSError("test policy file unavailable")
+
+    monkeypatch.setattr("app.api.presenters.load_policy", unavailable)
+    response = client.post(
+        "/api/v1/returns/evaluate",
+        json={"customer_email": "june@example.com", "order_number": "ORD-1004"},
+    )
+    assert response.status_code == 200
+    assert response.json()["decision"] == "ineligible"
+    assert response.json()["reason_code"] == "FINAL_SALE"
+    assert response.json()["policy_evidence"] == []
+    assert response.json()["policy_warning"] == "Policy evidence is temporarily unavailable."
 
 
 def test_multiple_items_use_server_generated_options(client):

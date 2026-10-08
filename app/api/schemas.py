@@ -49,6 +49,13 @@ class ReturnRequestResponse(BaseModel):
     created_at: datetime
 
 
+class PolicyCitation(BaseModel):
+    clause_id: str
+    policy_version: str
+    scope: str
+    content: str
+
+
 class CaseResponse(BaseModel):
     session_id: UUID
     state: str
@@ -57,6 +64,9 @@ class CaseResponse(BaseModel):
     reply: str
     question: QuestionResponse | None = None
     return_request: ReturnRequestResponse | None = None
+    policy_version: str | None = None
+    policy_evidence: list[PolicyCitation] = Field(default_factory=list)
+    policy_warning: str | None = None
     request_id: UUID = Field(default_factory=uuid4)
 
 

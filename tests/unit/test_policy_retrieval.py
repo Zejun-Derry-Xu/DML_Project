@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import pytest
 
@@ -96,6 +98,20 @@ def test_qdrant_query_uses_version_and_scope_metadata_filters() -> None:
     assert calls[1].url.path == "/collections/test_policy/points/query"
     assert b'"policy_version"' in calls[1].content
     assert b'"eligibility"' in calls[1].content
+    assert b'"clause_id"' in calls[1].content
+    assert b'task: search result | query:' in calls[0].content
+
+
+def test_qdrant_does_not_embed_unsupported_policy_topic() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise AssertionError(f"Unexpected external request: {request.url}")
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        retriever = QdrantPolicyRetriever(
+            load_policy(), client, OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
+            url="http://qdrant", collection="test_policy",
+        )
+        assert retriever.search("Can I exchange my item?") == []
 
 
 def test_semantic_upstream_failure_falls_back_to_lexical() -> None:
@@ -123,7 +139,10 @@ def test_ollama_generation_receives_only_retrieved_evidence() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
-        return httpx.Response(200, json={"message": {"content": "[P-WINDOW] Within 30 days."}})
+        return httpx.Response(
+            200,
+            json={"message": {"content": json.dumps({"answer": "Within 30 days [P-WINDOW]."})}},
+        )
 
     clause = load_policy().by_id("P-WINDOW")
     assert clause is not None
@@ -134,6 +153,25 @@ def test_ollama_generation_receives_only_retrieved_evidence() -> None:
     assert "[P-WINDOW]" in answer
     assert b"P-WINDOW" in requests[0].content
     assert b'"think":false' in requests[0].content
+
+
+def test_ollama_generation_rejects_unsupported_citation() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        del request
+        return httpx.Response(
+            200,
+            json={"message": {"content": json.dumps({"answer": "No [P-UNKNOWN]."})}},
+        )
+
+    clause = load_policy().by_id("P-WINDOW")
+    assert clause is not None
+    with (
+        httpx.Client(transport=httpx.MockTransport(handler)) as client,
+        pytest.raises(PolicyUpstreamError),
+    ):
+        OllamaPolicyGenerator(client, url="http://ollama", model="qwen3:4b").generate(
+            "What is the window?", [clause]
+        )
 
 
 def test_embedding_errors_are_explicit() -> None:
@@ -171,6 +209,9 @@ def test_qdrant_index_is_explicit_and_stores_version_metadata() -> None:
             load_policy(), client, OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
             url="http://qdrant", collection="test_policy",
         ).index()
-    assert [request.method for request in requests] == ["POST", "GET", "PUT", "PUT", "PUT", "PUT"]
+    assert [request.method for request in requests] == [
+        "POST", "GET", "PUT", "PUT", "PUT", "PUT", "PUT"
+    ]
     assert b'"policy_version":"mvp-1.0.0"' in requests[-1].content
     assert b'"size":2' in requests[2].content
+    assert b'title: ReturnFlow simulated return policy | text:' in requests[0].content

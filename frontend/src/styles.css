@@ -192,6 +192,23 @@ button { cursor: pointer; }
 .result h2 { margin: 0; font: 700 19px "Manrope", sans-serif; }
 .result p:last-child { margin: 5px 0 0; color: #59665f; }
 
+.policy-evidence {
+  margin: 10px 44px 24px;
+  padding: 16px 18px;
+  border: 1px solid #d9e1d9;
+  border-radius: 14px;
+  background: #f8faf7;
+  color: #33463b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.policy-evidence .card-label { margin: 0 0 6px; }
+.policy-note { margin: 0 0 10px; color: #66736d; }
+.policy-evidence ul { margin: 0; padding-left: 18px; }
+.policy-evidence li + li { margin-top: 8px; }
+.policy-evidence strong { margin-right: 5px; }
+.policy-warning { margin: 10px 44px 24px; color: #8a4b24; font-size: 13px; }
+
 .typing { margin-left: 44px; display: flex; gap: 4px; }
 .typing span { width: 7px; height: 7px; border-radius: 50%; background: #8fa197; animation: bounce 1.1s infinite; }
 .typing span:nth-child(2) { animation-delay: 120ms; }
@@ -229,7 +246,7 @@ footer { padding: 25px; color: #8a918d; text-align: center; font-size: 11px; }
   .hero h1 { letter-spacing: -2px; }
   .trust-strip span:last-child { display: none; }
   .conversation { height: 52vh; min-height: 360px; padding: 22px 14px; }
-  .question-card, .result { margin-left: 44px; margin-right: 0; }
+  .question-card, .result, .policy-evidence, .policy-warning { margin-left: 44px; margin-right: 0; }
   .options { grid-template-columns: 1fr; }
   .composer { padding: 14px; }
   .message-input button { padding: 0 15px; }

@@ -71,6 +71,16 @@ class OllamaEmbeddings:
         self.url = url.rstrip("/")
         self.model = model
 
+    def document_input(self, title: str, content: str) -> str:
+        if self.model.startswith("embeddinggemma"):
+            return f"title: {title} | text: {content}"
+        return content
+
+    def query_input(self, question: str) -> str:
+        if self.model.startswith("embeddinggemma"):
+            return f"task: search result | query: {question}"
+        return question
+
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
         try:
             response = self.client.post(
@@ -100,7 +110,12 @@ class QdrantPolicyRetriever:
 
     def index(self) -> None:
         """Explicit, repeatable indexing; never run automatically on an API request."""
-        vectors = self.embeddings.embed([clause.content for clause in self.corpus.clauses])
+        vectors = self.embeddings.embed(
+            [
+                self.embeddings.document_input(self.corpus.title, clause.content)
+                for clause in self.corpus.clauses
+            ]
+        )
         if len({len(vector) for vector in vectors}) != 1:
             raise ValueError("Policy embeddings have inconsistent dimensions")
         points = [
@@ -134,7 +149,7 @@ class QdrantPolicyRetriever:
                 indexed_fields = set(collection.get("payload_schema", {}))
         except (httpx.HTTPError, KeyError, TypeError) as exc:
             raise PolicyUpstreamError("Qdrant collection unavailable") from exc
-        for field in ("policy_version", "scope"):
+        for field in ("policy_version", "scope", "clause_id"):
             if field not in indexed_fields:
                 self._put(
                     f"/collections/{self.collection}/index?wait=true",
@@ -151,12 +166,20 @@ class QdrantPolicyRetriever:
             return LexicalPolicyRetriever(self.corpus).search(
                 question, scope=scope, reason_code=reason_code, limit=limit
             )
+        # The MVP corpus is tiny. Require a lexical candidate before vector search so
+        # nearby but unsupported topics (for example exchanges) do not gain authority.
+        candidates = LexicalPolicyRetriever(self.corpus).search(
+            question, scope=scope, limit=len(self.corpus.clauses)
+        )
+        if not candidates:
+            return []
         conditions: list[dict[str, object]] = [
-            {"key": "policy_version", "match": {"value": self.corpus.version}}
+            {"key": "policy_version", "match": {"value": self.corpus.version}},
+            {"key": "clause_id", "match": {"any": [clause.id for clause in candidates]}},
         ]
         if scope is not None:
             conditions.append({"key": "scope", "match": {"value": scope}})
-        vector = self.embeddings.embed([question])[0]
+        vector = self.embeddings.embed([self.embeddings.query_input(question)])[0]
         result = self._post(
             f"/collections/{self.collection}/points/query",
             {

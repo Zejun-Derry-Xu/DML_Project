@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 import httpx
+from pydantic import BaseModel, Field, ValidationError
 
 from app.policy.corpus import PolicyClause, PolicyCorpus
 from app.policy.retrieval import (
@@ -26,6 +27,10 @@ class PolicyAnswer:
 
 class PolicyGenerator(Protocol):
     def generate(self, question: str, clauses: list[PolicyClause]) -> str: ...
+
+
+class _ModelAnswer(BaseModel):
+    answer: str = Field(min_length=1, max_length=280)
 
 
 class ExtractivePolicyGenerator:
@@ -62,7 +67,8 @@ class OllamaPolicyGenerator:
                                 "using only the supplied policy clauses. Do not decide whether "
                                 "a particular order is eligible. Do not invent exceptions. "
                                 "If the clauses do not answer the question, say you do not know. "
-                                "Use clause IDs in the answer."
+                                "Return one concise sentence with the supporting clause ID. "
+                                "Do not include analysis or explain your instructions."
                             ),
                         },
                         {
@@ -70,14 +76,17 @@ class OllamaPolicyGenerator:
                             "content": f"Question: {question}\nPolicy evidence:\n{evidence}",
                         },
                     ],
+                    "format": _ModelAnswer.model_json_schema(),
                 },
             )
             response.raise_for_status()
-            content = response.json()["message"]["content"]
-            if not isinstance(content, str) or not content.strip():
-                raise ValueError("Empty model answer")
-            return content.strip()
-        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
+            content = _ModelAnswer.model_validate_json(response.json()["message"]["content"])
+            answer = content.answer.strip()
+            cited_ids = set(re.findall(r"\[(P-[A-Z-]+)\]", answer))
+            if not cited_ids or not cited_ids <= {clause.id for clause in clauses}:
+                raise ValueError("Missing or unsupported policy citation")
+            return answer
+        except (httpx.HTTPError, KeyError, TypeError, ValueError, ValidationError) as exc:
             raise PolicyUpstreamError("Policy wording model unavailable") from exc
 
 
@@ -104,7 +113,7 @@ class PolicyKnowledge:
                 retriever_used=self.retriever_name,
                 generator_used=self.generator_name,
             )
-        warning = None
+        warnings: list[str] = []
         retriever_used = self.retriever_name
         generator_used = self.generator_name
         try:
@@ -112,7 +121,7 @@ class PolicyKnowledge:
         except PolicyUpstreamError:
             clauses = LexicalPolicyRetriever(self.corpus).search(question, scope=scope)
             retriever_used = "lexical_fallback"
-            warning = "Semantic retrieval unavailable; used lexical retrieval."
+            warnings.append("Semantic retrieval unavailable; used lexical retrieval.")
         if not clauses:
             return PolicyAnswer(
                 status="no_match",
@@ -120,19 +129,19 @@ class PolicyKnowledge:
                 citations=(),
                 retriever_used=retriever_used,
                 generator_used="none",
-                warning=warning,
+                warning=" ".join(warnings) or None,
             )
         try:
             answer = self.generator.generate(question, clauses)
         except PolicyUpstreamError:
             answer = ExtractivePolicyGenerator().generate(question, clauses)
             generator_used = "extractive_fallback"
-            warning = "Answer model unavailable; quoted retrieved policy clauses instead."
+            warnings.append("Answer model unavailable; quoted retrieved policy clauses instead.")
         return PolicyAnswer(
             status="answered",
             answer=answer,
             citations=tuple(clauses),
             retriever_used=retriever_used,
             generator_used=generator_used,
-            warning=warning,
+            warning=" ".join(warnings) or None,
         )

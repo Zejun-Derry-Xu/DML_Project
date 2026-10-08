@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     policy_qdrant_api_key: str = ""
     policy_ollama_url: str = "http://localhost:11434"
     policy_embedding_model: str = "embeddinggemma"
-    policy_min_vector_score: float = 0.45
+    policy_min_vector_score: float = 0.25
     log_level: str = "INFO"
 
 
