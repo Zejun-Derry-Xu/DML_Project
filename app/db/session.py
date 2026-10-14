@@ -1,7 +1,8 @@
 from collections.abc import Generator
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import get_settings
@@ -27,5 +28,10 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def database_is_ready(session: Session) -> bool:
+    # A reachable but unmigrated database cannot serve return workflows.
+    from app.db import models  # noqa: F401
+
     session.execute(text("SELECT 1"))
+    if not set(Base.metadata.tables) <= set(inspect(session.connection()).get_table_names()):
+        raise SQLAlchemyError("Required application tables are missing")
     return True

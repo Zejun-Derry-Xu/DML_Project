@@ -63,7 +63,10 @@ class ConversationService:
                     "message_length": len(message),
                     "pending_question": current.pending_question,
                 },
-                result={"fields_present": self._present_fields(facts)},
+                result={
+                    "fields_present": self._present_fields(facts),
+                    "extraction_path": getattr(self.extractor, "last_path", "not_reported"),
+                },
                 success=True,
                 latency_ms=latency_ms,
             )
@@ -144,7 +147,8 @@ class ConversationService:
         return [
             key
             for key, value in data.items()
-            if value is not None and value is not False and value != "unclear"
+            if value is not None and value != "unclear"
+            and not (key == "wants_human" and value is False)
         ]
 
     @staticmethod

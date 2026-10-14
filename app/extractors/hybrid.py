@@ -7,6 +7,7 @@ class HybridExtractor:
     def __init__(self, fallback: FactExtractor | None = None) -> None:
         self.rules = RuleBasedExtractor()
         self.fallback = fallback
+        self.last_path = "not_run"
 
     async def extract(
         self,
@@ -15,12 +16,18 @@ class HybridExtractor:
         pending_question: str | None,
     ) -> ReturnFacts:
         rule_facts = await self.rules.extract(message, current_case, pending_question)
-        if self.fallback is None or self._answers_pending(rule_facts, pending_question):
+        if self.fallback is None:
+            self.last_path = "rules_only"
+            return rule_facts
+        if self._answers_pending(rule_facts, pending_question):
+            self.last_path = "rules_sufficient"
             return rule_facts
         try:
             model_facts = await self.fallback.extract(message, current_case, pending_question)
         except ExtractorError:
+            self.last_path = "model_error_rules_fallback"
             return rule_facts
+        self.last_path = "rules_and_model"
         return self._merge(rule_facts, model_facts)
 
     @staticmethod

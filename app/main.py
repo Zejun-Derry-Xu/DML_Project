@@ -110,7 +110,7 @@ def create_app() -> FastAPI:
 
     @application.get("/health", tags=["operations"])
     def health() -> dict[str, str]:
-        return {"status": "ok"}
+        return {"status": "ok", "environment": settings.environment}
 
     @application.get("/metrics", tags=["operations"], response_model=None)
     def metrics() -> Response:

@@ -131,7 +131,7 @@ class ReturnRequestRecord(TimestampMixin, Base):
         ForeignKey("return_cases.id"), unique=True, index=True
     )
     order_id: Mapped[UUID] = mapped_column(ForeignKey("orders.id"))
-    item_id: Mapped[UUID] = mapped_column(ForeignKey("order_items.id"))
+    item_id: Mapped[UUID] = mapped_column(ForeignKey("order_items.id"), unique=True, index=True)
     status: Mapped[str] = mapped_column(String(30), default="requested")
     idempotency_key: Mapped[str] = mapped_column(String(200), unique=True, index=True)
     return_case: Mapped[ReturnCaseRecord] = relationship(back_populates="return_request")

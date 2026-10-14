@@ -4,9 +4,15 @@ from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.db.models import QuestionRequestRecord, ReturnCaseRecord, ReturnRequestRecord
+from app.db.models import (
+    OrderItemRecord,
+    QuestionRequestRecord,
+    ReturnCaseRecord,
+    ReturnRequestRecord,
+)
 from app.domain.models import (
     CaseStatus,
     OrderSnapshot,
@@ -293,6 +299,16 @@ class CaseService:
             return existing
         if not case.order_id or not case.item_id or case.decision != ReturnDecision.ELIGIBLE.value:
             raise AppError("RETURN_NOT_ELIGIBLE", "The case is not ready for return creation.", 409)
+        # Claim the item atomically, including when another session confirmed after
+        # this case was evaluated. A per-case idempotency key alone cannot do this.
+        claimed = self.session.execute(
+            update(OrderItemRecord)
+            .where(OrderItemRecord.id == case.item_id, OrderItemRecord.return_status.is_(None))
+            .values(return_status="requested")
+            .returning(OrderItemRecord.id)
+        ).scalar_one_or_none()
+        if claimed is None:
+            raise AppError("ORDER_ALREADY_RETURNED", "A return already exists for this item.", 409)
         request = ReturnRequestRecord(
             rma_number=f"RMA-{str(case.session_id).split('-')[0].upper()}",
             return_case_id=case.id,
