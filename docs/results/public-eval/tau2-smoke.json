@@ -1,0 +1,65 @@
+{
+  "experiment": "official tau2 retail local compatibility smoke",
+  "date": "2026-10-14",
+  "agent_implementation": "official LLMAgent; not ReturnFlow application",
+  "source": {
+    "repository": "https://github.com/sierra-research/tau2-bench",
+    "revision": "dd8757d4c8791dad7b3cdaf02a105a3d5f9d86bd",
+    "harness_sha256": "23b56604e80399f03f0527e64fa37e8d3b4203971ece34d89b035ff0c756677f",
+    "retail_sha256": {
+      "tasks.json": "8e03ebce7901bd6218e7a7dc3105faa9324091a68058f7fe61c65262868812e8",
+      "db.json": "413a65160adbdb5fde0ffc0015c49b6d70250b10c18128de169b597af7766765",
+      "policy.md": "2c9652afbce57d6e087768d37cda64d31c53d50b3e3225cfdb791bac66466467",
+      "split_tasks.json": "ed0580ec52575b63fbf76568af42490da6ee7783ecb4aa81af46961291358f20"
+    }
+  },
+  "configuration": {
+    "split": "train",
+    "task_ids": ["48"],
+    "seeds": [300],
+    "agent_model": "qwen3:4b",
+    "user_model": "qwen3:4b",
+    "model_digest_observed_on_server": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+    "transport": "ollama_chat via LiteLLM 1.81.11",
+    "temperature": 0,
+    "max_tokens_per_call": 512,
+    "num_ctx": 8192,
+    "requested_reasoning_effort": "none",
+    "max_steps": 20,
+    "task_timeout_seconds": 180,
+    "call_timeout_seconds": 60,
+    "total_timeout_seconds": 180
+  },
+  "aggregate": {
+    "requested_simulations": 1,
+    "recorded_simulations": 1,
+    "attempted_simulations": 1,
+    "completed_interactions": 0,
+    "officially_scored_simulations": 0,
+    "unscored_simulations": 1,
+    "status_counts": {"timeout": 1},
+    "mean_official_reward_over_scored": null,
+    "score_coverage": 0,
+    "official_pass_k": null
+  },
+  "elapsed_seconds": 180.024,
+  "partial_trajectory": {
+    "completed_official_steps": 11,
+    "messages": 12,
+    "tool_calls": 1,
+    "measured_messages": 10,
+    "recorded_prompt_tokens": 44482,
+    "recorded_output_tokens": 4737,
+    "messages_containing_closing_think_tag": 3,
+    "token_coverage": "Finished checkpointed calls only; excludes any in-flight killed call. Not total task cost."
+  },
+  "diagnosis": "The local model produced verbose deliberation despite requested disabled reasoning; repeated 512-token capped messages consumed the budget. Source code and a separate capture of the pinned LiteLLM transport confirmed that reasoning_effort=none maps to top-level think=false. This does not guarantee that this model's free-form output suppresses deliberation.",
+  "private_report": "data/evaluation_runs/tau2-smoke-2026-10-14/report.json",
+  "limitations": [
+    "Timeout is unscored, not an official reward of zero and not a successful interaction.",
+    "One train task is only a runtime compatibility probe, not a leaderboard or full benchmark result.",
+    "Both participants use one small local model; this is not the upstream evaluation configuration.",
+    "The generic official agent is not connected to ReturnFlow's conversation service.",
+    "No external natural-language judge was called."
+  ]
+}

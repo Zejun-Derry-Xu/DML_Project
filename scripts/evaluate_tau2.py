@@ -23,7 +23,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument(
         "--data-dir", type=Path, help="Official data root containing tau2/domains/retail"
     )
-    result.add_argument("--output-dir", type=Path, default=Path("docs/results/tau2-local"))
+    result.add_argument("--output-dir", type=Path, default=Path("data/evaluation_runs/tau2/local"))
     result.add_argument("--split", default="train", help="Official split (train/test/base) or all")
     result.add_argument("--task-ids", nargs="*", default=[])
     result.add_argument(

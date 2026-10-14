@@ -1,0 +1,1148 @@
+{
+  "benchmark": "OR-ShARC",
+  "evaluator_version": "or-sharc-v1",
+  "started_at": "2026-10-14T18:10:11.845174+00:00",
+  "updated_at": "2026-10-14T18:11:13.525530+00:00",
+  "sources": {
+    "repository": "https://github.com/Yifan-Gao/open_retrieval_conversational_machine_reading",
+    "revision": "309c4ea3a7cc4c7a815d7f46292d91fc9a0de581",
+    "license": "CC BY-SA 3.0 (upstream README)",
+    "files_sha256": {
+      "id2snippet.json": "859a6c9fca2b153ff72b834b9fcef520117b09088d4da9a66f6b1db48b8f7124",
+      "open_retrieval_sharc_dev.json": "f58623a43829eb369a4bce1886f5b33790b939f404b27fdeb89fbce7d64061fd"
+    },
+    "manifest_sha256": "75becc3e95b38ff958a5e8bcaa20af5cbd4307b43dc82836f90bf1037d2431c7"
+  },
+  "model_provenance": {
+    "qwen3:4b": {
+      "name": "qwen3:4b",
+      "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+      "size": 2497293931,
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "qwen3",
+        "families": [
+          "qwen3"
+        ],
+        "parameter_size": "4.0B",
+        "quantization_level": "Q4_K_M",
+        "context_length": 262144,
+        "embedding_length": 2560
+      }
+    }
+  },
+  "parameters": {
+    "evaluator_version": "or-sharc-v1",
+    "split": "dev",
+    "mode": "all",
+    "retriever": "bm25",
+    "bm25": {
+      "k1": 1.2,
+      "b": 0.75,
+      "tokenizer": "ascii_alphanumeric_casefold",
+      "query_terms": "unique"
+    },
+    "query_fields": [
+      "question",
+      "scenario",
+      "history"
+    ],
+    "model": "qwen3:4b",
+    "embedding_model": null,
+    "ollama_url": "http://127.0.0.1:11434",
+    "sample_size": 12,
+    "seed": 42,
+    "top_k": 3,
+    "num_predict": 220,
+    "temperature": 0,
+    "think": false,
+    "reader_prompt_sha256": "cf70d31949ec9d02e9516f159a9fd18bc60ff2d4686bf626deb76fd4f14db146",
+    "selected_ids_sha256": "905d987433cdf852838d4e9bbf49f66ead81f6df853b66c3092ece044c0b67fe",
+    "code_sha256": {
+      "app/evaluation/or_sharc.py": "51ea53e02db2206d4de3ac56d534605be01ca9e1b15b2ec7b9964835c2f51bfa",
+      "scripts/evaluate_or_sharc.py": "341ea77ee144b446c35cf7d1734b98d1dcafc80ad0810a6b47b8ca4b39cb41f6"
+    }
+  },
+  "corpus_document_count": 651,
+  "split": {
+    "example_count": 1105,
+    "canonical_tree_group_count": 273,
+    "gold_document_count": 273,
+    "decision_counts": {
+      "no": 366,
+      "yes": 426,
+      "inquire": 313
+    },
+    "seen_counts": {
+      "seen": 500,
+      "unseen": 605
+    }
+  },
+  "model_sample": {
+    "example_count": 12,
+    "canonical_tree_group_count": 10,
+    "gold_document_count": 10,
+    "decision_counts": {
+      "no": 4,
+      "yes": 5,
+      "inquire": 3
+    },
+    "seen_counts": {
+      "unseen": 7,
+      "seen": 5
+    }
+  },
+  "model_sample_note": "Uniform fixed-seed utterance sample chosen by IDs only; labels never stratify selection. Shared tree groups may recur.",
+  "retrieval": {
+    "example_count": 1105,
+    "canonical_tree_group_count": 273,
+    "gold_document_count": 273,
+    "decision_counts": {
+      "no": 366,
+      "yes": 426,
+      "inquire": 313
+    },
+    "seen_counts": {
+      "seen": 500,
+      "unseen": 605
+    },
+    "attempted_count": 1105,
+    "not_run_count": 0,
+    "complete": true,
+    "metric_denominator": 1105,
+    "recall_at_1": 0.8506787330316742,
+    "recall_at_3": 0.9212669683257918,
+    "recall_at_5": 0.9447963800904977,
+    "mrr": 0.8929337203489865,
+    "errors": {},
+    "latency_ms_p50": 0.3962500486522913,
+    "latency_ms_p95": 0.5258084158413112
+  },
+  "retrieval_by_seen": {
+    "seen": {
+      "example_count": 500,
+      "canonical_tree_group_count": 257,
+      "gold_document_count": 257,
+      "decision_counts": {
+        "no": 155,
+        "yes": 174,
+        "inquire": 171
+      },
+      "seen_counts": {
+        "seen": 500
+      },
+      "attempted_count": 500,
+      "not_run_count": 0,
+      "complete": true,
+      "metric_denominator": 500,
+      "recall_at_1": 0.846,
+      "recall_at_3": 0.94,
+      "recall_at_5": 0.958,
+      "mrr": 0.8964700403486602,
+      "errors": {},
+      "latency_ms_p50": 0.39954151725396514,
+      "latency_ms_p95": 0.5456351238535717
+    },
+    "unseen": {
+      "example_count": 605,
+      "canonical_tree_group_count": 16,
+      "gold_document_count": 16,
+      "decision_counts": {
+        "yes": 252,
+        "inquire": 142,
+        "no": 211
+      },
+      "seen_counts": {
+        "unseen": 605
+      },
+      "attempted_count": 605,
+      "not_run_count": 0,
+      "complete": true,
+      "metric_denominator": 605,
+      "recall_at_1": 0.8545454545454545,
+      "recall_at_3": 0.9057851239669421,
+      "recall_at_5": 0.9338842975206612,
+      "mrr": 0.8900111418368596,
+      "errors": {},
+      "latency_ms_p50": 0.39216596633195877,
+      "latency_ms_p95": 0.5050166044384241
+    }
+  },
+  "experiments": {
+    "reader_oracle": {
+      "example_count": 12,
+      "canonical_tree_group_count": 10,
+      "gold_document_count": 10,
+      "decision_counts": {
+        "no": 4,
+        "yes": 5,
+        "inquire": 3
+      },
+      "seen_counts": {
+        "unseen": 7,
+        "seen": 5
+      },
+      "attempted_count": 12,
+      "valid_count": 12,
+      "not_run_count": 0,
+      "complete": true,
+      "decision_on_selected": {
+        "accuracy": 0.25,
+        "macro_f1": 0.2222222222222222,
+        "f1_by_class": {
+          "yes": 0.4444444444444444,
+          "no": 0.2222222222222222,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 2
+          },
+          "no": {
+            "no": 1,
+            "yes": 2,
+            "inquire": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "decision_on_attempted": {
+        "accuracy": 0.25,
+        "macro_f1": 0.2222222222222222,
+        "f1_by_class": {
+          "yes": 0.4444444444444444,
+          "no": 0.2222222222222222,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 2
+          },
+          "no": {
+            "no": 1,
+            "yes": 2,
+            "inquire": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+      "errors": {},
+      "citation_doc_precision": 1.0,
+      "citation_doc_precision_denominator": 12,
+      "citation_gold_doc_correctness_on_selected": 1.0,
+      "citation_gold_doc_correctness_on_attempted": 1.0,
+      "citation_outside_context_count": 0,
+      "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+      "tokens": {
+        "prompt_tokens": {
+          "total_measured": 3710,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        },
+        "completion_tokens": {
+          "total_measured": 781,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        }
+      },
+      "latency_ms_p50": 1417.7003749646246,
+      "latency_ms_p95": 2949.1627832845547,
+      "by_seen": {
+        "seen": {
+          "example_count": 5,
+          "canonical_tree_group_count": 5,
+          "gold_document_count": 5,
+          "decision_counts": {
+            "inquire": 1,
+            "no": 2,
+            "yes": 2
+          },
+          "seen_counts": {
+            "seen": 5
+          },
+          "attempted_count": 5,
+          "valid_count": 5,
+          "not_run_count": 0,
+          "complete": true,
+          "decision_on_selected": {
+            "accuracy": 0.2,
+            "macro_f1": 0.16666666666666666,
+            "f1_by_class": {
+              "yes": 0.5,
+              "no": 0.0,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "no": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "inquire": {
+                "no": 1
+              }
+            }
+          },
+          "decision_on_attempted": {
+            "accuracy": 0.2,
+            "macro_f1": 0.16666666666666666,
+            "f1_by_class": {
+              "yes": 0.5,
+              "no": 0.0,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "no": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "inquire": {
+                "no": 1
+              }
+            }
+          },
+          "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+          "errors": {},
+          "citation_doc_precision": 1.0,
+          "citation_doc_precision_denominator": 5,
+          "citation_gold_doc_correctness_on_selected": 1.0,
+          "citation_gold_doc_correctness_on_attempted": 1.0,
+          "citation_outside_context_count": 0,
+          "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+          "tokens": {
+            "prompt_tokens": {
+              "total_measured": 1572,
+              "measured_call_count": 5,
+              "unknown_call_count": 0
+            },
+            "completion_tokens": {
+              "total_measured": 383,
+              "measured_call_count": 5,
+              "unknown_call_count": 0
+            }
+          },
+          "latency_ms_p50": 1313.5691249626689,
+          "latency_ms_p95": 3195.6334251794033
+        },
+        "unseen": {
+          "example_count": 7,
+          "canonical_tree_group_count": 5,
+          "gold_document_count": 5,
+          "decision_counts": {
+            "no": 2,
+            "yes": 3,
+            "inquire": 2
+          },
+          "seen_counts": {
+            "unseen": 7
+          },
+          "attempted_count": 7,
+          "valid_count": 7,
+          "not_run_count": 0,
+          "complete": true,
+          "decision_on_selected": {
+            "accuracy": 0.2857142857142857,
+            "macro_f1": 0.24444444444444446,
+            "f1_by_class": {
+              "yes": 0.4,
+              "no": 0.3333333333333333,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "inquire": 1,
+                "no": 1,
+                "yes": 1
+              },
+              "no": {
+                "no": 1,
+                "yes": 1
+              },
+              "inquire": {
+                "no": 2
+              }
+            }
+          },
+          "decision_on_attempted": {
+            "accuracy": 0.2857142857142857,
+            "macro_f1": 0.24444444444444446,
+            "f1_by_class": {
+              "yes": 0.4,
+              "no": 0.3333333333333333,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "inquire": 1,
+                "no": 1,
+                "yes": 1
+              },
+              "no": {
+                "no": 1,
+                "yes": 1
+              },
+              "inquire": {
+                "no": 2
+              }
+            }
+          },
+          "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+          "errors": {},
+          "citation_doc_precision": 1.0,
+          "citation_doc_precision_denominator": 7,
+          "citation_gold_doc_correctness_on_selected": 1.0,
+          "citation_gold_doc_correctness_on_attempted": 1.0,
+          "citation_outside_context_count": 0,
+          "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+          "tokens": {
+            "prompt_tokens": {
+              "total_measured": 2138,
+              "measured_call_count": 7,
+              "unknown_call_count": 0
+            },
+            "completion_tokens": {
+              "total_measured": 398,
+              "measured_call_count": 7,
+              "unknown_call_count": 0
+            }
+          },
+          "latency_ms_p50": 1521.8316249665804,
+          "latency_ms_p95": 2151.2071080796886
+        }
+      },
+      "context": "gold public snippet (oracle)"
+    },
+    "reader_retrieved": {
+      "example_count": 12,
+      "canonical_tree_group_count": 10,
+      "gold_document_count": 10,
+      "decision_counts": {
+        "no": 4,
+        "yes": 5,
+        "inquire": 3
+      },
+      "seen_counts": {
+        "unseen": 7,
+        "seen": 5
+      },
+      "attempted_count": 12,
+      "valid_count": 12,
+      "not_run_count": 0,
+      "complete": true,
+      "decision_on_selected": {
+        "accuracy": 0.25,
+        "macro_f1": 0.2222222222222222,
+        "f1_by_class": {
+          "yes": 0.4444444444444444,
+          "no": 0.2222222222222222,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 2
+          },
+          "no": {
+            "no": 1,
+            "yes": 2,
+            "inquire": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "decision_on_attempted": {
+        "accuracy": 0.25,
+        "macro_f1": 0.2222222222222222,
+        "f1_by_class": {
+          "yes": 0.4444444444444444,
+          "no": 0.2222222222222222,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 2
+          },
+          "no": {
+            "no": 1,
+            "yes": 2,
+            "inquire": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+      "errors": {},
+      "citation_doc_precision": 1.0,
+      "citation_doc_precision_denominator": 12,
+      "citation_gold_doc_correctness_on_selected": 1.0,
+      "citation_gold_doc_correctness_on_attempted": 1.0,
+      "citation_outside_context_count": 0,
+      "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+      "tokens": {
+        "prompt_tokens": {
+          "total_measured": 3710,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        },
+        "completion_tokens": {
+          "total_measured": 781,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        }
+      },
+      "latency_ms_p50": 1224.9010000086855,
+      "latency_ms_p95": 2739.3478274665536,
+      "by_seen": {
+        "seen": {
+          "example_count": 5,
+          "canonical_tree_group_count": 5,
+          "gold_document_count": 5,
+          "decision_counts": {
+            "inquire": 1,
+            "no": 2,
+            "yes": 2
+          },
+          "seen_counts": {
+            "seen": 5
+          },
+          "attempted_count": 5,
+          "valid_count": 5,
+          "not_run_count": 0,
+          "complete": true,
+          "decision_on_selected": {
+            "accuracy": 0.2,
+            "macro_f1": 0.16666666666666666,
+            "f1_by_class": {
+              "yes": 0.5,
+              "no": 0.0,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "no": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "inquire": {
+                "no": 1
+              }
+            }
+          },
+          "decision_on_attempted": {
+            "accuracy": 0.2,
+            "macro_f1": 0.16666666666666666,
+            "f1_by_class": {
+              "yes": 0.5,
+              "no": 0.0,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "no": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "inquire": {
+                "no": 1
+              }
+            }
+          },
+          "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+          "errors": {},
+          "citation_doc_precision": 1.0,
+          "citation_doc_precision_denominator": 5,
+          "citation_gold_doc_correctness_on_selected": 1.0,
+          "citation_gold_doc_correctness_on_attempted": 1.0,
+          "citation_outside_context_count": 0,
+          "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+          "tokens": {
+            "prompt_tokens": {
+              "total_measured": 1572,
+              "measured_call_count": 5,
+              "unknown_call_count": 0
+            },
+            "completion_tokens": {
+              "total_measured": 383,
+              "measured_call_count": 5,
+              "unknown_call_count": 0
+            }
+          },
+          "latency_ms_p50": 1059.3746670056134,
+          "latency_ms_p95": 2973.536516795866
+        },
+        "unseen": {
+          "example_count": 7,
+          "canonical_tree_group_count": 5,
+          "gold_document_count": 5,
+          "decision_counts": {
+            "no": 2,
+            "yes": 3,
+            "inquire": 2
+          },
+          "seen_counts": {
+            "unseen": 7
+          },
+          "attempted_count": 7,
+          "valid_count": 7,
+          "not_run_count": 0,
+          "complete": true,
+          "decision_on_selected": {
+            "accuracy": 0.2857142857142857,
+            "macro_f1": 0.24444444444444446,
+            "f1_by_class": {
+              "yes": 0.4,
+              "no": 0.3333333333333333,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "inquire": 1,
+                "no": 1,
+                "yes": 1
+              },
+              "no": {
+                "no": 1,
+                "yes": 1
+              },
+              "inquire": {
+                "no": 2
+              }
+            }
+          },
+          "decision_on_attempted": {
+            "accuracy": 0.2857142857142857,
+            "macro_f1": 0.24444444444444446,
+            "f1_by_class": {
+              "yes": 0.4,
+              "no": 0.3333333333333333,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "inquire": 1,
+                "no": 1,
+                "yes": 1
+              },
+              "no": {
+                "no": 1,
+                "yes": 1
+              },
+              "inquire": {
+                "no": 2
+              }
+            }
+          },
+          "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+          "errors": {},
+          "citation_doc_precision": 1.0,
+          "citation_doc_precision_denominator": 7,
+          "citation_gold_doc_correctness_on_selected": 1.0,
+          "citation_gold_doc_correctness_on_attempted": 1.0,
+          "citation_outside_context_count": 0,
+          "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+          "tokens": {
+            "prompt_tokens": {
+              "total_measured": 2138,
+              "measured_call_count": 7,
+              "unknown_call_count": 0
+            },
+            "completion_tokens": {
+              "total_measured": 398,
+              "measured_call_count": 7,
+              "unknown_call_count": 0
+            }
+          },
+          "latency_ms_p50": 1300.693000026513,
+          "latency_ms_p95": 1651.7854581645224
+        }
+      },
+      "context": "retrieved top-1"
+    },
+    "integrated": {
+      "example_count": 12,
+      "canonical_tree_group_count": 10,
+      "gold_document_count": 10,
+      "decision_counts": {
+        "no": 4,
+        "yes": 5,
+        "inquire": 3
+      },
+      "seen_counts": {
+        "unseen": 7,
+        "seen": 5
+      },
+      "attempted_count": 12,
+      "valid_count": 12,
+      "not_run_count": 0,
+      "complete": true,
+      "decision_on_selected": {
+        "accuracy": 0.25,
+        "macro_f1": 0.25,
+        "f1_by_class": {
+          "yes": 0.5,
+          "no": 0.25,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 3,
+            "yes": 2
+          },
+          "no": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "decision_on_attempted": {
+        "accuracy": 0.25,
+        "macro_f1": 0.25,
+        "f1_by_class": {
+          "yes": 0.5,
+          "no": 0.25,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 3,
+            "yes": 2
+          },
+          "no": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+      "errors": {},
+      "citation_doc_precision": 0.6,
+      "citation_doc_precision_denominator": 20,
+      "citation_gold_doc_correctness_on_selected": 1.0,
+      "citation_gold_doc_correctness_on_attempted": 1.0,
+      "citation_outside_context_count": 0,
+      "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+      "tokens": {
+        "prompt_tokens": {
+          "total_measured": 5256,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        },
+        "completion_tokens": {
+          "total_measured": 961,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        }
+      },
+      "latency_ms_p50": 1824.1160629841033,
+      "latency_ms_p95": 3290.921462650294,
+      "by_seen": {
+        "seen": {
+          "example_count": 5,
+          "canonical_tree_group_count": 5,
+          "gold_document_count": 5,
+          "decision_counts": {
+            "inquire": 1,
+            "no": 2,
+            "yes": 2
+          },
+          "seen_counts": {
+            "seen": 5
+          },
+          "attempted_count": 5,
+          "valid_count": 5,
+          "not_run_count": 0,
+          "complete": true,
+          "decision_on_selected": {
+            "accuracy": 0.2,
+            "macro_f1": 0.16666666666666666,
+            "f1_by_class": {
+              "yes": 0.5,
+              "no": 0.0,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "no": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "inquire": {
+                "no": 1
+              }
+            }
+          },
+          "decision_on_attempted": {
+            "accuracy": 0.2,
+            "macro_f1": 0.16666666666666666,
+            "f1_by_class": {
+              "yes": 0.5,
+              "no": 0.0,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "no": {
+                "yes": 1,
+                "inquire": 1
+              },
+              "inquire": {
+                "no": 1
+              }
+            }
+          },
+          "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+          "errors": {},
+          "citation_doc_precision": 0.5555555555555556,
+          "citation_doc_precision_denominator": 9,
+          "citation_gold_doc_correctness_on_selected": 1.0,
+          "citation_gold_doc_correctness_on_attempted": 1.0,
+          "citation_outside_context_count": 0,
+          "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+          "tokens": {
+            "prompt_tokens": {
+              "total_measured": 2138,
+              "measured_call_count": 5,
+              "unknown_call_count": 0
+            },
+            "completion_tokens": {
+              "total_measured": 454,
+              "measured_call_count": 5,
+              "unknown_call_count": 0
+            }
+          },
+          "latency_ms_p50": 1911.8822919554077,
+          "latency_ms_p95": 3308.5105586098507
+        },
+        "unseen": {
+          "example_count": 7,
+          "canonical_tree_group_count": 5,
+          "gold_document_count": 5,
+          "decision_counts": {
+            "no": 2,
+            "yes": 3,
+            "inquire": 2
+          },
+          "seen_counts": {
+            "unseen": 7
+          },
+          "attempted_count": 7,
+          "valid_count": 7,
+          "not_run_count": 0,
+          "complete": true,
+          "decision_on_selected": {
+            "accuracy": 0.2857142857142857,
+            "macro_f1": 0.3,
+            "f1_by_class": {
+              "yes": 0.5,
+              "no": 0.4,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "inquire": 2,
+                "yes": 1
+              },
+              "no": {
+                "inquire": 1,
+                "no": 1
+              },
+              "inquire": {
+                "no": 2
+              }
+            }
+          },
+          "decision_on_attempted": {
+            "accuracy": 0.2857142857142857,
+            "macro_f1": 0.3,
+            "f1_by_class": {
+              "yes": 0.5,
+              "no": 0.4,
+              "inquire": 0.0
+            },
+            "confusion": {
+              "yes": {
+                "inquire": 2,
+                "yes": 1
+              },
+              "no": {
+                "inquire": 1,
+                "no": 1
+              },
+              "inquire": {
+                "no": 2
+              }
+            }
+          },
+          "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+          "errors": {},
+          "citation_doc_precision": 0.6363636363636364,
+          "citation_doc_precision_denominator": 11,
+          "citation_gold_doc_correctness_on_selected": 1.0,
+          "citation_gold_doc_correctness_on_attempted": 1.0,
+          "citation_outside_context_count": 0,
+          "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+          "tokens": {
+            "prompt_tokens": {
+              "total_measured": 3118,
+              "measured_call_count": 7,
+              "unknown_call_count": 0
+            },
+            "completion_tokens": {
+              "total_measured": 507,
+              "measured_call_count": 7,
+              "unknown_call_count": 0
+            }
+          },
+          "latency_ms_p50": 1736.349834012799,
+          "latency_ms_p95": 2942.3609622870567
+        }
+      },
+      "context": "retrieved top-3"
+    }
+  },
+  "new_model_calls": 36,
+  "retriever_initialization_error": null,
+  "embedding_calls_this_invocation": {
+    "count": 0,
+    "input_count": 0,
+    "prompt_tokens_total_measured": 0,
+    "prompt_tokens_unknown_call_count": 0,
+    "note": "Embedding cost is invocation-local; cached document vectors do not incur new calls."
+  },
+  "invocation_elapsed_seconds": 61.68389937502798,
+  "stopped_reason": null,
+  "checkpoint": "data/evaluation_runs/or_sharc/or-sharc-qwen-dev12-2026-10-14/predictions.jsonl",
+  "limitations": [
+    "BM25 is a frozen lexical baseline, not the published OR-ShARC model.",
+    "Three-way decision accuracy is distinct from follow-up question quality, which is not scored automatically.",
+    "Citations score gold document IDs only; clause entailment and textual faithfulness require manual review.",
+    "Native Ollama token counts are measured when supplied; missing provider counts remain unknown.",
+    "Model samples and partial runs must not be represented as complete test-set model performance."
+  ],
+  "paired_reader_comparison": {
+    "paired_attempted_count": 12,
+    "selected_count": 12,
+    "oracle": {
+      "example_count": 12,
+      "canonical_tree_group_count": 10,
+      "gold_document_count": 10,
+      "decision_counts": {
+        "no": 4,
+        "yes": 5,
+        "inquire": 3
+      },
+      "seen_counts": {
+        "unseen": 7,
+        "seen": 5
+      },
+      "attempted_count": 12,
+      "valid_count": 12,
+      "not_run_count": 0,
+      "complete": true,
+      "decision_on_selected": {
+        "accuracy": 0.25,
+        "macro_f1": 0.2222222222222222,
+        "f1_by_class": {
+          "yes": 0.4444444444444444,
+          "no": 0.2222222222222222,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 2
+          },
+          "no": {
+            "no": 1,
+            "yes": 2,
+            "inquire": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "decision_on_attempted": {
+        "accuracy": 0.25,
+        "macro_f1": 0.2222222222222222,
+        "f1_by_class": {
+          "yes": 0.4444444444444444,
+          "no": 0.2222222222222222,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 2
+          },
+          "no": {
+            "no": 1,
+            "yes": 2,
+            "inquire": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+      "errors": {},
+      "citation_doc_precision": 1.0,
+      "citation_doc_precision_denominator": 12,
+      "citation_gold_doc_correctness_on_selected": 1.0,
+      "citation_gold_doc_correctness_on_attempted": 1.0,
+      "citation_outside_context_count": 0,
+      "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+      "tokens": {
+        "prompt_tokens": {
+          "total_measured": 3710,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        },
+        "completion_tokens": {
+          "total_measured": 781,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        }
+      },
+      "latency_ms_p50": 1417.7003749646246,
+      "latency_ms_p95": 2949.1627832845547
+    },
+    "retrieved": {
+      "example_count": 12,
+      "canonical_tree_group_count": 10,
+      "gold_document_count": 10,
+      "decision_counts": {
+        "no": 4,
+        "yes": 5,
+        "inquire": 3
+      },
+      "seen_counts": {
+        "unseen": 7,
+        "seen": 5
+      },
+      "attempted_count": 12,
+      "valid_count": 12,
+      "not_run_count": 0,
+      "complete": true,
+      "decision_on_selected": {
+        "accuracy": 0.25,
+        "macro_f1": 0.2222222222222222,
+        "f1_by_class": {
+          "yes": 0.4444444444444444,
+          "no": 0.2222222222222222,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 2
+          },
+          "no": {
+            "no": 1,
+            "yes": 2,
+            "inquire": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "decision_on_attempted": {
+        "accuracy": 0.25,
+        "macro_f1": 0.2222222222222222,
+        "f1_by_class": {
+          "yes": 0.4444444444444444,
+          "no": 0.2222222222222222,
+          "inquire": 0.0
+        },
+        "confusion": {
+          "yes": {
+            "inquire": 2,
+            "no": 1,
+            "yes": 2
+          },
+          "no": {
+            "no": 1,
+            "yes": 2,
+            "inquire": 1
+          },
+          "inquire": {
+            "no": 3
+          }
+        }
+      },
+      "selected_metric_note": "Not-run and failed calls count as incorrect; selected accuracy is a lower bound until complete. Partial-run F1 is provisional.",
+      "errors": {},
+      "citation_doc_precision": 1.0,
+      "citation_doc_precision_denominator": 12,
+      "citation_gold_doc_correctness_on_selected": 1.0,
+      "citation_gold_doc_correctness_on_attempted": 1.0,
+      "citation_outside_context_count": 0,
+      "citation_scope": "Document-ID correctness only; no gold clause mapping or automatic textual entailment/faithfulness claim.",
+      "tokens": {
+        "prompt_tokens": {
+          "total_measured": 3710,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        },
+        "completion_tokens": {
+          "total_measured": 781,
+          "measured_call_count": 12,
+          "unknown_call_count": 0
+        }
+      },
+      "latency_ms_p50": 1224.9010000086855,
+      "latency_ms_p95": 2739.3478274665536
+    },
+    "note": "Same examples and prompt; only supplied snippet differs. Failed calls remain in paired denominators."
+  },
+  "complete": true
+}

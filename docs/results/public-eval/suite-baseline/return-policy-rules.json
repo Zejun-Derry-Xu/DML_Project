@@ -1,0 +1,32 @@
+{
+  "dataset_kind": "hand-authored synthetic policy boundary supplement",
+  "config": {
+    "evaluator_version": "return-policy-v2",
+    "mode": "rules",
+    "model": "qwen3:4b",
+    "policy_version": "mvp-1.0.0",
+    "fixture_sha256": "3b8202252afbbc7549542f5c6816b01c81d3d89027e17929a0ffce1ade013e52",
+    "policy_sha256": "02f9c678841a18a56a30bbd6b58c309ee191007236d937fbb60bedf5a8856cc9",
+    "evaluator_sha256": "5b4ae7ca90944d24022858cf99613198c288cb9c50900d5a7907f649560009dc",
+    "base_url": "http://127.0.0.1:11434"
+  },
+  "requested_count": 20,
+  "attempted_count": 20,
+  "completed_all": true,
+  "decision_accuracy": 1.0,
+  "decision_macro_f1": 1.0,
+  "false_approval_rate": 0.0,
+  "gold_clause_citation_rate": 1.0,
+  "retrieval_recall_at_3": null,
+  "provider_errors": 0,
+  "measured_tokens": 0,
+  "latency_ms": {
+    "p50": 0.011,
+    "p95": 0.021
+  },
+  "limitations": [
+    "Small synthetic supplement, not a public dataset benchmark.",
+    "Citation ID match does not establish textual entailment.",
+    "Rules and hybrid_rag share the deterministic decision engine."
+  ]
+}

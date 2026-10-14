@@ -111,6 +111,15 @@ Measured outputs are checked in under `docs/results/`. On the 50-case set, the r
 100% labeled-slot accuracy; local Qwen3:4B reached 56.16%. These are partial-label, offline results,
 not production claims, and they support keeping deterministic rules as the primary path.
 
+## Public-data evaluation experiment
+
+The experimental public-data evaluators run without Docker or the application database.
+They cover ABCD fact extraction, OR-ShARC retrieval/rule reading, a separate retail-policy
+boundary supplement, and an isolated official tau2 compatibility runner. See
+[the measured results and reproduction guide](docs/public-data-evaluation.md).
+Full retrieval results, small local-model samples, and authored tests are reported separately;
+none is presented as a complete native ReturnFlow end-to-end benchmark score.
+
 ## API flow
 
 1. `POST /api/v1/chat` with `session_id`, `customer_email`, and a free-text `message`.

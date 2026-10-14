@@ -1,0 +1,180 @@
+{
+  "benchmark": "OR-ShARC",
+  "evaluator_version": "or-sharc-v1",
+  "started_at": "2026-10-14T23:03:54.033481+00:00",
+  "updated_at": "2026-10-14T23:05:10.503117+00:00",
+  "sources": {
+    "repository": "https://github.com/Yifan-Gao/open_retrieval_conversational_machine_reading",
+    "revision": "309c4ea3a7cc4c7a815d7f46292d91fc9a0de581",
+    "license": "CC BY-SA 3.0 (upstream README)",
+    "files_sha256": {
+      "id2snippet.json": "859a6c9fca2b153ff72b834b9fcef520117b09088d4da9a66f6b1db48b8f7124",
+      "open_retrieval_sharc_test.json": "a2ecee7f1cb014f28c862fa44df813501fb2f31a3c1ed64279efcf9e21ef4ce3"
+    },
+    "manifest_sha256": "75becc3e95b38ff958a5e8bcaa20af5cbd4307b43dc82836f90bf1037d2431c7"
+  },
+  "model_provenance": {
+    "embeddinggemma": {
+      "name": "embeddinggemma:latest",
+      "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1",
+      "size": 621875917,
+      "details": {
+        "parent_model": "embeddinggemma:300m-bf16",
+        "format": "gguf",
+        "family": "gemma3",
+        "families": [
+          "gemma3"
+        ],
+        "parameter_size": "307.58M",
+        "quantization_level": "BF16",
+        "context_length": 2048,
+        "embedding_length": 768
+      }
+    }
+  },
+  "parameters": {
+    "evaluator_version": "or-sharc-v1",
+    "split": "test",
+    "mode": "retrieval",
+    "retriever": "ollama",
+    "bm25": {
+      "k1": 1.2,
+      "b": 0.75,
+      "tokenizer": "ascii_alphanumeric_casefold",
+      "query_terms": "unique"
+    },
+    "query_fields": [
+      "question",
+      "scenario",
+      "history"
+    ],
+    "model": null,
+    "embedding_model": "embeddinggemma",
+    "ollama_url": "http://127.0.0.1:11434",
+    "sample_size": 30,
+    "seed": 42,
+    "top_k": 3,
+    "num_predict": 220,
+    "temperature": 0,
+    "think": false,
+    "reader_prompt_sha256": "cf70d31949ec9d02e9516f159a9fd18bc60ff2d4686bf626deb76fd4f14db146",
+    "selected_ids_sha256": "417c1f423adfa302e0e6716479b777f004dd992620a7d42901fae88102b69286",
+    "code_sha256": {
+      "app/evaluation/or_sharc.py": "51ea53e02db2206d4de3ac56d534605be01ca9e1b15b2ec7b9964835c2f51bfa",
+      "scripts/evaluate_or_sharc.py": "341ea77ee144b446c35cf7d1734b98d1dcafc80ad0810a6b47b8ca4b39cb41f6"
+    }
+  },
+  "corpus_document_count": 651,
+  "split": {
+    "example_count": 2373,
+    "canonical_tree_group_count": 428,
+    "gold_document_count": 423,
+    "decision_counts": {
+      "no": 835,
+      "inquire": 701,
+      "yes": 837
+    },
+    "seen_counts": {
+      "seen": 1000,
+      "unseen": 1373
+    }
+  },
+  "model_sample": null,
+  "model_sample_note": "Uniform fixed-seed utterance sample chosen by IDs only; labels never stratify selection. Shared tree groups may recur.",
+  "retrieval": {
+    "example_count": 2373,
+    "canonical_tree_group_count": 428,
+    "gold_document_count": 423,
+    "decision_counts": {
+      "no": 835,
+      "inquire": 701,
+      "yes": 837
+    },
+    "seen_counts": {
+      "seen": 1000,
+      "unseen": 1373
+    },
+    "attempted_count": 2373,
+    "not_run_count": 0,
+    "complete": true,
+    "metric_denominator": 2373,
+    "recall_at_1": 0.865992414664981,
+    "recall_at_3": 0.9443742098609356,
+    "recall_at_5": 0.9662873999157185,
+    "mrr": 0.9093636389172189,
+    "errors": {},
+    "latency_ms_p50": 28.782000008504838,
+    "latency_ms_p95": 35.40513322222978
+  },
+  "retrieval_by_seen": {
+    "seen": {
+      "example_count": 1000,
+      "canonical_tree_group_count": 377,
+      "gold_document_count": 373,
+      "decision_counts": {
+        "no": 314,
+        "inquire": 339,
+        "yes": 347
+      },
+      "seen_counts": {
+        "seen": 1000
+      },
+      "attempted_count": 1000,
+      "not_run_count": 0,
+      "complete": true,
+      "metric_denominator": 1000,
+      "recall_at_1": 0.809,
+      "recall_at_3": 0.919,
+      "recall_at_5": 0.945,
+      "mrr": 0.86872738275077,
+      "errors": {},
+      "latency_ms_p50": 28.51716647273861,
+      "latency_ms_p95": 35.72469936334527
+    },
+    "unseen": {
+      "example_count": 1373,
+      "canonical_tree_group_count": 51,
+      "gold_document_count": 50,
+      "decision_counts": {
+        "yes": 490,
+        "no": 521,
+        "inquire": 362
+      },
+      "seen_counts": {
+        "unseen": 1373
+      },
+      "attempted_count": 1373,
+      "not_run_count": 0,
+      "complete": true,
+      "metric_denominator": 1373,
+      "recall_at_1": 0.9075018208302986,
+      "recall_at_3": 0.9628550619082301,
+      "recall_at_5": 0.9817916970138383,
+      "mrr": 0.9389603294972982,
+      "errors": {},
+      "latency_ms_p50": 28.965666017029434,
+      "latency_ms_p95": 35.099849815014736
+    }
+  },
+  "experiments": {},
+  "new_model_calls": 0,
+  "retriever_initialization_error": null,
+  "embedding_calls_this_invocation": {
+    "count": 2394,
+    "input_count": 3024,
+    "prompt_tokens_total_measured": 171870,
+    "prompt_tokens_unknown_call_count": 0,
+    "note": "Embedding cost is invocation-local; cached document vectors do not incur new calls."
+  },
+  "invocation_elapsed_seconds": 76.47304950002581,
+  "stopped_reason": null,
+  "checkpoint": "data/evaluation_runs/or_sharc/embeddinggemma-test-2026-10-14/predictions.jsonl",
+  "limitations": [
+    "BM25 is a frozen lexical baseline, not the published OR-ShARC model.",
+    "Three-way decision accuracy is distinct from follow-up question quality, which is not scored automatically.",
+    "Citations score gold document IDs only; clause entailment and textual faithfulness require manual review.",
+    "Native Ollama token counts are measured when supplied; missing provider counts remain unknown.",
+    "Model samples and partial runs must not be represented as complete test-set model performance."
+  ],
+  "complete": true
+}

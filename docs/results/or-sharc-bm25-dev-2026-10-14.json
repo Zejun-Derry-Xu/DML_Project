@@ -1,0 +1,162 @@
+{
+  "benchmark": "OR-ShARC",
+  "evaluator_version": "or-sharc-v1",
+  "started_at": "2026-10-14T18:02:06.034867+00:00",
+  "updated_at": "2026-10-14T18:02:06.583898+00:00",
+  "sources": {
+    "repository": "https://github.com/Yifan-Gao/open_retrieval_conversational_machine_reading",
+    "revision": "309c4ea3a7cc4c7a815d7f46292d91fc9a0de581",
+    "license": "CC BY-SA 3.0 (upstream README)",
+    "files_sha256": {
+      "id2snippet.json": "859a6c9fca2b153ff72b834b9fcef520117b09088d4da9a66f6b1db48b8f7124",
+      "open_retrieval_sharc_dev.json": "f58623a43829eb369a4bce1886f5b33790b939f404b27fdeb89fbce7d64061fd"
+    },
+    "manifest_sha256": "75becc3e95b38ff958a5e8bcaa20af5cbd4307b43dc82836f90bf1037d2431c7"
+  },
+  "model_provenance": null,
+  "parameters": {
+    "evaluator_version": "or-sharc-v1",
+    "split": "dev",
+    "mode": "retrieval",
+    "retriever": "bm25",
+    "bm25": {
+      "k1": 1.2,
+      "b": 0.75,
+      "tokenizer": "ascii_alphanumeric_casefold",
+      "query_terms": "unique"
+    },
+    "query_fields": [
+      "question",
+      "scenario",
+      "history"
+    ],
+    "model": null,
+    "embedding_model": null,
+    "ollama_url": null,
+    "sample_size": 30,
+    "seed": 42,
+    "top_k": 3,
+    "num_predict": 220,
+    "temperature": 0,
+    "think": false,
+    "reader_prompt_sha256": "cf70d31949ec9d02e9516f159a9fd18bc60ff2d4686bf626deb76fd4f14db146",
+    "selected_ids_sha256": "1c6a849aee2a333911874b43c88c722205ead7d413ae62caacc3b789752a0501",
+    "code_sha256": {
+      "app/evaluation/or_sharc.py": "51ea53e02db2206d4de3ac56d534605be01ca9e1b15b2ec7b9964835c2f51bfa",
+      "scripts/evaluate_or_sharc.py": "341ea77ee144b446c35cf7d1734b98d1dcafc80ad0810a6b47b8ca4b39cb41f6"
+    }
+  },
+  "corpus_document_count": 651,
+  "split": {
+    "example_count": 1105,
+    "canonical_tree_group_count": 273,
+    "gold_document_count": 273,
+    "decision_counts": {
+      "no": 366,
+      "yes": 426,
+      "inquire": 313
+    },
+    "seen_counts": {
+      "seen": 500,
+      "unseen": 605
+    }
+  },
+  "model_sample": null,
+  "model_sample_note": "Uniform fixed-seed utterance sample chosen by IDs only; labels never stratify selection. Shared tree groups may recur.",
+  "retrieval": {
+    "example_count": 1105,
+    "canonical_tree_group_count": 273,
+    "gold_document_count": 273,
+    "decision_counts": {
+      "no": 366,
+      "yes": 426,
+      "inquire": 313
+    },
+    "seen_counts": {
+      "seen": 500,
+      "unseen": 605
+    },
+    "attempted_count": 1105,
+    "not_run_count": 0,
+    "complete": true,
+    "metric_denominator": 1105,
+    "recall_at_1": 0.8506787330316742,
+    "recall_at_3": 0.9212669683257918,
+    "recall_at_5": 0.9447963800904977,
+    "mrr": 0.8929337203489865,
+    "errors": {},
+    "latency_ms_p50": 0.39541698060929775,
+    "latency_ms_p95": 0.5369252292439342
+  },
+  "retrieval_by_seen": {
+    "seen": {
+      "example_count": 500,
+      "canonical_tree_group_count": 257,
+      "gold_document_count": 257,
+      "decision_counts": {
+        "no": 155,
+        "yes": 174,
+        "inquire": 171
+      },
+      "seen_counts": {
+        "seen": 500
+      },
+      "attempted_count": 500,
+      "not_run_count": 0,
+      "complete": true,
+      "metric_denominator": 500,
+      "recall_at_1": 0.846,
+      "recall_at_3": 0.94,
+      "recall_at_5": 0.958,
+      "mrr": 0.8964700403486602,
+      "errors": {},
+      "latency_ms_p50": 0.4002290079370141,
+      "latency_ms_p95": 0.5423187481937929
+    },
+    "unseen": {
+      "example_count": 605,
+      "canonical_tree_group_count": 16,
+      "gold_document_count": 16,
+      "decision_counts": {
+        "yes": 252,
+        "inquire": 142,
+        "no": 211
+      },
+      "seen_counts": {
+        "unseen": 605
+      },
+      "attempted_count": 605,
+      "not_run_count": 0,
+      "complete": true,
+      "metric_denominator": 605,
+      "recall_at_1": 0.8545454545454545,
+      "recall_at_3": 0.9057851239669421,
+      "recall_at_5": 0.9338842975206612,
+      "mrr": 0.8900111418368596,
+      "errors": {},
+      "latency_ms_p50": 0.39191602263599634,
+      "latency_ms_p95": 0.5231083719991148
+    }
+  },
+  "experiments": {},
+  "new_model_calls": 0,
+  "retriever_initialization_error": null,
+  "embedding_calls_this_invocation": {
+    "count": 0,
+    "input_count": 0,
+    "prompt_tokens_total_measured": 0,
+    "prompt_tokens_unknown_call_count": 0,
+    "note": "Embedding cost is invocation-local; cached document vectors do not incur new calls."
+  },
+  "invocation_elapsed_seconds": 0.5503582920064218,
+  "stopped_reason": null,
+  "checkpoint": "data/evaluation_runs/or_sharc/or-sharc-bm25-dev-2026-10-14/predictions.jsonl",
+  "limitations": [
+    "BM25 is a frozen lexical baseline, not the published OR-ShARC model.",
+    "Three-way decision accuracy is distinct from follow-up question quality, which is not scored automatically.",
+    "Citations score gold document IDs only; clause entailment and textual faithfulness require manual review.",
+    "Native Ollama token counts are measured when supplied; missing provider counts remain unknown.",
+    "Model samples and partial runs must not be represented as complete test-set model performance."
+  ],
+  "complete": true
+}

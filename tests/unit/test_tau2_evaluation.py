@@ -63,6 +63,10 @@ def test_cli_supports_all_tasks_seeds_resume_and_budgets() -> None:
     assert arguments.max_steps == 12
 
 
+def test_cli_defaults_keep_raw_benchmark_trajectories_out_of_public_reports() -> None:
+    assert parser().parse_args([]).output_dir == Path("data/evaluation_runs/tau2/local")
+
+
 @pytest.mark.parametrize(
     "url",
     [
