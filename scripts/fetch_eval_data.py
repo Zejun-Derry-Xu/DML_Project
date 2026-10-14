@@ -72,8 +72,10 @@ def fetch_dataset(name: str, directory: Path, client: httpx.Client) -> dict[str,
             (entry for entry in existing.get("files", []) if entry["name"] == filename), None
         )
         verified = (
-            destination.exists() and previous is not None
-            and previous["url"] == url and previous["sha256"] == sha256(destination)
+            destination.exists()
+            and previous is not None
+            and previous["url"] == url
+            and previous["sha256"] == sha256(destination)
         )
         if not verified:
             partial = destination.with_name(destination.name + ".partial")
@@ -87,14 +89,27 @@ def fetch_dataset(name: str, directory: Path, client: httpx.Client) -> dict[str,
             finally:
                 partial.unlink(missing_ok=True)
         files.append(
-            {"name": filename, "url": url, "sha256": sha256(destination),
-             "bytes": destination.stat().st_size}
+            {
+                "name": filename,
+                "url": url,
+                "sha256": sha256(destination),
+                "bytes": destination.stat().st_size,
+            }
         )
     manifest = {
-        "dataset": name, "repository": source["repository"],
-        "revision": source["revision"], "license": source["license"],
-        "verified_at": datetime.now(UTC).isoformat(), "files": files,
+        "dataset": name,
+        "repository": source["repository"],
+        "revision": source["revision"],
+        "license": source["license"],
+        "verified_at": datetime.now(UTC).isoformat(),
+        "files": files,
     }
+    # Re-verification must not change the identity used by resumable evaluation runs.
+    if all(
+        existing.get(key) == manifest[key]
+        for key in ("dataset", "repository", "revision", "license", "files")
+    ):
+        manifest = existing
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
     return manifest
 
@@ -112,8 +127,21 @@ def main() -> None:
     if args.manifest_output:
         args.manifest_output.parent.mkdir(parents=True, exist_ok=True)
         args.manifest_output.write_text(json.dumps(report, indent=2) + "\n")
-    print(json.dumps({"datasets": [{"name": entry["dataset"], "revision": entry["revision"],
-                                  "files": len(entry["files"])} for entry in manifests]}, indent=2))
+    print(
+        json.dumps(
+            {
+                "datasets": [
+                    {
+                        "name": entry["dataset"],
+                        "revision": entry["revision"],
+                        "files": len(entry["files"]),
+                    }
+                    for entry in manifests
+                ]
+            },
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

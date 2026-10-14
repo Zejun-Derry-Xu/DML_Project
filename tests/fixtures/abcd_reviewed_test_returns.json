@@ -1,0 +1,215 @@
+{
+  "projection_version": "abcd-returnfacts-v1",
+  "source_revision": "6b8700ce67c6b37b062dd7a60abc76d7ef832a97",
+  "source_sha256": "2bdf53ac359543dcdc38d55bc6513e78df120363f8f44870716e909f4606de15",
+  "annotation_method": "assistant_reviewed_supplement_not_official_gold",
+  "reviewer": "Codex assistant /root/abcd_evaluation, 2026-10-14",
+  "needs_human_confirmation": true,
+  "reviewer_trace": [
+    "Selected the first 12 native return_* test conversations by ascending SHA-256 of 99:convo_id before reviewing customer text or individual predictions.",
+    "Reviewed every original customer turn in the selected conversations; did not view agent turns, scenario values, latent subflow labels, or individual extractor predictions when assigning supplemental intent/reason/condition labels.",
+    "Retained the separate automatic official-placeholder-grounded order-ID labels; evidence snippets remain exact original customer text.",
+    "Assigned product names only when customers explicitly named them. Generic item/it/return-label requests do not identify a product.",
+    "Mapped explicit wrong-size complaints to does_not_fit, stains to defective, explicitly received wrong-color variants to wrong_item, unspecified color dissatisfaction to other, and the explicit no-longer-needed motivation to changed_mind.",
+    "Null used/opened/damaged labels mean no explicit customer assertion of that state after reviewing all customer turns, not proof of unused/unopened/undamaged. Original packaging retention/disposal and rhetorical questions do not establish these states.",
+    "Case 8580 remains intent unclear because its customer never explicitly requests a return/refund/send-back; the latent return subflow was not used as intent evidence.",
+    "The twelve supplemental rows require independent human confirmation and are not official ABCD ReturnFacts annotations. No production extractor or prompt was changed after reviewing this subset."
+  ],
+  "selection": {
+    "split": "test",
+    "task": "self_contained",
+    "native_subflow_prefix": "return_",
+    "seed": 99,
+    "limit_conversations": 12,
+    "algorithm": "ascending sha256(f'{seed}:{convo_id}').hexdigest()"
+  },
+  "selected_convo_ids": [7423, 8197, 1229, 2669, 9225, 8580, 533, 9880, 8141, 1972, 9340, 3294],
+  "annotations": [
+    {
+      "sample_id": "abcd:test:7423:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "4508809777", "item_name": null,
+        "reason": "does_not_fit", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 1, "text": "I would like to return an item"}],
+        "order_id": [{"turn_index": 8, "text": "Order ID: 4508809777", "basis": "official_customer_order_id_placeholder"}],
+        "reason": [{"turn_index": 1, "text": "it is the wrong size"}]
+      },
+      "absence_audited": ["item_name", "used", "opened", "damaged", "wants_human"],
+      "review_note": "Customer retains original packaging; this says nothing explicit about opening, use, or damage. No named item or request for human transfer."
+    },
+    {
+      "sample_id": "abcd:test:8197:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "9205525470", "item_name": null,
+        "reason": "wrong_item", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 1, "text": "I want to return an item"}],
+        "order_id": [{"turn_index": 8, "text": "9205525470", "basis": "official_customer_order_id_placeholder"}],
+        "reason": [{"turn_index": 1, "text": "it came in the wrong color"}]
+      },
+      "absence_audited": ["item_name", "used", "opened", "damaged", "wants_human"],
+      "review_note": "Wrong delivered color is reviewed as an incorrect product variant (wrong_item); this taxonomy choice needs human confirmation. No explicit condition or product-name assertion."
+    },
+    {
+      "sample_id": "abcd:test:1229:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "1307833917", "item_name": "jeans",
+        "reason": "defective", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 1, "text": "I want to return them"}],
+        "order_id": [{"turn_index": 12, "text": "order- 1307833917", "basis": "official_customer_order_id_placeholder"}],
+        "item_name": [{"turn_index": 1, "text": "jeans"}],
+        "reason": [{"turn_index": 1, "text": "they have a damn stain on them"}]
+      },
+      "absence_audited": ["used", "opened", "damaged", "wants_human"],
+      "review_note": "A stain supports a defective-quality reason but not an explicit physical-damage assertion. The rhetorical mailman-use question is not a fact; discarding packaging does not explicitly state opening. Flirting is not a human-support request."
+    },
+    {
+      "sample_id": "abcd:test:2669:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "4389488759", "item_name": "jeans",
+        "reason": "other", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 3, "text": "I want to return some jeans I just bought"}],
+        "order_id": [{"turn_index": 13, "text": "4389488759", "basis": "official_customer_order_id_placeholder"}],
+        "item_name": [{"turn_index": 3, "text": "jeans"}],
+        "reason": [{"turn_index": 4, "text": "It's not the right color"}]
+      },
+      "absence_audited": ["used", "opened", "damaged", "wants_human"],
+      "review_note": "Color dissatisfaction is explicit, but the customer does not say the delivered color differed from the ordered one or that their mind changed. Reviewed as other; taxonomy choice needs confirmation."
+    },
+    {
+      "sample_id": "abcd:test:9225:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "4041031563", "item_name": "jacket",
+        "reason": "defective", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 2, "text": "I want to return my jacket"}],
+        "order_id": [{"turn_index": 7, "text": "Order ID: 4041031563", "basis": "official_customer_order_id_placeholder"}],
+        "item_name": [{"turn_index": 2, "text": "jacket"}],
+        "reason": [{"turn_index": 2, "text": "there is a HUGE stain on it"}]
+      },
+      "absence_audited": ["used", "opened", "damaged", "wants_human"],
+      "review_note": "Stain supports defective quality; no explicit use, opening, physical-damage, or human-transfer assertion. A bare yes answer cannot establish a condition without the excluded agent question."
+    },
+    {
+      "sample_id": "abcd:test:8580:self_contained",
+      "expected": {
+        "intent": "unclear", "order_id": "4836314934", "item_name": null,
+        "reason": "defective", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "order_id": [{"turn_index": 6, "text": "4836314934 Order I’d", "basis": "official_customer_order_id_placeholder"}],
+        "reason": [{"turn_index": 1, "text": "it had a stain on the front right sleeve"}]
+      },
+      "absence_audited": ["intent", "item_name", "used", "opened", "damaged", "wants_human"],
+      "review_note": "Customer says received stained item and requests a label, without explicitly requesting a return/refund/send-back. Generic item/sleeve does not name a product. Bare yes answers are not standalone condition evidence."
+    },
+    {
+      "sample_id": "abcd:test:533:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "0902695748", "item_name": "pants",
+        "reason": "does_not_fit", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 2, "text": "I need to return an item"}],
+        "order_id": [{"turn_index": 13, "text": "Order ID: 0902695748", "basis": "official_customer_order_id_placeholder"}],
+        "item_name": [{"turn_index": 7, "text": "pants"}],
+        "reason": [{"turn_index": 2, "text": "it's the wrong size"}]
+      },
+      "absence_audited": ["used", "opened", "damaged", "wants_human"],
+      "review_note": "Preserves the customer surface pants rather than inferring a brand/product string from catalog metadata. Diet discussion does not state use, opening, or damage. Leading zero in order ID is preserved."
+    },
+    {
+      "sample_id": "abcd:test:9880:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "5654002088", "item_name": null,
+        "reason": "wrong_item", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 3, "text": "I need to make a return"}],
+        "order_id": [{"turn_index": 9, "text": "5654002088", "basis": "official_customer_order_id_placeholder"}],
+        "reason": [{"turn_index": 3, "text": "it came with the wrong color"}]
+      },
+      "absence_audited": ["item_name", "used", "opened", "damaged", "wants_human"],
+      "review_note": "Wrong delivered color is reviewed as an incorrect variant, not an unstated change of mind. No product name or explicit condition assertion."
+    },
+    {
+      "sample_id": "abcd:test:8141:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "4223520702", "item_name": null,
+        "reason": "does_not_fit", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 0, "text": "I want to return it"}],
+        "order_id": [{"turn_index": 8, "text": "4223520702", "basis": "official_customer_order_id_placeholder"}],
+        "reason": [{"turn_index": 0, "text": "I bought the wrong size"}]
+      },
+      "absence_audited": ["item_name", "used", "opened", "damaged", "wants_human"],
+      "review_note": "Buying a wrong size is explicit fit motivation but does not assert use. Pronoun it does not name a product."
+    },
+    {
+      "sample_id": "abcd:test:1972:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "2401332261", "item_name": "shirt",
+        "reason": "does_not_fit", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 1, "text": "I need to return the shirt"}],
+        "order_id": [{"turn_index": 7, "text": "order id is 2401332261", "basis": "official_customer_order_id_placeholder"}],
+        "item_name": [{"turn_index": 1, "text": "shirt"}],
+        "reason": [{"turn_index": 1, "text": "it is too big"}]
+      },
+      "absence_audited": ["used", "opened", "damaged", "wants_human"],
+      "review_note": "Size complaint supports does_not_fit. Account-credit preference is an outcome request, not condition or human-transfer evidence."
+    },
+    {
+      "sample_id": "abcd:test:9340:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "8328555099", "item_name": "boots",
+        "reason": "changed_mind", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 3, "text": "Can I please return them?"}],
+        "order_id": [{"turn_index": 9, "text": "Order ID: 8328555099", "basis": "official_customer_order_id_placeholder"}],
+        "item_name": [{"turn_index": 2, "text": "boots"}],
+        "reason": [{"turn_index": 5, "text": "Bought them for an event but don't need them"}]
+      },
+      "absence_audited": ["used", "opened", "damaged", "wants_human"],
+      "review_note": "Customer has multiple motivations: color dislike, then explicit no-longer-needed event purchase. The most recent explicit motivation maps to changed_mind. Single-reason taxonomy choice needs human confirmation."
+    },
+    {
+      "sample_id": "abcd:test:3294:self_contained",
+      "expected": {
+        "intent": "return", "order_id": "9004044286", "item_name": "Michael Kors boots",
+        "reason": "does_not_fit", "used": null, "opened": null, "damaged": null,
+        "wants_human": false
+      },
+      "evidence": {
+        "intent": [{"turn_index": 1, "text": "I need to return an item"}],
+        "order_id": [{"turn_index": 11, "text": "Order ID: 9004044286", "basis": "official_customer_order_id_placeholder"}],
+        "item_name": [{"turn_index": 4, "text": "Michael Kors boots"}],
+        "reason": [{"turn_index": 1, "text": "the wrong siZe"}]
+      },
+      "absence_audited": ["used", "opened", "damaged", "wants_human"],
+      "review_note": "Uses the full explicitly spoken product span. No explicit use, opening, physical-damage, or human-transfer assertion."
+    }
+  ]
+}

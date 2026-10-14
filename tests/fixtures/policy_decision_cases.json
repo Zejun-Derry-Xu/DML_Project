@@ -1,0 +1,22 @@
+[
+  {"id":"eligible-day0","days":0,"expected_decision":"eligible","expected_clause":"P-APPROVAL"},
+  {"id":"eligible-day29","days":29,"expected_decision":"eligible","expected_clause":"P-APPROVAL"},
+  {"id":"eligible-day30","days":30,"expected_decision":"eligible","expected_clause":"P-APPROVAL"},
+  {"id":"late-day31","days":31,"expected_decision":"ineligible","expected_clause":"P-WINDOW"},
+  {"id":"late-day90","days":90,"expected_decision":"ineligible","expected_clause":"P-WINDOW"},
+  {"id":"shipped","status":"shipped","days":null,"expected_decision":"ineligible","expected_clause":"P-DELIVERED"},
+  {"id":"pending","status":"pending","days":null,"expected_decision":"ineligible","expected_clause":"P-DELIVERED"},
+  {"id":"delivery-date-missing","days":null,"expected_decision":"ineligible","expected_clause":"P-DELIVERED"},
+  {"id":"final-sale","final_sale":true,"expected_decision":"ineligible","expected_clause":"P-FINAL-SALE"},
+  {"id":"duplicate-return","return_status":"requested","expected_decision":"ineligible","expected_clause":"P-ALREADY-RETURNED"},
+  {"id":"used","used":true,"expected_decision":"ineligible","expected_clause":"P-USAGE"},
+  {"id":"reason-missing","reason":null,"expected_decision":"need_more_information","expected_clause":"P-REASON"},
+  {"id":"usage-missing","used":null,"expected_decision":"need_more_information","expected_clause":"P-USAGE"},
+  {"id":"defective","reason":"defective","expected_decision":"human_review","expected_clause":"P-HUMAN-REVIEW"},
+  {"id":"wrong-item","reason":"wrong_item","expected_decision":"human_review","expected_clause":"P-HUMAN-REVIEW"},
+  {"id":"damage-reported","damaged":true,"expected_decision":"human_review","expected_clause":"P-HUMAN-REVIEW"},
+  {"id":"human-requested","wants_human":true,"expected_decision":"human_review","expected_clause":"P-HUMAN-REVIEW"},
+  {"id":"changed-mind-unused","reason":"changed_mind","expected_decision":"eligible","expected_clause":"P-APPROVAL"},
+  {"id":"other-reason-unused","reason":"other","expected_decision":"eligible","expected_clause":"P-APPROVAL"},
+  {"id":"unknown-damage-unused","damaged":null,"expected_decision":"eligible","expected_clause":"P-APPROVAL"}
+]
