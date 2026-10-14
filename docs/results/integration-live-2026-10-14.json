@@ -1,0 +1,41 @@
+{
+  "kind": "real local application integration, not public benchmark",
+  "date": "2026-10-14",
+  "database": "isolated file SQLite demo; PostgreSQL not locally tested",
+  "rules_http_smoke": {"passed": 32, "total": 32, "elapsed_seconds": 0.097},
+  "hybrid_http_smoke": {
+    "passed": 32,
+    "total": 32,
+    "elapsed_seconds": 6.698,
+    "extractor_records": {"rules_and_model": 7, "rules_sufficient": 3},
+    "model": "qwen3:4b",
+    "runtime": "Ollama, serial, 4K context, approximately 3.2 GB model resident"
+  },
+  "model_outage_actual_http": {
+    "passed": true,
+    "http_status": 200,
+    "pending_field": "reason",
+    "created_return": false,
+    "extraction_path": "model_error_rules_fallback"
+  },
+  "process_restart_actual_http": {
+    "passed": true,
+    "restored_state": "return_created",
+    "same_rma_id": true
+  },
+  "browser_verified": [
+    "general policy question returns P-WINDOW without changing case",
+    "missing usage question and button answer",
+    "explicit confirmation creates simulated RMA",
+    "refresh restores RMA with a single restored assistant message"
+  ],
+  "checks": {"pytest_passed": 178, "ruff": "passed", "mypy": "passed", "frontend_build": "passed", "frontend_lint": "passed", "alembic_check_sqlite": "no drift"},
+  "migration": "0002: unique return per item and backfill existing item return status",
+  "docker_started": false,
+  "limits": [
+    "Not a throughput, stress, or p95 latency experiment.",
+    "Not Jetstream2, Qdrant, PostgreSQL concurrency, or full native tau2 validation.",
+    "Explicitly marked synthetic demo DB only; no real refund or shipping action.",
+    "Older public dataset results retain their original experiment scope and revisions."
+  ]
+}

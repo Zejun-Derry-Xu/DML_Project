@@ -48,3 +48,13 @@ export type ChatMessage = {
   role: "assistant" | "user";
   content: string;
 };
+
+export type PolicyExplanation = {
+  status: string;
+  answer: string;
+  policy_version: string;
+  citations: PolicyCitation[];
+  retriever_used: string;
+  generator_used: string;
+  warning: string | null;
+};

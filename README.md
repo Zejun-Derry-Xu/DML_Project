@@ -41,7 +41,26 @@ separately. It does not decide a customer's return or alter existing case decisi
 Case responses also include the policy clause corresponding to a verified reason code, so the
 web UI can show the basis for an existing deterministic decision without calling the vector DB.
 
-## Fastest start: Docker Compose
+## Low-memory local demo (no Docker)
+
+For a 16 GB development machine, run the integrated UI/API with a separate SQLite demo DB:
+
+```bash
+uv sync --all-groups
+cd frontend
+npm ci
+cd ..
+make demo
+```
+
+Open <http://127.0.0.1:5173>. `Ctrl+C` stops this command's API/UI; the demo DB persists.
+No PostgreSQL, Qdrant, or model is started. General policy questions have a separate
+**Ask policy** panel and do not modify an active return. For optional local hybrid extraction,
+start Ollama separately and use `uv run python -m scripts.local_demo --provider ollama`.
+See [the integration verification and development gaps](docs/integration-status.md).
+SQLite is a local demonstration profile, not the production database architecture.
+
+## Docker Compose (optional)
 
 Requirements: Docker Desktop with Compose.
 

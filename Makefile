@@ -1,4 +1,4 @@
-.PHONY: install test lint typecheck check dev seed up down
+.PHONY: install test lint typecheck check dev seed up down demo eval-baseline
 
 install:
 	uv sync --all-groups
@@ -19,6 +19,12 @@ check: lint typecheck test
 
 dev:
 	uv run uvicorn app.main:app --reload
+
+demo:
+	uv run python -m scripts.local_demo
+
+eval-baseline:
+	uv run python -m scripts.run_public_evaluation --profile baseline --resume
 
 seed:
 	uv run alembic upgrade head

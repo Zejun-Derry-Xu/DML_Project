@@ -1,15 +1,15 @@
-import type { CaseResponse } from "./types";
+import type { CaseResponse, PolicyExplanation } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
 type ErrorEnvelope = { error?: { message?: string } };
 
-async function request(path: string, init?: RequestInit): Promise<CaseResponse> {
+async function request<T = CaseResponse>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
-  const body = (await response.json()) as CaseResponse & ErrorEnvelope;
+  const body = (await response.json()) as T & ErrorEnvelope;
   if (!response.ok) {
     throw new Error(body.error?.message ?? "ReturnFlow could not complete the request.");
   }
@@ -44,5 +44,12 @@ export function answerQuestion(
 
 export function resumeCase(sessionId: string): Promise<CaseResponse> {
   return request(`/api/v1/return-cases/${sessionId}`);
+}
+
+export function askPolicy(question: string): Promise<PolicyExplanation> {
+  return request<PolicyExplanation>("/api/v1/policy/ask", {
+    method: "POST",
+    body: JSON.stringify({ question }),
+  });
 }
 

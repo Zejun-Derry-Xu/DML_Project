@@ -6,9 +6,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": "http://localhost:8000",
-      "/health": "http://localhost:8000",
-      "/ready": "http://localhost:8000",
+      "/api": process.env.RETURNFLOW_API_ORIGIN ?? "http://127.0.0.1:8000",
+      "/health": process.env.RETURNFLOW_API_ORIGIN ?? "http://127.0.0.1:8000",
+      "/ready": process.env.RETURNFLOW_API_ORIGIN ?? "http://127.0.0.1:8000",
     },
   },
 });

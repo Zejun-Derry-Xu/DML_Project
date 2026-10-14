@@ -16,3 +16,4 @@ frontend/dist/
 # Downloaded public corpora and per-example evaluation traces stay local.
 data/evaluation_sources/
 data/evaluation_runs/
+data/local_demo/

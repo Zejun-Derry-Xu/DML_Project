@@ -240,6 +240,13 @@ button { cursor: pointer; }
 
 footer { padding: 25px; color: #8a918d; text-align: center; font-size: 11px; }
 
+.policy-help { width: min(820px, calc(100% - 32px)); margin: 24px auto 0; padding: 22px; background: #fbfbf8; border: 1px solid #d9e1d9; border-radius: 18px; }
+.policy-help h2 { margin: 0 0 8px; font-size: 18px; }
+.policy-help > p { color: #627069; font-size: 13px; line-height: 1.5; }
+.policy-answer { margin-top: 16px; line-height: 1.6; font-size: 14px; overflow-wrap: anywhere; }
+.policy-answer summary { cursor: pointer; color: #214336; font-weight: 600; }
+.policy-answer li + li { margin-top: 8px; }
+
 @media (max-width: 620px) {
   .topbar { height: 64px; padding: 0 18px; }
   .hero { margin-top: 34px; }
