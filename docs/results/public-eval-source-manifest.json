@@ -1,0 +1,115 @@
+{
+  "sources": [
+    {
+      "dataset": "abcd",
+      "repository": "asappresearch/abcd",
+      "revision": "6b8700ce67c6b37b062dd7a60abc76d7ef832a97",
+      "license": "MIT (upstream LICENSE)",
+      "verified_at": "2026-10-14T17:45:14.643563+00:00",
+      "files": [
+        {
+          "name": "abcd_v1.1.json.gz",
+          "url": "https://raw.githubusercontent.com/asappresearch/abcd/6b8700ce67c6b37b062dd7a60abc76d7ef832a97/data/abcd_v1.1.json.gz",
+          "sha256": "2bdf53ac359543dcdc38d55bc6513e78df120363f8f44870716e909f4606de15",
+          "bytes": 36985084
+        },
+        {
+          "name": "abcd_sample.json",
+          "url": "https://raw.githubusercontent.com/asappresearch/abcd/6b8700ce67c6b37b062dd7a60abc76d7ef832a97/data/abcd_sample.json",
+          "sha256": "151e0c487493ab376bb5115538f3bfd6d2f460c94f9daa5cdf04e55bccdf4808",
+          "bytes": 38934
+        },
+        {
+          "name": "guidelines.json",
+          "url": "https://raw.githubusercontent.com/asappresearch/abcd/6b8700ce67c6b37b062dd7a60abc76d7ef832a97/data/guidelines.json",
+          "sha256": "9264557941df24fe075138a632a2345172971573124a354ccb2ceee2a12e4c2a",
+          "bytes": 95293
+        },
+        {
+          "name": "LICENSE",
+          "url": "https://raw.githubusercontent.com/asappresearch/abcd/6b8700ce67c6b37b062dd7a60abc76d7ef832a97/LICENSE",
+          "sha256": "3ab7e179a7f13027b7bc64293541f0e9beacca3701cade67fb8fce78c2d9317b",
+          "bytes": 1071
+        }
+      ]
+    },
+    {
+      "dataset": "or_sharc",
+      "repository": "Yifan-Gao/open_retrieval_conversational_machine_reading",
+      "revision": "309c4ea3a7cc4c7a815d7f46292d91fc9a0de581",
+      "license": "CC BY-SA 3.0 (upstream README)",
+      "verified_at": "2026-10-14T17:45:16.574687+00:00",
+      "files": [
+        {
+          "name": "id2snippet.json",
+          "url": "https://raw.githubusercontent.com/Yifan-Gao/open_retrieval_conversational_machine_reading/309c4ea3a7cc4c7a815d7f46292d91fc9a0de581/data/id2snippet.json",
+          "sha256": "859a6c9fca2b153ff72b834b9fcef520117b09088d4da9a66f6b1db48b8f7124",
+          "bytes": 159242
+        },
+        {
+          "name": "open_retrieval_sharc_train.json",
+          "url": "https://raw.githubusercontent.com/Yifan-Gao/open_retrieval_conversational_machine_reading/309c4ea3a7cc4c7a815d7f46292d91fc9a0de581/data/open_retrieval_sharc_train.json",
+          "sha256": "46ac9920a27fa0bedca59b0cb25a791aee2dee85508b6f518384342e4a1bbe51",
+          "bytes": 11352351
+        },
+        {
+          "name": "open_retrieval_sharc_dev.json",
+          "url": "https://raw.githubusercontent.com/Yifan-Gao/open_retrieval_conversational_machine_reading/309c4ea3a7cc4c7a815d7f46292d91fc9a0de581/data/open_retrieval_sharc_dev.json",
+          "sha256": "f58623a43829eb369a4bce1886f5b33790b939f404b27fdeb89fbce7d64061fd",
+          "bytes": 700342
+        },
+        {
+          "name": "open_retrieval_sharc_test.json",
+          "url": "https://raw.githubusercontent.com/Yifan-Gao/open_retrieval_conversational_machine_reading/309c4ea3a7cc4c7a815d7f46292d91fc9a0de581/data/open_retrieval_sharc_test.json",
+          "sha256": "a2ecee7f1cb014f28c862fa44df813501fb2f31a3c1ed64279efcf9e21ef4ce3",
+          "bytes": 1511129
+        },
+        {
+          "name": "README.md",
+          "url": "https://raw.githubusercontent.com/Yifan-Gao/open_retrieval_conversational_machine_reading/309c4ea3a7cc4c7a815d7f46292d91fc9a0de581/README.md",
+          "sha256": "6ad4772eef11dab2b581b5912978b8122154150bc232bd66080053f487752f69",
+          "bytes": 2886
+        }
+      ]
+    },
+    {
+      "dataset": "tau2",
+      "repository": "sierra-research/tau2-bench",
+      "revision": "dd8757d4c8791dad7b3cdaf02a105a3d5f9d86bd",
+      "license": "MIT (upstream LICENSE)",
+      "verified_at": "2026-10-14T17:45:17.186010+00:00",
+      "files": [
+        {
+          "name": "tasks.json",
+          "url": "https://raw.githubusercontent.com/sierra-research/tau2-bench/dd8757d4c8791dad7b3cdaf02a105a3d5f9d86bd/data/tau2/domains/retail/tasks.json",
+          "sha256": "8e03ebce7901bd6218e7a7dc3105faa9324091a68058f7fe61c65262868812e8",
+          "bytes": 345982
+        },
+        {
+          "name": "db.json",
+          "url": "https://raw.githubusercontent.com/sierra-research/tau2-bench/dd8757d4c8791dad7b3cdaf02a105a3d5f9d86bd/data/tau2/domains/retail/db.json",
+          "sha256": "413a65160adbdb5fde0ffc0015c49b6d70250b10c18128de169b597af7766765",
+          "bytes": 2811616
+        },
+        {
+          "name": "policy.md",
+          "url": "https://raw.githubusercontent.com/sierra-research/tau2-bench/dd8757d4c8791dad7b3cdaf02a105a3d5f9d86bd/data/tau2/domains/retail/policy.md",
+          "sha256": "2c9652afbce57d6e087768d37cda64d31c53d50b3e3225cfdb791bac66466467",
+          "bytes": 6699
+        },
+        {
+          "name": "split_tasks.json",
+          "url": "https://raw.githubusercontent.com/sierra-research/tau2-bench/dd8757d4c8791dad7b3cdaf02a105a3d5f9d86bd/data/tau2/domains/retail/split_tasks.json",
+          "sha256": "ed0580ec52575b63fbf76568af42490da6ee7783ecb4aa81af46961291358f20",
+          "bytes": 3263
+        },
+        {
+          "name": "LICENSE",
+          "url": "https://raw.githubusercontent.com/sierra-research/tau2-bench/dd8757d4c8791dad7b3cdaf02a105a3d5f9d86bd/LICENSE",
+          "sha256": "e67c5aa0074dfcaefd3c3a1aedb94cb539234aecd15d5a972574e3200e6252fe",
+          "bytes": 1072
+        }
+      ]
+    }
+  ]
+}

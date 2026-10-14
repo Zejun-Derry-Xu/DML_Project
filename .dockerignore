@@ -10,3 +10,5 @@ frontend/dist
 *.db
 .env
 data/abcd_synthetic/
+data/evaluation_sources/
+data/evaluation_runs/
