@@ -27,7 +27,19 @@ class HybridExtractor:
         if self.fallback is None:
             self.last_path = "rules_only"
             return rule_facts
-        if not self.last_conflicts and self._answers_pending(rule_facts, pending_question):
+        complete_apparel = (
+            current_case.item_category == "apparel"
+            and pending_question is None
+            and rule_facts.order_id is not None
+            and rule_facts.reason is not None
+            and all(
+                getattr(rule_facts, field) is not None
+                for field in ("stained", "tags_attached", "tags_intact", "damaged")
+            )
+        )
+        if not self.last_conflicts and (
+            complete_apparel or self._answers_pending(rule_facts, pending_question)
+        ):
             self.last_path = "rules_sufficient"
             return rule_facts
         try:

@@ -83,3 +83,20 @@ async def test_tag_damage_is_not_item_damage():
     )
     assert result.tags_intact is False
     assert result.damaged is None and result.reason is None
+
+
+@pytest.mark.asyncio
+async def test_complete_apparel_does_not_require_usage_or_model():
+    class Exploding:
+        async def extract(self, *args):
+            raise AssertionError("All required condition facts are explicit")
+
+    extractor = HybridExtractor(Exploding())
+    result = await extractor.extract(
+        "Return ORD-1010 because it doesn't fit. It has no stains. "
+        "The tags are attached. The tags are intact. It is not damaged.",
+        ReturnCase(session_id=uuid4(), item_category="apparel"),
+        None,
+    )
+    assert result.used is None and result.stained is False
+    assert extractor.last_path == "rules_sufficient"
