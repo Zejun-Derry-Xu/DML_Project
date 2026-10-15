@@ -21,6 +21,7 @@ def to_snapshot(order: OrderRecord) -> OrderSnapshot:
                 price=item.price,
                 final_sale=item.final_sale,
                 return_status=item.return_status,
+                category=item.category,
             )
             for item in order.items
         ],

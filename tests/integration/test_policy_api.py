@@ -3,7 +3,7 @@ def test_policy_endpoint_returns_versioned_citation(client) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "answered"
-    assert body["policy_version"] == "mvp-1.0.0"
+    assert body["policy_version"] == "mvp-2.0.0"
     assert body["citations"][0]["clause_id"] == "P-WINDOW"
 
 

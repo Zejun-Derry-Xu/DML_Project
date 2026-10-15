@@ -10,8 +10,35 @@ import httpx
 from app.policy.corpus import PolicyClause, PolicyCorpus
 
 _STOP_WORDS = {
-    "a", "an", "and", "are", "can", "do", "for", "how", "i", "is", "it", "my",
-    "of", "on", "or", "policy", "return", "the", "to", "what", "when", "will",
+    "a",
+    "an",
+    "and",
+    "are",
+    "can",
+    "do",
+    "for",
+    "how",
+    "i",
+    "is",
+    "it",
+    "my",
+    "of",
+    "on",
+    "or",
+    "policy",
+    "return",
+    "the",
+    "to",
+    "what",
+    "when",
+    "will",
+    "if",
+    "was",
+    "item",
+    "your",
+    "does",
+    "be",
+    "its",
 }
 
 
@@ -21,7 +48,11 @@ def _terms(value: str) -> set[str]:
 
 class PolicyRetriever(Protocol):
     def search(
-        self, question: str, *, scope: str | None = None, reason_code: str | None = None,
+        self,
+        question: str,
+        *,
+        scope: str | None = None,
+        reason_code: str | None = None,
         limit: int = 3,
     ) -> list[PolicyClause]: ...
 
@@ -31,7 +62,11 @@ class LexicalPolicyRetriever:
         self.corpus = corpus
 
     def search(
-        self, question: str, *, scope: str | None = None, reason_code: str | None = None,
+        self,
+        question: str,
+        *,
+        scope: str | None = None,
+        reason_code: str | None = None,
         limit: int = 3,
     ) -> list[PolicyClause]:
         question_terms = _terms(question)
@@ -48,8 +83,7 @@ class LexicalPolicyRetriever:
                 for keyword in clause.keywords
                 if " " in keyword
             ) + sum(
-                2 for keyword in clause.keywords
-                if " " not in keyword and keyword in question_terms
+                2 for keyword in clause.keywords if " " not in keyword and keyword in question_terms
             )
             # One generic content word is not enough evidence for a policy match.
             if not reason_match and keyword_score == 0 and text_score < 2:
@@ -97,8 +131,15 @@ class OllamaEmbeddings:
 
 class QdrantPolicyRetriever:
     def __init__(
-        self, corpus: PolicyCorpus, client: httpx.Client, embeddings: OllamaEmbeddings,
-        *, url: str, collection: str, api_key: str = "", min_score: float = 0.45,
+        self,
+        corpus: PolicyCorpus,
+        client: httpx.Client,
+        embeddings: OllamaEmbeddings,
+        *,
+        url: str,
+        collection: str,
+        api_key: str = "",
+        min_score: float = 0.45,
     ) -> None:
         self.corpus = corpus
         self.client = client
@@ -158,7 +199,11 @@ class QdrantPolicyRetriever:
         self._put(f"/collections/{self.collection}/points?wait=true", {"points": points})
 
     def search(
-        self, question: str, *, scope: str | None = None, reason_code: str | None = None,
+        self,
+        question: str,
+        *,
+        scope: str | None = None,
+        reason_code: str | None = None,
         limit: int = 3,
     ) -> list[PolicyClause]:
         if reason_code is not None:
@@ -195,7 +240,8 @@ class QdrantPolicyRetriever:
             clause_ids = [point["payload"]["clause_id"] for point in points]
             clauses = [self.corpus.by_id(clause_id) for clause_id in clause_ids]
             return [
-                clause for clause in clauses
+                clause
+                for clause in clauses
                 if clause is not None and (scope is None or clause.scope == scope)
             ]
         except (KeyError, TypeError) as exc:

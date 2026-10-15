@@ -56,8 +56,11 @@ def test_scope_filter_and_abstention() -> None:
 def test_general_answer_cites_document_but_refuses_order_specific_decision() -> None:
     corpus = load_policy()
     knowledge = PolicyKnowledge(
-        corpus, LexicalPolicyRetriever(corpus), ExtractivePolicyGenerator(),
-        retriever_name="lexical", generator_name="extractive",
+        corpus,
+        LexicalPolicyRetriever(corpus),
+        ExtractivePolicyGenerator(),
+        retriever_name="lexical",
+        generator_name="extractive",
     )
     answer = knowledge.answer("Can a final sale item be returned?")
     assert answer.status == "answered"
@@ -78,20 +81,17 @@ def test_qdrant_query_uses_version_and_scope_metadata_filters() -> None:
         if request.url.path.endswith("/points/query"):
             return httpx.Response(
                 200,
-                json={
-                    "result": {
-                        "points": [
-                            {"score": 0.8, "payload": {"clause_id": "P-WINDOW"}}
-                        ]
-                    }
-                },
+                json={"result": {"points": [{"score": 0.8, "payload": {"clause_id": "P-WINDOW"}}]}},
             )
         raise AssertionError(f"Unexpected request: {request.url}")
 
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         retriever = QdrantPolicyRetriever(
-            load_policy(), client, OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
-            url="http://qdrant", collection="test_policy",
+            load_policy(),
+            client,
+            OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
+            url="http://qdrant",
+            collection="test_policy",
         )
         result = retriever.search("What is the return window?", scope="eligibility")
     assert [clause.id for clause in result] == ["P-WINDOW"]
@@ -99,7 +99,7 @@ def test_qdrant_query_uses_version_and_scope_metadata_filters() -> None:
     assert b'"policy_version"' in calls[1].content
     assert b'"eligibility"' in calls[1].content
     assert b'"clause_id"' in calls[1].content
-    assert b'task: search result | query:' in calls[0].content
+    assert b"task: search result | query:" in calls[0].content
 
 
 def test_qdrant_does_not_embed_unsupported_policy_topic() -> None:
@@ -108,8 +108,11 @@ def test_qdrant_does_not_embed_unsupported_policy_topic() -> None:
 
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         retriever = QdrantPolicyRetriever(
-            load_policy(), client, OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
-            url="http://qdrant", collection="test_policy",
+            load_policy(),
+            client,
+            OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
+            url="http://qdrant",
+            collection="test_policy",
         )
         assert retriever.search("Can I exchange my item?") == []
 
@@ -122,12 +125,18 @@ def test_semantic_upstream_failure_falls_back_to_lexical() -> None:
     corpus = load_policy()
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         retriever = QdrantPolicyRetriever(
-            corpus, client, OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
-            url="http://qdrant", collection="test_policy",
+            corpus,
+            client,
+            OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
+            url="http://qdrant",
+            collection="test_policy",
         )
         result = PolicyKnowledge(
-            corpus, retriever, ExtractivePolicyGenerator(),
-            retriever_name="qdrant", generator_name="extractive",
+            corpus,
+            retriever,
+            ExtractivePolicyGenerator(),
+            retriever_name="qdrant",
+            generator_name="extractive",
         ).answer("Can I return a final sale item?")
     assert result.status == "answered"
     assert result.retriever_used == "lexical_fallback"
@@ -206,12 +215,22 @@ def test_qdrant_index_is_explicit_and_stores_version_metadata() -> None:
 
     with httpx.Client(transport=httpx.MockTransport(handler)) as client:
         QdrantPolicyRetriever(
-            load_policy(), client, OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
-            url="http://qdrant", collection="test_policy",
+            load_policy(),
+            client,
+            OllamaEmbeddings(client, "http://ollama", "embeddinggemma"),
+            url="http://qdrant",
+            collection="test_policy",
         ).index()
     assert [request.method for request in requests] == [
-        "POST", "GET", "PUT", "PUT", "PUT", "PUT", "PUT"
+        "POST",
+        "GET",
+        "PUT",
+        "PUT",
+        "PUT",
+        "PUT",
+        "PUT",
     ]
-    assert b'"policy_version":"mvp-1.0.0"' in requests[-1].content
+    assert b'"policy_version":"mvp-2.0.0"' in requests[-1].content
     assert b'"size":2' in requests[2].content
-    assert b'title: ReturnFlow simulated return policy | text:' in requests[0].content
+    title = b"title: ReturnFlow simulated return policy: apparel resale conditions | text:"
+    assert title in requests[0].content

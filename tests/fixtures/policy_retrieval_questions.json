@@ -6,7 +6,7 @@
   {"question": "Do I have to tell you why I want to send it back?", "expected_ids": ["P-REASON"]},
   {"question": "Why do you ask for the order email?", "expected_ids": ["P-IDENTITY"]},
   {"question": "What happens if the product is broken?", "expected_ids": ["P-HUMAN-REVIEW"]},
-  {"question": "Can I return a worn item?", "expected_ids": ["P-USAGE"]},
+  {"question": "Can I return worn clothing?", "expected_ids": ["P-APPAREL"]},
   {"question": "Do you create a real refund or shipping label?", "expected_ids": ["P-APPROVAL"]},
   {"question": "Can I return a final sale item 31 days after delivery?", "expected_ids": ["P-FINAL-SALE", "P-WINDOW"]},
   {"question": "What are your store opening hours?", "expected_ids": []},

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from typing import Literal
 
-from app.domain.models import QuestionOption, QuestionRequest, ReturnCase
+from app.domain.models import QuestionField, QuestionOption, QuestionRequest, ReturnCase
 from app.domain.reason_codes import ReasonCode
 
 QUESTION_TTL = timedelta(minutes=10)
@@ -31,7 +31,7 @@ def reason_for_missing(field: str) -> ReasonCode:
 
 
 def build_question(
-    field: Literal["order_id", "item_id", "reason", "used", "opened", "confirm_return"],
+    field: QuestionField,
     *,
     case_version: int,
     item_options: list[QuestionOption] | None = None,
@@ -44,6 +44,11 @@ def build_question(
         "used": "Has the item been used?",
         "opened": "Has the item been opened?",
         "confirm_return": "Would you like to submit the return request now?",
+        "stained": "Does the clothing have any stains?",
+        "tags_attached": "Are the original tags still attached to the clothing?",
+        "tags_intact": "Are the tags intact and undamaged?",
+        "damaged": "Is the clothing damaged?",
+        "condition_origin": "Did you cause this condition, or was it already present on delivery?",
     }
     options: dict[str, list[QuestionOption]] = {
         "order_id": [],
@@ -70,6 +75,17 @@ def build_question(
             QuestionOption(value="cancel", label="Cancel"),
         ],
     }
+    for boolean_field in ("stained", "tags_attached", "tags_intact", "damaged"):
+        options[boolean_field] = [
+            QuestionOption(value="yes", label="Yes"),
+            QuestionOption(value="no", label="No"),
+            QuestionOption(value="unknown", label="I'm not sure"),
+        ]
+    options["condition_origin"] = [
+        QuestionOption(value="customer", label="I caused it"),
+        QuestionOption(value="pre_existing", label="Already present on delivery"),
+        QuestionOption(value="unknown", label="I'm not sure"),
+    ]
     created_at = now or datetime.now(UTC)
     return QuestionRequest(
         field=field,

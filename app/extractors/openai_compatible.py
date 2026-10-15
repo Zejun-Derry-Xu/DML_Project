@@ -1,11 +1,13 @@
 import asyncio
 import json
+from time import monotonic
 
 import httpx
 from pydantic import ValidationError
 
 from app.domain.models import ReturnCase, ReturnFacts
 from app.extractors.base import ExtractorError
+from app.extractors.contracts import SPEC_VERSION, EvidenceFacts, grounded, output_schema, prompt
 
 SYSTEM_PROMPT = """You extract explicitly stated facts from the CUSTOMER MESSAGE.
 Return only JSON matching the supplied schema. Use null for facts absent from that message.
@@ -19,7 +21,7 @@ def extraction_prompt(message: str, current_case: ReturnCase, pending_question: 
     known = {
         key: value
         for key, value in current_case.model_dump(mode="json").items()
-        if value is not None and value is not False and value not in {"unclear", "started"}
+        if value is not None and value not in {"unclear", "started"}
     }
     return (
         "CUSTOMER MESSAGE (extract facts from this text):\n"
@@ -37,7 +39,7 @@ class OpenAICompatibleExtractor:
         base_url: str,
         model: str,
         api_key: str = "",
-        timeout_seconds: float = 15.0,
+        timeout_seconds: float = 60.0,
         retries: int = 1,
     ) -> None:
         self.base_url = base_url.rstrip("/")
@@ -53,40 +55,66 @@ class OpenAICompatibleExtractor:
         pending_question: str | None,
     ) -> ReturnFacts:
         headers = {"Content-Type": "application/json"}
+        self.last_diagnostics: dict[str, object] = {"spec_version": SPEC_VERSION, "attempts": 0}
+        self.last_usage: dict[str, int] = {}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
         payload = {
             "model": self.model,
             "temperature": 0,
-            "max_tokens": 300,
+            "max_tokens": 512,
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": "Extract grounded facts, not policy decisions."},
                 {
                     "role": "user",
-                    "content": extraction_prompt(message, current_case, pending_question),
+                    "content": prompt(message, current_case, pending_question),
                 },
             ],
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
                     "name": "return_facts",
-                    "strict": True,
-                    "schema": ReturnFacts.model_json_schema(),
+                    "strict": False,
+                    "schema": output_schema(pending_question),
                 },
             },
         }
         last_error: Exception | None = None
-        for attempt in range(self.retries + 1):
+        deadline = monotonic() + self.timeout_seconds
+        for attempt in range(min(self.retries, 1) + 1):
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                break
+            self.last_diagnostics["attempts"] = attempt + 1
             try:
-                async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
-                    response = await client.post(
-                        f"{self.base_url}/chat/completions", json=payload, headers=headers
+                async with asyncio.timeout(remaining):
+                    async with httpx.AsyncClient(timeout=remaining) as client:
+                        response = await client.post(
+                            f"{self.base_url}/chat/completions", json=payload, headers=headers
+                        )
+                        response.raise_for_status()
+                    body = response.json()
+                    choice = body["choices"][0]
+                    if choice.get("finish_reason") == "length":
+                        raise ValueError("Truncated structured output")
+                    envelope = EvidenceFacts.model_validate_json(
+                        self._strip_fence(choice["message"]["content"])
                     )
-                    response.raise_for_status()
-                content = response.json()["choices"][0]["message"]["content"]
-                return ReturnFacts.model_validate_json(self._strip_fence(content))
+                    facts, rejected = grounded(envelope, message, pending_question)
+                    self.last_diagnostics["rejected_fields"] = rejected
+                    self.last_usage = {
+                        key: int(value)
+                        for key, value in body.get("usage", {}).items()
+                        if isinstance(value, int)
+                    }
+                    return facts
+            except (httpx.ConnectError, httpx.ReadError, httpx.RemoteProtocolError) as exc:
+                last_error = exc
+                if attempt < min(self.retries, 1):
+                    await asyncio.sleep(min(0.25, max(0, deadline - monotonic())))
             except (
                 httpx.HTTPError,
+                TimeoutError,
                 KeyError,
                 IndexError,
                 TypeError,
@@ -94,8 +122,7 @@ class OpenAICompatibleExtractor:
                 ValueError,
             ) as exc:
                 last_error = exc
-                if attempt < self.retries:
-                    await asyncio.sleep(0.25 * (attempt + 1))
+                break
         raise ExtractorError("The model provider did not return valid facts.") from last_error
 
     @staticmethod

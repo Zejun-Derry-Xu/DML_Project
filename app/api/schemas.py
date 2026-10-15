@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Self
+from typing import Literal, Self
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
@@ -14,6 +14,7 @@ class OrderItemResponse(BaseModel):
     price: Decimal
     final_sale: bool
     return_status: str | None
+    category: Literal["general", "apparel"] = "general"
 
 
 class OrderResponse(BaseModel):
@@ -80,6 +81,10 @@ class EvaluateRequest(BaseModel):
     opened: bool | None = None
     damaged: bool | None = None
     wants_human: bool = False
+    stained: bool | None = None
+    tags_attached: bool | None = None
+    tags_intact: bool | None = None
+    condition_origin: Literal["customer", "pre_existing", "unknown"] | None = None
 
 
 class ChatRequest(BaseModel):

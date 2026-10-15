@@ -48,6 +48,7 @@ class OrderItemRecord(Base):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     order_id: Mapped[UUID] = mapped_column(ForeignKey("orders.id"), index=True)
     product_name: Mapped[str] = mapped_column(String(300))
+    category: Mapped[str] = mapped_column(String(20), default="general", server_default="general")
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     final_sale: Mapped[bool] = mapped_column(Boolean, default=False)
     return_status: Mapped[str | None] = mapped_column(String(30), nullable=True)
@@ -69,6 +70,13 @@ class ReturnCaseRecord(TimestampMixin, Base):
     used: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     opened: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     damaged: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    stained: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    tags_attached: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    tags_intact: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    condition_origin: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    policy_version: Mapped[str] = mapped_column(
+        String(30), default="mvp-2.0.0", server_default="mvp-2.0.0"
+    )
     pending_question: Mapped[str | None] = mapped_column(String(30), nullable=True)
     decision: Mapped[str | None] = mapped_column(String(40), nullable=True)
     decision_reason: Mapped[str | None] = mapped_column(String(60), nullable=True)

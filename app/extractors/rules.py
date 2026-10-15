@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from app.domain.models import ReturnCase, ReturnFacts, ReturnReason
 
@@ -14,6 +15,18 @@ class RuleBasedExtractor:
     ) -> ReturnFacts:
         text = message.strip()
         lowered = text.casefold()
+        self.ambiguous_fields: list[str] = []
+        # Unresolved subjects, speculation and prompt-like instructions must not
+        # become confident rule facts. The model may clarify them, never approve.
+        if re.search(
+            r"\b(maybe|perhaps|probably|not sure|cannot tell|may have|not certain)\b", lowered
+        ) or re.search(
+            r"ignore (?:all |previous )?(?:rules|instructions)|output json|set \w+\s*="
+            r"|one .*other|two .*which",
+            lowered,
+        ):
+            safe_order = ORDER_PATTERN.search(text)
+            return ReturnFacts(order_id=f"ORD-{safe_order.group(1)}" if safe_order else None)
         order_match = ORDER_PATTERN.search(text)
         order_id = f"ORD-{order_match.group(1)}" if order_match else None
 
@@ -23,16 +36,53 @@ class RuleBasedExtractor:
         if any(term in lowered for term in ("cancel this return", "never mind", "nevermind")):
             intent = "not_return"
 
-        reason = self._reason(lowered, pending_question)
+        item_text = re.sub(
+            r"(?:the )?tags?[^.!;]*(?:damaged|torn|cut|removed|missing)[^.!;]*", "", lowered
+        )
+        reason = self._reason(item_text, pending_question)
         used = self._used(lowered, pending_question)
+        positive_usage = re.sub(r"\b(?:never|not) used\b", "", lowered)
+        if used is False and re.search(
+            r"\b(?:i used|used it|used once|was used)\b", positive_usage
+        ):
+            self.ambiguous_fields.append("used")
+            used = None
         opened = self._opened(lowered, pending_question)
-        damaged = self._damaged(lowered)
+        damaged = self._damaged(item_text)
+        if damaged is False and re.search(
+            r"\b(?:is damaged|arrived damaged|i damaged)\b", item_text
+        ):
+            self.ambiguous_fields.append("damaged")
+            damaged = None
+        if pending_question == "damaged" and lowered.strip(" .!?") in {"yes", "no", "yep", "nope"}:
+            damaged = lowered.strip(" .!?") in {"yes", "yep"}
+        condition = self._conditions(lowered, pending_question)
+        if condition.get("condition_origin") == "customer" and reason == ReturnReason.DEFECTIVE:
+            # Damage caused by the customer is a condition, not a manufactured defect claim.
+            reason = None
+            if "doesn't fit" in lowered or "does not fit" in lowered or "too small" in lowered:
+                reason = ReturnReason.DOES_NOT_FIT
+            elif "changed my mind" in lowered:
+                reason = ReturnReason.CHANGED_MIND
+        if pending_question is not None and pending_question != "reason":
+            # A focused condition answer is not an opportunity to invent a new reason.
+            reason = None
         wants_human = any(
             term in lowered
             for term in ("human", "a person", "real person", "support specialist", "agent")
         )
 
         item_name = self._item_name(text)
+        if current_case.item_category == "apparel" and pending_question in {
+            "used",
+            "opened",
+            "stained",
+            "tags_attached",
+            "tags_intact",
+            "damaged",
+            "condition_origin",
+        }:
+            item_name = None
         if pending_question == "item_id" and item_name is None and len(text) <= 100:
             item_name = text.strip(" .!?")
 
@@ -45,7 +95,53 @@ class RuleBasedExtractor:
             opened=opened,
             damaged=damaged,
             wants_human=wants_human,
+            **condition,
         )
+
+    def _conditions(self, text: str, pending: str | None) -> dict[str, Any]:
+        patterns = {
+            "stained": (
+                r"\b(?:is stained|has stains|have stains|a stain|arrived stained|i stained)\b",
+                r"\b(?:no stains|not stained|stain.free|is clean)\b",
+            ),
+            "tags_attached": (
+                r"\btags? (?:are |is )?(?:still )?attached\b",
+                r"\b(?:tags? (?:are |is |were |was )?(?:removed|missing)|cut off (?:the )?tags?"
+                r"|tags? (?:are |is )?not attached)\b",
+            ),
+            "tags_intact": (
+                r"\btags? (?:are |is )?(?:intact|undamaged)\b",
+                r"\btags? (?:are |is )?(?:damaged|torn)\b",
+            ),
+        }
+        values: dict[str, bool | str | None] = {}
+        for field, (positive, negative) in patterns.items():
+            pos, neg = bool(re.search(positive, text)), bool(re.search(negative, text))
+            if pos and neg:
+                self.ambiguous_fields.append(field)
+                values[field] = None
+            else:
+                values[field] = True if pos else False if neg else None
+            if pending == field and text.strip(" .!?") in {"yes", "yep", "no", "nope"}:
+                values[field] = text.strip(" .!?") in {"yes", "yep"}
+        origin = None
+        if re.search(r"\bi (?:stained|damaged|cut off|removed|caused)\b", text):
+            origin = "customer"
+        if re.search(r"\b(?:arrived|delivered|delivery)\b", text) and any(
+            value in text for value in ("stain", "damag", "missing", "removed", "torn")
+        ):
+            if origin:
+                self.ambiguous_fields.append("condition_origin")
+            origin = "pre_existing" if not origin else None
+        if pending == "condition_origin":
+            if text.strip(" .!?") in {"unknown", "i don't know", "i'm not sure"}:
+                origin = "unknown"
+            elif text.strip(" .!?") in {"i caused it", "customer"}:
+                origin = "customer"
+            elif text.strip(" .!?") in {"already present on delivery", "pre_existing"}:
+                origin = "pre_existing"
+        values["condition_origin"] = origin
+        return values
 
     @staticmethod
     def _reason(text: str, pending: str | None) -> ReturnReason | None:

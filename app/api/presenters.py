@@ -60,7 +60,7 @@ def present_case(
     policy_warning = None
     if case.decision_reason and case.status != "cancelled":
         try:
-            corpus = load_policy()
+            corpus = load_policy(case.policy_version)
             clauses = LexicalPolicyRetriever(corpus).search(
                 "", reason_code=case.decision_reason, limit=len(corpus.clauses)
             )

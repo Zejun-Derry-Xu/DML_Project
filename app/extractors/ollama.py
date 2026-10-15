@@ -1,19 +1,19 @@
 import asyncio
+from time import monotonic
 
 import httpx
 from pydantic import ValidationError
 
 from app.domain.models import ReturnCase, ReturnFacts
 from app.extractors.base import ExtractorError
-from app.extractors.openai_compatible import (
-    SYSTEM_PROMPT,
-    OpenAICompatibleExtractor,
-    extraction_prompt,
-)
+from app.extractors.contracts import SPEC_VERSION, EvidenceFacts, grounded, output_schema, prompt
+from app.extractors.openai_compatible import OpenAICompatibleExtractor
 
 
 class OllamaExtractor(OpenAICompatibleExtractor):
-    """Use Ollama's native API so Qwen thinking can be disabled explicitly."""
+    """Grounded extraction; retries only transient transport errors within one budget."""
+
+    variant = "focused"
 
     async def extract(
         self,
@@ -21,31 +21,71 @@ class OllamaExtractor(OpenAICompatibleExtractor):
         current_case: ReturnCase,
         pending_question: str | None,
     ) -> ReturnFacts:
+        self.last_diagnostics: dict[str, object] = {"spec_version": SPEC_VERSION, "attempts": 0}
+        self.last_usage: dict[str, int] = {}
         root_url = self.base_url.removesuffix("/v1")
         payload = {
             "model": self.model,
             "stream": False,
             "think": False,
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "system",
+                    "content": "Extract grounded facts, never decide return eligibility.",
+                },
                 {
                     "role": "user",
-                    "content": extraction_prompt(message, current_case, pending_question),
+                    "content": prompt(
+                        message, current_case, pending_question, focused=self.variant == "focused"
+                    ),
                 },
             ],
-            "format": ReturnFacts.model_json_schema(),
-            "options": {"temperature": 0, "num_predict": 300},
+            "format": output_schema(pending_question),
+            "options": {"temperature": 0, "num_ctx": 4096, "num_predict": 512},
         }
+        deadline = monotonic() + self.timeout_seconds
         last_error: Exception | None = None
-        for attempt in range(self.retries + 1):
+        for attempt in range(min(self.retries, 1) + 1):
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                break
+            self.last_diagnostics["attempts"] = attempt + 1
             try:
-                async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
-                    response = await client.post(f"{root_url}/api/chat", json=payload)
-                    response.raise_for_status()
-                content = response.json()["message"]["content"]
-                return ReturnFacts.model_validate_json(content)
-            except (httpx.HTTPError, KeyError, TypeError, ValidationError, ValueError) as exc:
+                async with asyncio.timeout(remaining):
+                    async with httpx.AsyncClient(timeout=remaining) as client:
+                        response = await client.post(f"{root_url}/api/chat", json=payload)
+                        response.raise_for_status()
+                    body = response.json()
+                    if body.get("done_reason") == "length":
+                        raise ValueError("Truncated structured response")
+                    self.last_usage = {
+                        key: int(body[key])
+                        for key in ("prompt_eval_count", "eval_count", "load_duration")
+                        if key in body
+                    }
+                    envelope = EvidenceFacts.model_validate_json(body["message"]["content"])
+                    facts, rejected = grounded(envelope, message, pending_question)
+                    self.last_diagnostics["rejected_fields"] = rejected
+                    self.last_diagnostics["evidence_spans"] = {
+                        key: [message.find(quote), message.find(quote) + len(quote)]
+                        for key, quote in envelope.evidence.items()
+                        if key in ReturnFacts.model_fields and quote and quote in message
+                    }
+                    return facts
+            except (httpx.ConnectError, httpx.ReadError, httpx.RemoteProtocolError) as exc:
                 last_error = exc
-                if attempt < self.retries:
-                    await asyncio.sleep(0.25 * (attempt + 1))
-        raise ExtractorError("Ollama did not return valid facts.") from last_error
+                if attempt < min(self.retries, 1):
+                    await asyncio.sleep(min(0.25, max(0, deadline - monotonic())))
+            except (
+                httpx.HTTPError,
+                TimeoutError,
+                KeyError,
+                TypeError,
+                ValidationError,
+                ValueError,
+            ) as exc:
+                last_error = exc
+                break
+        raise ExtractorError(
+            "Ollama could not produce grounded facts within budget."
+        ) from last_error

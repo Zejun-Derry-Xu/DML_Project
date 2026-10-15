@@ -20,6 +20,10 @@ def evaluate_return(
     used: bool | None,
     damaged: bool | None = None,
     wants_human: bool = False,
+    stained: bool | None = None,
+    tags_attached: bool | None = None,
+    tags_intact: bool | None = None,
+    condition_origin: str | None = None,
     now: datetime | None = None,
 ) -> PolicyResult:
     """Evaluate the four MVP policies in a deterministic, short-circuiting order."""
@@ -58,7 +62,40 @@ def evaluate_return(
             decision=ReturnDecision.NEED_MORE_INFORMATION,
             reason_code=ReasonCode.MISSING_RETURN_REASON,
         )
-    if reason in {ReturnReason.DEFECTIVE, ReturnReason.WRONG_ITEM} or damaged is True:
+    if reason in {ReturnReason.DEFECTIVE, ReturnReason.WRONG_ITEM}:
+        return PolicyResult(
+            decision=ReturnDecision.HUMAN_REVIEW,
+            reason_code=ReasonCode.DEFECT_REQUIRES_REVIEW,
+        )
+    if item.category == "apparel":
+        adverse = (
+            stained is True or damaged is True or tags_attached is False or tags_intact is False
+        )
+        if adverse:
+            if condition_origin == "customer":
+                return PolicyResult(
+                    decision=ReturnDecision.INELIGIBLE,
+                    reason_code=ReasonCode.APPAREL_RESALE_CONDITION,
+                )
+            if condition_origin in {"pre_existing", "unknown"}:
+                return PolicyResult(
+                    decision=ReturnDecision.HUMAN_REVIEW,
+                    reason_code=ReasonCode.CONDITION_REQUIRES_REVIEW,
+                )
+            return PolicyResult(
+                decision=ReturnDecision.NEED_MORE_INFORMATION,
+                reason_code=ReasonCode.MISSING_CONDITION_ORIGIN,
+            )
+        for value, code in (
+            (stained, ReasonCode.MISSING_STAIN_STATUS),
+            (tags_attached, ReasonCode.MISSING_TAG_ATTACHMENT),
+            (tags_intact, ReasonCode.MISSING_TAG_INTEGRITY),
+            (damaged, ReasonCode.MISSING_DAMAGE_STATUS),
+        ):
+            if value is None:
+                return PolicyResult(decision=ReturnDecision.NEED_MORE_INFORMATION, reason_code=code)
+        return PolicyResult(decision=ReturnDecision.ELIGIBLE, reason_code=ReasonCode.ELIGIBLE)
+    if damaged is True:
         return PolicyResult(
             decision=ReturnDecision.HUMAN_REVIEW,
             reason_code=ReasonCode.DEFECT_REQUIRES_REVIEW,

@@ -8,6 +8,7 @@ class HybridExtractor:
         self.rules = RuleBasedExtractor()
         self.fallback = fallback
         self.last_path = "not_run"
+        self.last_conflicts: list[str] = []
 
     async def extract(
         self,
@@ -15,11 +16,18 @@ class HybridExtractor:
         current_case: ReturnCase,
         pending_question: str | None,
     ) -> ReturnFacts:
+        self.last_conflicts = []
+        if self.fallback is not None:
+            if hasattr(self.fallback, "last_usage"):
+                self.fallback.last_usage = {}
+            if hasattr(self.fallback, "last_diagnostics"):
+                self.fallback.last_diagnostics = {}
         rule_facts = await self.rules.extract(message, current_case, pending_question)
+        self.last_conflicts = list(getattr(self.rules, "ambiguous_fields", []))
         if self.fallback is None:
             self.last_path = "rules_only"
             return rule_facts
-        if self._answers_pending(rule_facts, pending_question):
+        if not self.last_conflicts and self._answers_pending(rule_facts, pending_question):
             self.last_path = "rules_sufficient"
             return rule_facts
         try:
@@ -28,6 +36,17 @@ class HybridExtractor:
             self.last_path = "model_error_rules_fallback"
             return rule_facts
         self.last_path = "rules_and_model"
+        self.last_conflicts = sorted(
+            set(self.last_conflicts)
+            | {
+                key
+                for key in ReturnFacts.model_fields
+                if key not in {"intent", "wants_human"}
+                and getattr(rule_facts, key) is not None
+                and getattr(model_facts, key) is not None
+                and getattr(rule_facts, key) != getattr(model_facts, key)
+            }
+        )
         return self._merge(rule_facts, model_facts)
 
     @staticmethod
@@ -44,6 +63,8 @@ class HybridExtractor:
             return facts.used is not None
         if pending == "opened":
             return facts.opened is not None
+        if pending in {"stained", "tags_attached", "tags_intact", "damaged", "condition_origin"}:
+            return getattr(facts, pending) is not None
         return False
 
     @staticmethod
@@ -51,7 +72,16 @@ class HybridExtractor:
         first = primary.model_dump()
         second = secondary.model_dump()
         merged = {
-            key: first[key] if first[key] is not None else second[key]
+            key: (
+                None
+                if first[key] is not None
+                and second[key] is not None
+                and first[key] != second[key]
+                and key != "intent"
+                else first[key]
+                if first[key] is not None
+                else second[key]
+            )
             for key in first
             if key != "wants_human"
         }

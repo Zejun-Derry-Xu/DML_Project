@@ -56,6 +56,7 @@ def seed() -> None:
                         id=stable_id("item", f"{data['order_number']}:{index}"),
                         order_id=order.id,
                         product_name=item["product_name"],
+                        category=item.get("category", "general"),
                         price=Decimal(item["price"]),
                         final_sale=item["final_sale"],
                         return_status=item.get("return_status"),

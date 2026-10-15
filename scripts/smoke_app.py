@@ -30,7 +30,7 @@ def run_smoke(base_url: str) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     started = perf_counter()
     with httpx.Client(
-        base_url=require_local_origin(base_url), timeout=45, trust_env=False
+        base_url=require_local_origin(base_url), timeout=70, trust_env=False
     ) as client:
 
         def call(method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -84,7 +84,10 @@ def run_smoke(base_url: str) -> dict[str, Any]:
 
         session = str(uuid4())
         first = chat("Return ORD-1010 because the shirt doesn't fit.", "june@example.com", session)
-        verify("asks_only_missing_usage", (first.get("question") or {}).get("field") == "used")
+        verify(
+            "asks_missing_apparel_condition",
+            (first.get("question") or {}).get("field") == "stained",
+        )
         if first.get("question") is None:
             raise RuntimeError("Use a fresh demo DB: ORD-1010 is not available for the smoke flow")
         pending_id = first["question"]["question_id"]
@@ -102,9 +105,14 @@ def run_smoke(base_url: str) -> dict[str, Any]:
             },
         )
         verify("cross_session_answer_blocked", intruder.status_code == 403)
-        second = chat("No, I never used it.", "june@example.com", session)
+        second = chat(
+            "I used it. It has no stains. The tags are attached. "
+            "The tags are intact. It is not damaged.",
+            "june@example.com",
+            session,
+        )
         verify(
-            "unused_answer_advances_to_confirmation",
+            "worn_good_condition_advances_to_confirmation",
             second["decision"] == "eligible"
             and (second.get("question") or {}).get("field") == "confirm_return",
         )

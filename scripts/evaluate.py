@@ -25,7 +25,8 @@ def meaningful(data: dict[str, object]) -> dict[str, object]:
     return {
         key: value
         for key, value in data.items()
-        if value is not None and value != "unclear"
+        if value is not None
+        and value != "unclear"
         and not (key == "wants_human" and value is False)
     }
 

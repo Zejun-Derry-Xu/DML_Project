@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Any, Literal, cast
 from uuid import UUID
 
 from sqlalchemy import update
@@ -17,6 +17,7 @@ from app.domain.models import (
     CaseStatus,
     OrderSnapshot,
     PolicyResult,
+    QuestionField,
     QuestionOption,
     ReturnDecision,
     ReturnReason,
@@ -48,8 +49,28 @@ class CaseService:
         opened: bool | None = None,
         damaged: bool | None = None,
         wants_human: bool = False,
+        stained: bool | None = None,
+        tags_attached: bool | None = None,
+        tags_intact: bool | None = None,
+        condition_origin: Literal["customer", "pre_existing", "unknown"] | None = None,
     ) -> tuple[ReturnCaseRecord, QuestionRequestRecord | None, ReturnRequestRecord | None]:
         case = self.returns.get_or_create_case(session_id)
+        if case.status in {"return_created", "escalated", "cancelled"} or (
+            case.status == "closed" and case.policy_version != "mvp-2.0.0"
+        ):
+            return case, None, case.return_request
+        self._upgrade_policy(case)
+        for field, value in (
+            ("stained", stained),
+            ("tags_attached", tags_attached),
+            ("tags_intact", tags_intact),
+            ("condition_origin", condition_origin),
+        ):
+            if value is not None:
+                previous = getattr(case, field)
+                if previous is not None and previous != value:
+                    return self._escalate_conflict(case)
+                setattr(case, field, value)
         if customer_email:
             case_email = case.customer_email
             if case_email and case_email.casefold() != customer_email.casefold():
@@ -116,6 +137,10 @@ class CaseService:
             reason=ReturnReason(case.reason) if case.reason else None,
             used=case.used,
             damaged=case.damaged,
+            stained=case.stained,
+            tags_attached=case.tags_attached,
+            tags_intact=case.tags_intact,
+            condition_origin=case.condition_origin,
         )
         return self._apply_policy_result(case, order, result)
 
@@ -146,6 +171,11 @@ class CaseService:
         case = self.returns.case_by_session(session_id)
         if case is None:
             raise AppError("CASE_NOT_FOUND", "The return case could not be found.", 404)
+        if self._upgrade_policy(case):
+            self.session.commit()
+            raise AppError(
+                "STALE_ANSWER", "Policy changed; resume to answer current questions.", 409
+            )
         if question.case_version != case.version:
             question.status = "replaced"
             self.session.commit()
@@ -186,12 +216,38 @@ class CaseService:
         if question.field == "reason":
             self.session.flush()
             return self.advance(session_id=session_id, reason=ReturnReason(selected_value))
-        if question.field in {"used", "opened"}:
+        if question.field == "condition_origin":
+            self.session.flush()
+            return self.advance(
+                session_id=session_id,
+                condition_origin=cast(
+                    Literal["customer", "pre_existing", "unknown"], selected_value
+                ),
+            )
+        if question.field in {
+            "used",
+            "opened",
+            "stained",
+            "tags_attached",
+            "tags_intact",
+            "damaged",
+        }:
+            if selected_value == "unknown" and question.field in {
+                "stained",
+                "tags_attached",
+                "tags_intact",
+                "damaged",
+            }:
+                case.decision = ReturnDecision.HUMAN_REVIEW.value
+                case.decision_reason = ReasonCode.CONDITION_REQUIRES_REVIEW.value
+                case.status = CaseStatus.ESCALATED.value
+                self.returns.replace_pending_questions(session_id)
+                self.session.commit()
+                return case, None, None
             bool_value = None if selected_value == "unknown" else selected_value == "yes"
             self.session.flush()
-            if question.field == "used":
-                return self.advance(session_id=session_id, used=bool_value)
-            return self.advance(session_id=session_id, opened=bool_value)
+            values: dict[str, Any] = {question.field: bool_value}
+            return self.advance(session_id=session_id, **values)
         raise AppError("INVALID_QUESTION", "The question field is not supported.", 422)
 
     def resume(
@@ -207,6 +263,9 @@ class CaseService:
             CaseStatus.CANCELLED.value,
         }:
             return case, None, case.return_request
+        if self._upgrade_policy(case):
+            self.session.flush()
+            return self.advance(session_id=session_id)
         pending = self.returns.pending_question(session_id)
         if pending:
             expires_at = pending.expires_at
@@ -225,9 +284,16 @@ class CaseService:
         case.decision = result.decision.value
         case.decision_reason = result.reason_code.value
         if result.decision == ReturnDecision.NEED_MORE_INFORMATION:
-            field: Literal["reason", "used"] = (
-                "reason" if result.reason_code == ReasonCode.MISSING_RETURN_REASON else "used"
-            )
+            fields: dict[ReasonCode, QuestionField] = {
+                ReasonCode.MISSING_RETURN_REASON: "reason",
+                ReasonCode.MISSING_USAGE_STATUS: "used",
+                ReasonCode.MISSING_STAIN_STATUS: "stained",
+                ReasonCode.MISSING_TAG_ATTACHMENT: "tags_attached",
+                ReasonCode.MISSING_TAG_INTEGRITY: "tags_intact",
+                ReasonCode.MISSING_DAMAGE_STATUS: "damaged",
+                ReasonCode.MISSING_CONDITION_ORIGIN: "condition_origin",
+            }
+            field = fields[result.reason_code]
             question = self._persist_question(case, field)
             self.session.commit()
             return case, question, None
@@ -249,7 +315,7 @@ class CaseService:
     def _persist_question(
         self,
         case: ReturnCaseRecord,
-        field: Literal["order_id", "item_id", "reason", "used", "opened", "confirm_return"],
+        field: QuestionField,
         item_options: list[QuestionOption] | None = None,
     ) -> QuestionRequestRecord:
         existing = self.returns.pending_question(case.session_id)
@@ -279,6 +345,36 @@ class CaseService:
         self.session.flush()
         return record
 
+    def _upgrade_policy(self, case: ReturnCaseRecord) -> bool:
+        if case.policy_version == "mvp-2.0.0" or case.status in {
+            "return_created",
+            "closed",
+            "escalated",
+            "cancelled",
+        }:
+            return False
+        self.returns.replace_pending_questions(case.session_id)
+        case.policy_version = "mvp-2.0.0"
+        case.version += 1
+        case.pending_question = None
+        case.decision = None
+        case.decision_reason = None
+        case.status = CaseStatus.STARTED.value
+        return True
+
+    def clarify(
+        self, session_id: UUID, field: QuestionField
+    ) -> tuple[ReturnCaseRecord, QuestionRequestRecord, None]:
+        case = self.returns.get_or_create_case(session_id)
+        self._upgrade_policy(case)
+        case.decision = ReturnDecision.NEED_MORE_INFORMATION.value
+        case.decision_reason = ReasonCode.INFORMATION_CONFLICT.value
+        case.version += 1
+        question = self._persist_question(case, field)
+        question.prompt = "I found conflicting information. Please confirm: " + question.prompt
+        self.session.commit()
+        return case, question, None
+
     def _escalate_conflict(self, case: ReturnCaseRecord) -> tuple[ReturnCaseRecord, None, None]:
         case.decision = ReturnDecision.HUMAN_REVIEW.value
         case.decision_reason = ReasonCode.INFORMATION_CONFLICT.value
@@ -297,6 +393,11 @@ class CaseService:
         existing = self.returns.return_request_for_case(case.id)
         if existing:
             return existing
+        if self._upgrade_policy(case):
+            self.session.commit()
+            raise AppError(
+                "STALE_ANSWER", "Policy changed; resume the case before confirming.", 409
+            )
         if not case.order_id or not case.item_id or case.decision != ReturnDecision.ELIGIBLE.value:
             raise AppError("RETURN_NOT_ELIGIBLE", "The case is not ready for return creation.", 409)
         # Claim the item atomically, including when another session confirmed after

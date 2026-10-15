@@ -92,8 +92,13 @@ class OllamaPolicyGenerator:
 
 class PolicyKnowledge:
     def __init__(
-        self, corpus: PolicyCorpus, retriever: PolicyRetriever,
-        generator: PolicyGenerator, *, retriever_name: str, generator_name: str,
+        self,
+        corpus: PolicyCorpus,
+        retriever: PolicyRetriever,
+        generator: PolicyGenerator,
+        *,
+        retriever_name: str,
+        generator_name: str,
     ) -> None:
         self.corpus = corpus
         self.retriever = retriever

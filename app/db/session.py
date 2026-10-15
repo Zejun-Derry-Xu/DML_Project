@@ -32,6 +32,11 @@ def database_is_ready(session: Session) -> bool:
     from app.db import models  # noqa: F401
 
     session.execute(text("SELECT 1"))
-    if not set(Base.metadata.tables) <= set(inspect(session.connection()).get_table_names()):
+    inspector = inspect(session.connection())
+    if not set(Base.metadata.tables) <= set(inspector.get_table_names()):
         raise SQLAlchemyError("Required application tables are missing")
+    for name, table in Base.metadata.tables.items():
+        existing = {column["name"] for column in inspector.get_columns(name)}
+        if not set(table.columns.keys()) <= existing:
+            raise SQLAlchemyError(f"Required columns are missing from {name}")
     return True

@@ -10,6 +10,20 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.reason_codes import ReasonCode
 
+QuestionField = Literal[
+    "order_id",
+    "item_id",
+    "reason",
+    "used",
+    "opened",
+    "confirm_return",
+    "stained",
+    "tags_attached",
+    "tags_intact",
+    "damaged",
+    "condition_origin",
+]
+
 
 class ReturnReason(StrEnum):
     DEFECTIVE = "defective"
@@ -53,6 +67,14 @@ class ReturnFacts(BaseModel):
     opened: bool | None = None
     damaged: bool | None = None
     wants_human: bool = False
+    stained: bool | None = Field(
+        default=None, description="Explicit stain status; unknown is null."
+    )
+    tags_attached: bool | None = Field(default=None, description="Tags still fastened to item.")
+    tags_intact: bool | None = Field(
+        default=None, description="Tags are undamaged, not merely attached."
+    )
+    condition_origin: Literal["customer", "pre_existing", "unknown"] | None = None
 
 
 class ReturnCase(BaseModel):
@@ -73,6 +95,12 @@ class ReturnCase(BaseModel):
     decision_reason: ReasonCode | None = None
     status: CaseStatus = CaseStatus.STARTED
     version: int = 1
+    item_category: Literal["general", "apparel"] = "general"
+    stained: bool | None = None
+    tags_attached: bool | None = None
+    tags_intact: bool | None = None
+    condition_origin: Literal["customer", "pre_existing", "unknown"] | None = None
+    question_prompt: str | None = None
 
 
 class OrderItem(BaseModel):
@@ -83,6 +111,7 @@ class OrderItem(BaseModel):
     price: Decimal
     final_sale: bool = False
     return_status: str | None = None
+    category: Literal["general", "apparel"] = "general"
 
 
 class OrderSnapshot(BaseModel):
@@ -110,7 +139,7 @@ class QuestionOption(BaseModel):
 
 class QuestionRequest(BaseModel):
     question_id: UUID = Field(default_factory=uuid4)
-    field: Literal["order_id", "item_id", "reason", "used", "opened", "confirm_return"]
+    field: QuestionField
     prompt: str
     options: list[QuestionOption]
     selection_mode: Literal["single"] = "single"

@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     llm_model: str = "qwen3:4b"
     llm_base_url: str = "http://localhost:11434/v1"
     llm_api_key: str = ""
-    llm_timeout_seconds: float = 15.0
+    llm_timeout_seconds: float = 60.0
     policy_retriever: Literal["lexical", "qdrant"] = "lexical"
     policy_generator: Literal["extractive", "ollama"] = "extractive"
     policy_qdrant_url: str = "http://localhost:6333"

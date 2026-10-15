@@ -64,7 +64,7 @@ def test_final_sale_short_circuits_questions(client):
     assert response.json()["decision"] == "ineligible"
     assert response.json()["reason_code"] == "FINAL_SALE"
     assert response.json()["question"] is None
-    assert response.json()["policy_version"] == "mvp-1.0.0"
+    assert response.json()["policy_version"] == "mvp-2.0.0"
     assert response.json()["policy_evidence"][0]["clause_id"] == "P-FINAL-SALE"
 
 
