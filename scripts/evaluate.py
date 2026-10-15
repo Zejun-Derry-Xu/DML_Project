@@ -25,7 +25,8 @@ def meaningful(data: dict[str, object]) -> dict[str, object]:
     return {
         key: value
         for key, value in data.items()
-        if value is not None and value is not False and value != "unclear"
+        if value is not None and value != "unclear"
+        and not (key == "wants_human" and value is False)
     }
 
 
@@ -122,7 +123,10 @@ async def main() -> None:
         "provider": args.provider,
         "model": args.model if args.provider == "ollama" else None,
         "extraction": await evaluate_extractor(extractor, args.limit),
-        "question_efficiency": question_efficiency(),
+        "question_efficiency": {
+            "status": "not_measured",
+            "note": "Historical hardcoded scenario counts are not observed user efficiency.",
+        },
     }
     print(json.dumps(output, indent=2))
 
