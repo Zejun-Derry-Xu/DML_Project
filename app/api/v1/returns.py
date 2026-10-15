@@ -35,6 +35,7 @@ def create_return(
         confirmation is None
         or confirmation.session_id != payload.session_id
         or confirmation.field != "confirm_return"
+        or confirmation.case_version != case.version
         or confirmation.status != "answered"
         or confirmation.selected_value != "confirm"
     ):

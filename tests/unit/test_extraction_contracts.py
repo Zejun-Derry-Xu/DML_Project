@@ -4,7 +4,8 @@ from uuid import uuid4
 
 import pytest
 
-from app.domain.models import ReturnCase, ReturnFacts
+from app.domain.models import ReturnCase, ReturnFacts, ReturnReason
+from app.domain.state_machine import next_missing_field
 from app.extractors.contracts import EvidenceFacts, grounded, prompt
 from app.extractors.fake import FakeExtractor
 from app.extractors.hybrid import HybridExtractor
@@ -100,3 +101,18 @@ async def test_complete_apparel_does_not_require_usage_or_model():
     )
     assert result.used is None and result.stained is False
     assert extractor.last_path == "rules_sufficient"
+
+
+def test_state_helper_uses_apparel_conditions_not_usage():
+    case = ReturnCase(
+        session_id=uuid4(),
+        order_number="ORD-1010",
+        item_category="apparel",
+        reason=ReturnReason.DOES_NOT_FIT,
+        used=True,
+    )
+    assert next_missing_field(case) == "stained"
+    case.tags_attached = False
+    assert next_missing_field(case) == "condition_origin"
+    case.condition_origin = "unknown"
+    assert next_missing_field(case) is None  # policy routes this to human review

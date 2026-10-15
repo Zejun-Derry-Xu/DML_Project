@@ -227,6 +227,8 @@ async def run(args):
                     "seconds": perf_counter() - started,
                     "usage": provider.last_usage,
                     "path": path,
+                    "diagnostics": getattr(provider, "last_diagnostics", {}),
+                    "conflicts": getattr(extractor, "last_conflicts", []),
                     "model_called": variant != "rules" and path != "rules_sufficient",
                 }
                 records.append(record)

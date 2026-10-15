@@ -15,9 +15,12 @@ machine-readable fields and reason codes.
 - Creates one simulated RMA only after explicit, version-bound confirmation.
 - Records messages, extraction metadata, tool latency, policy results, and stable reason codes.
 
-The four MVP policies are deliberately narrow: the order must be delivered, the request must be
-within 30 days, final-sale items cannot be returned, and used non-defective items are rejected.
-Defects, conflicting information, unsupported cases, and explicit requests go to human review.
+Policy `mvp-2.0.0` keeps delivery, 30-day, final-sale and duplicate-return safeguards.
+Catalog-classified apparel may have been worn: eligibility requires explicit no-stain/no-damage
+facts and attached, intact tags. Customer-caused adverse conditions reject; arrival problems or
+unresolved cause go to human review. Missing facts require questions, not assumed good condition.
+Non-apparel retains the unused-item rule. This is simulated customer-reported pre-screening.
+See [extraction reliability and release gates](docs/extraction-reliability-v2.md).
 
 ## Architecture
 
@@ -62,6 +65,12 @@ SQLite is a local demonstration profile, not the production database architectur
 
 ## Docker Compose (optional)
 
+The following is **local development only**, not safe public-server configuration.
+For the private CPU Jetstream2 profile, use the standalone `compose.jetstream.yml` and
+[migration/start/stop/rollback runbook](docs/jetstream-v2-runbook.md). Its database/model
+ports are not published; API/UI bind to loopback and are accessed through an SSH tunnel.
+Do not run local Docker on a memory-constrained Mac just to test this change.
+
 Requirements: Docker Desktop with Compose.
 
 ```bash
@@ -77,7 +86,7 @@ Demo order/email pairs include:
 
 | Order | Email | Scenario |
 |---|---|---|
-| `ORD-1010` | `june@example.com` | Eligible when unused and within window |
+| `ORD-1010` | `june@example.com` | Apparel: ask stains, attached/intact tags and damage; worn alone is allowed |
 | `ORD-1005` | `emma@example.com` | Multiple items; item selection required |
 | `ORD-1004` | `dev@example.com` | Final sale |
 | `ORD-1003` | `cora@example.com` | Outside 30-day window |

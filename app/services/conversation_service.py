@@ -55,6 +55,10 @@ class ConversationService:
                     current.item_category = cast(Literal["general", "apparel"], selected.category)
                     current.item_name = selected.product_name
         self.session.add(MessageRecord(session_id=session_id, role="user", content=message))
+        control = message.strip().casefold().rstrip(".!?")
+        control = control.removeprefix("please ").removesuffix(" please")
+        if control in {"cancel", "cancel this return", "cancel return", "never mind", "nevermind"}:
+            return self.cases.cancel(session_id)
 
         if pending and pending.field == "confirm_return":
             normalized = message.strip().casefold().rstrip(".!?")

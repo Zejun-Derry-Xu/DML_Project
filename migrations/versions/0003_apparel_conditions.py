@@ -1,5 +1,7 @@
 """Add nullable apparel facts; preserve historical decisions and explicit catalog identity."""
 
+from uuid import NAMESPACE_URL, uuid5
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -22,13 +24,11 @@ def upgrade() -> None:
         sa.Column("policy_version", sa.String(30), server_default="mvp-1.0.0", nullable=False),
     )
     # These are explicit seeded catalog IDs, not an LLM/name-based classifier.
-    from scripts.seed_data import stable_id
-
     table = sa.table("order_items", sa.column("id", sa.Uuid()), sa.column("category", sa.String()))
     for order in ("ORD-1004", "ORD-1010"):
         op.execute(
             table.update()
-            .where(table.c.id == stable_id("item", f"{order}:0"))
+            .where(table.c.id == uuid5(NAMESPACE_URL, f"returnflow:item:{order}:0"))
             .values(category="apparel")
         )
     # Existing rows retain v1; application creation explicitly uses v2.

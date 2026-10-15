@@ -39,6 +39,7 @@ def test_demo_overrides_external_services_without_altering_parent_environment(mo
     assert env["POLICY_RETRIEVER"] == "lexical"
     assert env["POLICY_GENERATOR"] == "extractive"
     assert env["LLM_API_KEY"] == ""
+    assert env["LLM_TIMEOUT_SECONDS"] == "60"
     assert env["RETURNFLOW_API_ORIGIN"] == "http://127.0.0.1:8111"
 
 

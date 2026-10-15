@@ -215,3 +215,82 @@ def test_condition_unknown_origin_goes_to_person(apparel):
         },
     ).json()
     assert body["reason_code"] == "CONDITION_REQUIRES_REVIEW"
+
+
+def test_answered_legacy_confirmation_cannot_create_new_policy_rma(apparel, db_session):
+    session = str(uuid4())
+    body = apparel.post(
+        "/api/v1/returns/evaluate",
+        json={
+            "session_id": session,
+            "order_number": "ORD-1010",
+            "customer_email": "june@example.com",
+            "reason": "does_not_fit",
+            **GOOD,
+        },
+    ).json()
+    question = db_session.get(QuestionRequestRecord, UUID(body["question"]["question_id"]))
+    question.status = "answered"
+    question.selected_value = "confirm"
+    question.case_version -= 1
+    db_session.commit()
+    response = apparel.post(
+        "/api/v1/returns",
+        json={
+            "session_id": session,
+            "confirmation_question_id": str(question.id),
+        },
+        headers={"Idempotency-Key": str(uuid4())},
+    )
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "CONFIRMATION_REQUIRED"
+
+
+def test_wrong_item_correction_is_not_lost_during_condition_question(apparel):
+    session = str(uuid4())
+    apparel.post(
+        "/api/v1/chat",
+        json={
+            "session_id": session,
+            "customer_email": "june@example.com",
+            "message": "Return ORD-1010 because the shirt doesn't fit.",
+        },
+    )
+    corrected = apparel.post(
+        "/api/v1/chat",
+        json={
+            "session_id": session,
+            "message": "Actually you sent the wrong item.",
+        },
+    ).json()
+    assert corrected["decision"] == "human_review"
+    assert corrected["return_request"] is None
+
+
+def test_cancel_during_condition_question_invalidates_pending_answer(apparel):
+    session = str(uuid4())
+    first = apparel.post(
+        "/api/v1/chat",
+        json={
+            "session_id": session,
+            "customer_email": "june@example.com",
+            "message": "Return ORD-1010 because the shirt doesn't fit.",
+        },
+    ).json()
+    cancelled = apparel.post(
+        "/api/v1/chat",
+        json={
+            "session_id": session,
+            "message": "Please cancel this return.",
+        },
+    ).json()
+    assert cancelled["state"] == "cancelled"
+    assert cancelled["question"] is None and cancelled["return_request"] is None
+    stale = apparel.post(
+        f"/api/v1/questions/{first['question']['question_id']}/answer",
+        json={
+            "session_id": session,
+            "selected_value": "no",
+        },
+    )
+    assert stale.status_code == 409

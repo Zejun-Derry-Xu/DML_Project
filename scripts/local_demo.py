@@ -26,6 +26,7 @@ def demo_environment(database: Path, provider: str, api_port: int, ui_port: int)
         LLM_MODEL="qwen3:4b",
         LLM_BASE_URL="http://127.0.0.1:11434/v1",
         LLM_API_KEY="",
+        LLM_TIMEOUT_SECONDS="60",
         POLICY_RETRIEVER="lexical",
         POLICY_GENERATOR="extractive",
         CORS_ORIGINS=json.dumps([f"http://127.0.0.1:{ui_port}", f"http://localhost:{ui_port}"]),

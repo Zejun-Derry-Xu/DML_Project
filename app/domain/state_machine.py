@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-from typing import Literal
 
 from app.domain.models import QuestionField, QuestionOption, QuestionRequest, ReturnCase
 from app.domain.reason_codes import ReasonCode
@@ -9,13 +8,28 @@ QUESTION_TTL = timedelta(minutes=10)
 
 def next_missing_field(
     case: ReturnCase, *, order_item_count: int | None = None
-) -> Literal["order_id", "item_id", "reason", "used"] | None:
+) -> QuestionField | None:
     if case.order_number is None:
         return "order_id"
     if order_item_count is not None and order_item_count > 1 and case.item_id is None:
         return "item_id"
     if case.reason is None:
         return "reason"
+    if case.item_category == "apparel":
+        if case.reason.value in {"defective", "wrong_item"}:
+            return None
+        adverse = (
+            case.stained is True
+            or case.damaged is True
+            or case.tags_attached is False
+            or case.tags_intact is False
+        )
+        if adverse:
+            return "condition_origin" if case.condition_origin is None else None
+        for field in ("stained", "tags_attached", "tags_intact", "damaged"):
+            if getattr(case, field) is None:
+                return field
+        return None
     if case.reason.value not in {"defective", "wrong_item"} and case.used is None:
         return "used"
     return None
@@ -27,6 +41,11 @@ def reason_for_missing(field: str) -> ReasonCode:
         "item_id": ReasonCode.MISSING_ITEM_SELECTION,
         "reason": ReasonCode.MISSING_RETURN_REASON,
         "used": ReasonCode.MISSING_USAGE_STATUS,
+        "stained": ReasonCode.MISSING_STAIN_STATUS,
+        "tags_attached": ReasonCode.MISSING_TAG_ATTACHMENT,
+        "tags_intact": ReasonCode.MISSING_TAG_INTEGRITY,
+        "damaged": ReasonCode.MISSING_DAMAGE_STATUS,
+        "condition_origin": ReasonCode.MISSING_CONDITION_ORIGIN,
     }[field]
 
 

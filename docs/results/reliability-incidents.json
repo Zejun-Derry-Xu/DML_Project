@@ -1,0 +1,78 @@
+{
+  "kind": "known incident regressions, not independent generalization evidence",
+  "results": [
+    {
+      "mode": "model",
+      "text": "I have not used it.",
+      "expected_used": false,
+      "used": false,
+      "passed": true,
+      "path": "model",
+      "seconds": 3.481162000040058
+    },
+    {
+      "mode": "model",
+      "text": "I never wore this shirt.",
+      "expected_used": false,
+      "used": false,
+      "passed": true,
+      "path": "model",
+      "seconds": 3.0467274580150843
+    },
+    {
+      "mode": "model",
+      "text": "It has stayed in my closet with the tags attached; I haven't worn it.",
+      "expected_used": false,
+      "used": false,
+      "passed": true,
+      "path": "model",
+      "seconds": 4.774102292023599
+    },
+    {
+      "mode": "model",
+      "text": "I wore it yesterday.",
+      "expected_used": true,
+      "used": true,
+      "passed": true,
+      "path": "model",
+      "seconds": 3.1655125000397675
+    },
+    {
+      "mode": "hybrid",
+      "text": "I have not used it.",
+      "expected_used": false,
+      "used": false,
+      "passed": true,
+      "path": "rules_sufficient",
+      "seconds": 0.0021413330105133355
+    },
+    {
+      "mode": "hybrid",
+      "text": "I never wore this shirt.",
+      "expected_used": false,
+      "used": false,
+      "passed": true,
+      "path": "rules_and_model",
+      "seconds": 2.6539311669766903
+    },
+    {
+      "mode": "hybrid",
+      "text": "It has stayed in my closet with the tags attached; I haven't worn it.",
+      "expected_used": false,
+      "used": false,
+      "passed": true,
+      "path": "rules_and_model",
+      "seconds": 4.520463792025112
+    },
+    {
+      "mode": "hybrid",
+      "text": "I wore it yesterday.",
+      "expected_used": true,
+      "used": true,
+      "passed": true,
+      "path": "rules_and_model",
+      "seconds": 3.0090956250205636
+    }
+  ],
+  "passed": 8
+}

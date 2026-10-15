@@ -19,6 +19,7 @@ from app.extractors.base import FactExtractor
 from app.extractors.hybrid import HybridExtractor
 from app.extractors.ollama import OllamaExtractor
 from app.extractors.rules import RuleBasedExtractor
+from scripts.evaluate_reliability import AblationExtractor
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,6 +34,7 @@ async def main() -> None:
         "--task", choices=["self_contained", "contextual", "all"], default="self_contained"
     )
     parser.add_argument("--provider", choices=["rules", "ollama", "hybrid"], default="rules")
+    parser.add_argument("--prompt-variant", choices=["focused", "legacy"], default="focused")
     parser.add_argument("--model", default="qwen3:4b")
     parser.add_argument("--base-url", default="http://localhost:11434/v1")
     parser.add_argument("--seed", type=int, default=42)
@@ -103,8 +105,11 @@ async def main() -> None:
     if args.provider == "rules":
         extractor = RuleBasedExtractor()
     else:
+        provider_class = OllamaExtractor if args.prompt_variant == "focused" else AblationExtractor
+        options = {"variant": "legacy"} if args.prompt_variant == "legacy" else {}
         model = ObservedModelExtractor(
-            OllamaExtractor(
+            provider_class(
+                **options,
                 base_url=args.base_url,
                 model=args.model,
                 timeout_seconds=args.request_timeout_seconds,
@@ -113,6 +118,7 @@ async def main() -> None:
         )
         extractor = model if args.provider == "ollama" else HybridExtractor(fallback=model)
     config = {
+        "prompt_variant": args.prompt_variant,
         "extractor_source_sha256": hashlib.sha256(
             b"".join(
                 (ROOT / path).read_bytes()

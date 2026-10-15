@@ -41,7 +41,6 @@ async def evaluate_extractor(
     labeled_total = 0
     exact = 0
     extra_predictions = 0
-    prediction_total = 0
     latencies: list[float] = []
     failures: list[dict[str, object]] = []
 
@@ -69,7 +68,6 @@ async def evaluate_extractor(
         exact += not mismatches
         predicted = meaningful(actual)
         extra_predictions += sum(field not in expected for field in predicted)
-        prediction_total += len(predicted)
         if mismatches:
             failures.append({"text": case["text"], "mismatches": mismatches})
 
@@ -77,7 +75,11 @@ async def evaluate_extractor(
         "case_count": len(cases),
         "labeled_slot_accuracy": round(labeled_correct / labeled_total, 4),
         "labeled_exact_match": round(exact / len(cases), 4),
-        "over_extraction_rate": round(extra_predictions / max(prediction_total, 1), 4),
+        "over_extraction_rate": None,
+        "unreviewed_predictions": extra_predictions,
+        "over_extraction_note": (
+            "This legacy fixture has partial labels; unlabeled fields are not gold null."
+        ),
         "latency_ms": {
             "mean": round(statistics.mean(latencies), 3),
             "p95": round(sorted(latencies)[int(len(latencies) * 0.95) - 1], 3),

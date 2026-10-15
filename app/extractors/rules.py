@@ -64,8 +64,13 @@ class RuleBasedExtractor:
                 reason = ReturnReason.DOES_NOT_FIT
             elif "changed my mind" in lowered:
                 reason = ReturnReason.CHANGED_MIND
-        if pending_question is not None and pending_question != "reason":
-            # A focused condition answer is not an opportunity to invent a new reason.
+        # Plain condition damage is not automatically a new defect claim.
+        # Explicit wrong-item/fit/change-of-mind corrections still reach state merging.
+        if (
+            pending_question not in {None, "reason"}
+            and reason == ReturnReason.DEFECTIVE
+            and not any(term in lowered for term in ("defective", "faulty", "does not work"))
+        ):
             reason = None
         wants_human = any(
             term in lowered

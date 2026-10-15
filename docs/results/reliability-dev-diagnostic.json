@@ -1,0 +1,387 @@
+{
+  "metadata": {
+    "machine": "macOS-27.0.1-arm64-arm-64bit",
+    "model": "qwen3:4b",
+    "spec_version": "extraction-2.0.0",
+    "split": "dev",
+    "diagnostic": true,
+    "fixture_sha256": "aae111fec8b11cbbf46d0f98ef694530977be6f4942258d5944ba476d86376b6",
+    "git_revision": "c72de69cd9450832e789619013180a914e21dd29",
+    "label_status": "assistant_authored_requires_human_review",
+    "model_manifest": [
+      {
+        "name": "qwen3:4b",
+        "model": "qwen3:4b",
+        "modified_at": "2026-09-23T20:03:01.073895998-04:00",
+        "size": 2497293931,
+        "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560
+        },
+        "capabilities": [
+          "completion",
+          "tools",
+          "thinking"
+        ]
+      }
+    ]
+  },
+  "results": {
+    "legacy": {
+      "examples": 36,
+      "template_groups": 12,
+      "field_scores": {
+        "intent": {
+          "correct": 0,
+          "total": 36
+        },
+        "order_id": {
+          "correct": 36,
+          "total": 36
+        },
+        "item_name": {
+          "correct": 23,
+          "total": 36
+        },
+        "reason": {
+          "correct": 24,
+          "total": 36
+        },
+        "used": {
+          "correct": 27,
+          "total": 36
+        },
+        "opened": {
+          "correct": 36,
+          "total": 36
+        },
+        "damaged": {
+          "correct": 25,
+          "total": 36
+        },
+        "wants_human": {
+          "correct": 36,
+          "total": 36
+        },
+        "stained": {
+          "correct": 30,
+          "total": 36
+        },
+        "tags_attached": {
+          "correct": 30,
+          "total": 36
+        },
+        "tags_intact": {
+          "correct": 30,
+          "total": 36
+        },
+        "condition_origin": {
+          "correct": 33,
+          "total": 36
+        }
+      },
+      "critical_macro_accuracy": 0.8222222222222222,
+      "known_fact_omission_rate": 0.6923076923076923,
+      "unsupported_fill_rate": 0.7333333333333333,
+      "unsupported_fills": 33,
+      "predicted_values": 45,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 1.0795791044947691,
+        "p95": 1.4543193749850616
+      },
+      "input_tokens": 7430,
+      "output_tokens": 1291,
+      "model_calls": 36,
+      "cold_load_seconds": 1.562645042
+    },
+    "described": {
+      "examples": 36,
+      "template_groups": 12,
+      "field_scores": {
+        "intent": {
+          "correct": 34,
+          "total": 36
+        },
+        "order_id": {
+          "correct": 36,
+          "total": 36
+        },
+        "item_name": {
+          "correct": 35,
+          "total": 36
+        },
+        "reason": {
+          "correct": 36,
+          "total": 36
+        },
+        "used": {
+          "correct": 33,
+          "total": 36
+        },
+        "opened": {
+          "correct": 36,
+          "total": 36
+        },
+        "damaged": {
+          "correct": 36,
+          "total": 36
+        },
+        "wants_human": {
+          "correct": 36,
+          "total": 36
+        },
+        "stained": {
+          "correct": 36,
+          "total": 36
+        },
+        "tags_attached": {
+          "correct": 36,
+          "total": 36
+        },
+        "tags_intact": {
+          "correct": 35,
+          "total": 36
+        },
+        "condition_origin": {
+          "correct": 33,
+          "total": 36
+        }
+      },
+      "critical_macro_accuracy": 0.9777777777777777,
+      "known_fact_omission_rate": 0.10256410256410256,
+      "unsupported_fill_rate": 0.027777777777777776,
+      "unsupported_fills": 1,
+      "predicted_values": 36,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 2.4337396874907427,
+        "p95": 2.887077584047802
+      },
+      "input_tokens": 48871,
+      "output_tokens": 2176,
+      "model_calls": 36,
+      "cold_load_seconds": 0.110753085
+    },
+    "focused": {
+      "examples": 36,
+      "template_groups": 12,
+      "field_scores": {
+        "intent": {
+          "correct": 36,
+          "total": 36
+        },
+        "order_id": {
+          "correct": 36,
+          "total": 36
+        },
+        "item_name": {
+          "correct": 36,
+          "total": 36
+        },
+        "reason": {
+          "correct": 36,
+          "total": 36
+        },
+        "used": {
+          "correct": 31,
+          "total": 36
+        },
+        "opened": {
+          "correct": 36,
+          "total": 36
+        },
+        "damaged": {
+          "correct": 36,
+          "total": 36
+        },
+        "wants_human": {
+          "correct": 36,
+          "total": 36
+        },
+        "stained": {
+          "correct": 36,
+          "total": 36
+        },
+        "tags_attached": {
+          "correct": 36,
+          "total": 36
+        },
+        "tags_intact": {
+          "correct": 34,
+          "total": 36
+        },
+        "condition_origin": {
+          "correct": 33,
+          "total": 36
+        }
+      },
+      "critical_macro_accuracy": 0.9722222222222222,
+      "known_fact_omission_rate": 0.20512820512820512,
+      "unsupported_fill_rate": 0.0,
+      "unsupported_fills": 0,
+      "predicted_values": 31,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 5.691509958502138,
+        "p95": 10.615956541034393
+      },
+      "input_tokens": 51559,
+      "output_tokens": 4146,
+      "model_calls": 36,
+      "cold_load_seconds": 0.08904529
+    },
+    "rules": {
+      "examples": 36,
+      "template_groups": 12,
+      "field_scores": {
+        "intent": {
+          "correct": 36,
+          "total": 36
+        },
+        "order_id": {
+          "correct": 36,
+          "total": 36
+        },
+        "item_name": {
+          "correct": 24,
+          "total": 36
+        },
+        "reason": {
+          "correct": 36,
+          "total": 36
+        },
+        "used": {
+          "correct": 27,
+          "total": 36
+        },
+        "opened": {
+          "correct": 36,
+          "total": 36
+        },
+        "damaged": {
+          "correct": 36,
+          "total": 36
+        },
+        "wants_human": {
+          "correct": 36,
+          "total": 36
+        },
+        "stained": {
+          "correct": 36,
+          "total": 36
+        },
+        "tags_attached": {
+          "correct": 36,
+          "total": 36
+        },
+        "tags_intact": {
+          "correct": 30,
+          "total": 36
+        },
+        "condition_origin": {
+          "correct": 36,
+          "total": 36
+        }
+      },
+      "critical_macro_accuracy": 0.9666666666666667,
+      "known_fact_omission_rate": 0.38461538461538464,
+      "unsupported_fill_rate": 0.3333333333333333,
+      "unsupported_fills": 12,
+      "predicted_values": 36,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 5.670799873769283e-05,
+        "p95": 0.0001390830148011446
+      },
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "model_calls": 0,
+      "cold_load_seconds": 0.0
+    },
+    "hybrid": {
+      "examples": 36,
+      "template_groups": 12,
+      "field_scores": {
+        "intent": {
+          "correct": 36,
+          "total": 36
+        },
+        "order_id": {
+          "correct": 36,
+          "total": 36
+        },
+        "item_name": {
+          "correct": 24,
+          "total": 36
+        },
+        "reason": {
+          "correct": 36,
+          "total": 36
+        },
+        "used": {
+          "correct": 33,
+          "total": 36
+        },
+        "opened": {
+          "correct": 36,
+          "total": 36
+        },
+        "damaged": {
+          "correct": 36,
+          "total": 36
+        },
+        "wants_human": {
+          "correct": 36,
+          "total": 36
+        },
+        "stained": {
+          "correct": 36,
+          "total": 36
+        },
+        "tags_attached": {
+          "correct": 36,
+          "total": 36
+        },
+        "tags_intact": {
+          "correct": 34,
+          "total": 36
+        },
+        "condition_origin": {
+          "correct": 36,
+          "total": 36
+        }
+      },
+      "critical_macro_accuracy": 0.9888888888888889,
+      "known_fact_omission_rate": 0.1282051282051282,
+      "unsupported_fill_rate": 0.2608695652173913,
+      "unsupported_fills": 12,
+      "predicted_values": 46,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 9.729151497595012e-05,
+        "p95": 7.413480375020299
+      },
+      "input_tokens": 21494,
+      "output_tokens": 1675,
+      "model_calls": 15,
+      "cold_load_seconds": 0.035048083
+    }
+  },
+  "release_status": "blocked",
+  "unmet_external_gates": [
+    "human_label_audit",
+    "paired_public_regression",
+    "Jetstream2_PostgreSQL_smoke",
+    "backup_restore_exercise"
+  ]
+}

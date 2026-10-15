@@ -28,6 +28,8 @@ def require_local_origin(value: str) -> str:
 
 def run_smoke(base_url: str) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
+    observed_questions: dict[str, tuple[str, str]] = {}
+    observed_submissions: list[str] = []
     started = perf_counter()
     with httpx.Client(
         base_url=require_local_origin(base_url), timeout=70, trust_env=False
@@ -36,7 +38,21 @@ def run_smoke(base_url: str) -> dict[str, Any]:
         def call(method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
             response = client.request(method, path, json=payload)
             response.raise_for_status()
-            return dict(response.json())
+            body = dict(response.json())
+            question = body.get("question")
+            if question:
+                observed_questions[question["question_id"]] = (
+                    body["session_id"],
+                    question["field"],
+                )
+            if (
+                method == "POST"
+                and payload
+                and payload.get("session_id")
+                and (path == "/api/v1/chat" or path.startswith("/api/v1/questions/"))
+            ):
+                observed_submissions.append(str(payload["session_id"]))
+            return body
 
         def verify(name: str, condition: bool) -> None:
             checks.append({"name": name, "passed": condition})
@@ -221,6 +237,14 @@ def run_smoke(base_url: str) -> dict[str, Any]:
         "elapsed_seconds": round(perf_counter() - started, 3),
         "resume_session_id": session,
         "created_return_id": created["return_request"]["id"],
+        "observed_main_case": {
+            "unique_questions": sum(sid == session for sid, _ in observed_questions.values()),
+            "question_fields": [
+                field for sid, field in observed_questions.values() if sid == session
+            ],
+            "user_submissions": observed_submissions.count(session),
+            "note": "Observed for this synthetic flow only, not a user-study average.",
+        },
         "limitations": [
             "SQLite demo, not PostgreSQL concurrency or deployment load testing.",
             "One deterministic flow, not a complete native tau2 benchmark score.",

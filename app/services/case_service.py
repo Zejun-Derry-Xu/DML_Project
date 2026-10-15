@@ -362,6 +362,19 @@ class CaseService:
         case.status = CaseStatus.STARTED.value
         return True
 
+    def cancel(self, session_id: UUID) -> tuple[ReturnCaseRecord, None, ReturnRequestRecord | None]:
+        case = self.returns.get_or_create_case(session_id)
+        if case.status in {"return_created", "closed", "escalated", "cancelled"}:
+            return case, None, case.return_request
+        case.status = CaseStatus.CANCELLED.value
+        case.decision = None
+        case.decision_reason = None
+        case.pending_question = None
+        case.version += 1
+        self.returns.replace_pending_questions(session_id)
+        self.session.commit()
+        return case, None, None
+
     def clarify(
         self, session_id: UUID, field: QuestionField
     ) -> tuple[ReturnCaseRecord, QuestionRequestRecord, None]:

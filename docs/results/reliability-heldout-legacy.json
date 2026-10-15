@@ -1,0 +1,130 @@
+{
+  "metadata": {
+    "machine": "macOS-27.0.1-arm64-arm-64bit",
+    "model": "qwen3:4b",
+    "spec_version": "extraction-2.0.0",
+    "split": "test",
+    "diagnostic": false,
+    "fixture_sha256": "aae111fec8b11cbbf46d0f98ef694530977be6f4942258d5944ba476d86376b6",
+    "git_revision": "64f845dcc02dfca68af1dd0ba6188e5df5e18f9e",
+    "label_status": "assistant_authored_requires_human_review",
+    "source_hashes": {
+      "app/extractors/__init__.py": "0cc9021a52d83d5e42a828d18758a2f2fd840d84c871306a6961aa184de5b04f",
+      "app/extractors/base.py": "1fc02ef6e9c46d741dd9825bfb87b453db40a2598416b59a85a701ae00aa30fe",
+      "app/extractors/contracts.py": "2f41b959bea7ceca3c6f6fffbc56576546b341a1f9b921df45f9d06826c2640e",
+      "app/extractors/factory.py": "c82539dbe79251dc4d93f315420bdc419874bd37a2623aae8385302775cbcd1a",
+      "app/extractors/fake.py": "09328a9ccf858497e40be40fbf631923ad0594f9944b88cafc342c95808d11fe",
+      "app/extractors/hybrid.py": "a3e57c703c4084ff9fbed2d12e642f50fda669d6f6d10626b83415d872096180",
+      "app/extractors/legacy.py": "411cf348ab22c0da47d6ee89f238383b185e59f71329bcc4cd132170b24ec30f",
+      "app/extractors/ollama.py": "94108258c51ffe4ce0e3508665ed5561b9ac160e61a390d6b9120f9259ab593a",
+      "app/extractors/openai_compatible.py": "08b057421100ad264376f748a0b7e6ae1ee81bf997ac8f628462ab512bb8be5b",
+      "app/extractors/rules.py": "d5580237eb80a95462e7f473ef20945414e9898680babef72c07edc60966cafa",
+      "app/extractors/specs/apparel-v2.md": "678d445eec8e1c4f7126abbafbe8ac6f3ffde4934297b459908b0b2d350903bb",
+      "app/extractors/specs/general-v2.md": "246fab14a100c633947c8fe026cc70de95fb7762d25dbc97c24e0f9209c02cf7"
+    },
+    "working_tree_dirty": true,
+    "model_manifest": [
+      {
+        "name": "qwen3:4b",
+        "model": "qwen3:4b",
+        "modified_at": "2026-09-23T20:03:01.073895998-04:00",
+        "size": 2497293931,
+        "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560
+        },
+        "capabilities": [
+          "completion",
+          "tools",
+          "thinking"
+        ]
+      }
+    ]
+  },
+  "results": {
+    "legacy": {
+      "examples": 120,
+      "template_groups": 24,
+      "field_scores": {
+        "intent": {
+          "correct": 0,
+          "total": 120
+        },
+        "order_id": {
+          "correct": 120,
+          "total": 120
+        },
+        "item_name": {
+          "correct": 70,
+          "total": 120
+        },
+        "reason": {
+          "correct": 64,
+          "total": 120
+        },
+        "used": {
+          "correct": 99,
+          "total": 120
+        },
+        "opened": {
+          "correct": 120,
+          "total": 120
+        },
+        "damaged": {
+          "correct": 98,
+          "total": 120
+        },
+        "wants_human": {
+          "correct": 120,
+          "total": 120
+        },
+        "stained": {
+          "correct": 95,
+          "total": 120
+        },
+        "tags_attached": {
+          "correct": 95,
+          "total": 120
+        },
+        "tags_intact": {
+          "correct": 110,
+          "total": 120
+        },
+        "condition_origin": {
+          "correct": 100,
+          "total": 120
+        }
+      },
+      "critical_macro_accuracy": 0.83,
+      "known_fact_omission_rate": 0.7461538461538462,
+      "unsupported_fill_rate": 0.7898089171974523,
+      "unsupported_fills": 124,
+      "predicted_values": 157,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 1.643482874991605,
+        "p95": 3.314474834012799
+      },
+      "input_tokens": 25092,
+      "output_tokens": 4552,
+      "model_calls": 120,
+      "cold_load_seconds": 0.274515958
+    }
+  },
+  "release_status": "blocked",
+  "unmet_external_gates": [
+    "human_label_audit",
+    "paired_public_regression",
+    "Jetstream2_PostgreSQL_smoke",
+    "backup_restore_exercise"
+  ]
+}

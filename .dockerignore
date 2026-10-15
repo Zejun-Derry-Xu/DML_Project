@@ -13,3 +13,5 @@ data/abcd_synthetic/
 data/evaluation_sources/
 data/evaluation_runs/
 data/local_demo/
+backups/
+*.dump

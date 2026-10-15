@@ -1,0 +1,755 @@
+{
+  "candidate_revision": "64f845d",
+  "kind": "authored template-held-out supplement; NOT official benchmark gold",
+  "label_review": "pending_human_review",
+  "common_claim_fields": [
+    "damaged",
+    "intent",
+    "opened",
+    "order_id",
+    "reason",
+    "used",
+    "wants_human"
+  ],
+  "out_of_target_fields": [
+    "item_name"
+  ],
+  "raw_run_sha256": {
+    "legacy": "87ea75e090d97e59601a8df6e1725e085f97cedcea1ec32f11cf0082e17409d9",
+    "focused": "afe040371841ce786a436fd21a9be97b9e229887280de753c47cf1ba45d22df7",
+    "hybrid": "c9c898e76563eeb319c29e662f4f64e60102b41202c635732b3110cb6ddd056e",
+    "rules": "40ee63670060c3386571c9288a6cbc77e1accf0a0bae4421c87ca4874c9b3caf"
+  },
+  "results": {
+    "legacy": {
+      "examples": 120,
+      "template_groups": 24,
+      "field_scores": {
+        "intent": {
+          "correct": 0,
+          "total": 120
+        },
+        "order_id": {
+          "correct": 120,
+          "total": 120
+        },
+        "item_name": {
+          "correct": 70,
+          "total": 120
+        },
+        "reason": {
+          "correct": 64,
+          "total": 120
+        },
+        "used": {
+          "correct": 99,
+          "total": 120
+        },
+        "opened": {
+          "correct": 120,
+          "total": 120
+        },
+        "damaged": {
+          "correct": 98,
+          "total": 120
+        },
+        "wants_human": {
+          "correct": 120,
+          "total": 120
+        },
+        "stained": {
+          "correct": 95,
+          "total": 120
+        },
+        "tags_attached": {
+          "correct": 95,
+          "total": 120
+        },
+        "tags_intact": {
+          "correct": 110,
+          "total": 120
+        },
+        "condition_origin": {
+          "correct": 100,
+          "total": 120
+        }
+      },
+      "critical_macro_accuracy": 0.83,
+      "known_fact_omission_rate": 0.7461538461538462,
+      "unsupported_fill_rate": 0.7898089171974523,
+      "unsupported_fills": 124,
+      "predicted_values": 157,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 1.643482874991605,
+        "p95": 3.314474834012799
+      },
+      "input_tokens": 25092,
+      "output_tokens": 4552,
+      "model_calls": 120,
+      "cold_load_seconds": 0.274515958,
+      "fallback_requests": 0,
+      "assertions_common_legacy_fields": {
+        "unsupported": 194,
+        "asserted": 227,
+        "rate": 0.8546255506607929
+      },
+      "assertions_all_fields": {
+        "unsupported": 244,
+        "asserted": 277,
+        "rate": 0.8808664259927798
+      },
+      "critical_non_null_scores": {
+        "stained": {
+          "correct": 0,
+          "total": 25
+        },
+        "tags_attached": {
+          "correct": 0,
+          "total": 25
+        },
+        "tags_intact": {
+          "correct": 0,
+          "total": 10
+        },
+        "damaged": {
+          "correct": 5,
+          "total": 10
+        },
+        "condition_origin": {
+          "correct": 0,
+          "total": 20
+        }
+      },
+      "critical_non_null_macro_accuracy": 0.1,
+      "usage_incomplete_requests": 0
+    },
+    "focused": {
+      "examples": 120,
+      "template_groups": 24,
+      "field_scores": {
+        "intent": {
+          "correct": 120,
+          "total": 120
+        },
+        "order_id": {
+          "correct": 120,
+          "total": 120
+        },
+        "item_name": {
+          "correct": 120,
+          "total": 120
+        },
+        "reason": {
+          "correct": 120,
+          "total": 120
+        },
+        "used": {
+          "correct": 120,
+          "total": 120
+        },
+        "opened": {
+          "correct": 115,
+          "total": 120
+        },
+        "damaged": {
+          "correct": 112,
+          "total": 120
+        },
+        "wants_human": {
+          "correct": 120,
+          "total": 120
+        },
+        "stained": {
+          "correct": 115,
+          "total": 120
+        },
+        "tags_attached": {
+          "correct": 115,
+          "total": 120
+        },
+        "tags_intact": {
+          "correct": 110,
+          "total": 120
+        },
+        "condition_origin": {
+          "correct": 110,
+          "total": 120
+        }
+      },
+      "critical_macro_accuracy": 0.9366666666666666,
+      "known_fact_omission_rate": 0.33076923076923076,
+      "unsupported_fill_rate": 0.0,
+      "unsupported_fills": 0,
+      "predicted_values": 87,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 5.676749104022747,
+        "p95": 6.991401416016743
+      },
+      "input_tokens": 166638,
+      "output_tokens": 10440,
+      "model_calls": 120,
+      "cold_load_seconds": 0.24818495299999999,
+      "fallback_requests": 0,
+      "assertions_common_legacy_fields": {
+        "unsupported": 0,
+        "asserted": 37,
+        "rate": 0.0
+      },
+      "assertions_all_fields": {
+        "unsupported": 0,
+        "asserted": 87,
+        "rate": 0.0
+      },
+      "critical_non_null_scores": {
+        "stained": {
+          "correct": 20,
+          "total": 25
+        },
+        "tags_attached": {
+          "correct": 20,
+          "total": 25
+        },
+        "tags_intact": {
+          "correct": 0,
+          "total": 10
+        },
+        "damaged": {
+          "correct": 2,
+          "total": 10
+        },
+        "condition_origin": {
+          "correct": 10,
+          "total": 20
+        }
+      },
+      "critical_non_null_macro_accuracy": 0.4600000000000001,
+      "usage_incomplete_requests": 0
+    },
+    "hybrid": {
+      "examples": 120,
+      "template_groups": 24,
+      "field_scores": {
+        "intent": {
+          "correct": 120,
+          "total": 120
+        },
+        "order_id": {
+          "correct": 120,
+          "total": 120
+        },
+        "item_name": {
+          "correct": 120,
+          "total": 120
+        },
+        "reason": {
+          "correct": 120,
+          "total": 120
+        },
+        "used": {
+          "correct": 120,
+          "total": 120
+        },
+        "opened": {
+          "correct": 115,
+          "total": 120
+        },
+        "damaged": {
+          "correct": 113,
+          "total": 120
+        },
+        "wants_human": {
+          "correct": 120,
+          "total": 120
+        },
+        "stained": {
+          "correct": 120,
+          "total": 120
+        },
+        "tags_attached": {
+          "correct": 115,
+          "total": 120
+        },
+        "tags_intact": {
+          "correct": 110,
+          "total": 120
+        },
+        "condition_origin": {
+          "correct": 120,
+          "total": 120
+        }
+      },
+      "critical_macro_accuracy": 0.9633333333333334,
+      "known_fact_omission_rate": 0.16923076923076924,
+      "unsupported_fill_rate": 0.0,
+      "unsupported_fills": 0,
+      "predicted_values": 108,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 3.416260895988671,
+        "p95": 7.1470497499685735
+      },
+      "input_tokens": 110814,
+      "output_tokens": 6820,
+      "model_calls": 80,
+      "cold_load_seconds": 0.128355708,
+      "fallback_requests": 0,
+      "assertions_common_legacy_fields": {
+        "unsupported": 0,
+        "asserted": 38,
+        "rate": 0.0
+      },
+      "assertions_all_fields": {
+        "unsupported": 0,
+        "asserted": 108,
+        "rate": 0.0
+      },
+      "critical_non_null_scores": {
+        "stained": {
+          "correct": 25,
+          "total": 25
+        },
+        "tags_attached": {
+          "correct": 20,
+          "total": 25
+        },
+        "tags_intact": {
+          "correct": 0,
+          "total": 10
+        },
+        "damaged": {
+          "correct": 3,
+          "total": 10
+        },
+        "condition_origin": {
+          "correct": 20,
+          "total": 20
+        }
+      },
+      "critical_non_null_macro_accuracy": 0.62,
+      "usage_incomplete_requests": 0
+    },
+    "rules": {
+      "examples": 120,
+      "template_groups": 24,
+      "field_scores": {
+        "intent": {
+          "correct": 120,
+          "total": 120
+        },
+        "order_id": {
+          "correct": 120,
+          "total": 120
+        },
+        "item_name": {
+          "correct": 120,
+          "total": 120
+        },
+        "reason": {
+          "correct": 120,
+          "total": 120
+        },
+        "used": {
+          "correct": 100,
+          "total": 120
+        },
+        "opened": {
+          "correct": 115,
+          "total": 120
+        },
+        "damaged": {
+          "correct": 110,
+          "total": 120
+        },
+        "wants_human": {
+          "correct": 120,
+          "total": 120
+        },
+        "stained": {
+          "correct": 115,
+          "total": 120
+        },
+        "tags_attached": {
+          "correct": 100,
+          "total": 120
+        },
+        "tags_intact": {
+          "correct": 110,
+          "total": 120
+        },
+        "condition_origin": {
+          "correct": 115,
+          "total": 120
+        }
+      },
+      "critical_macro_accuracy": 0.9166666666666666,
+      "known_fact_omission_rate": 0.5384615384615384,
+      "unsupported_fill_rate": 0.0,
+      "unsupported_fills": 0,
+      "predicted_values": 60,
+      "provider_failures": 0,
+      "latency_seconds": {
+        "p50": 1.8958497093990445e-05,
+        "p95": 7.270899368450046e-05
+      },
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "model_calls": 0,
+      "cold_load_seconds": 0.0,
+      "fallback_requests": 0,
+      "assertions_common_legacy_fields": {
+        "unsupported": 0,
+        "asserted": 15,
+        "rate": 0.0
+      },
+      "assertions_all_fields": {
+        "unsupported": 0,
+        "asserted": 60,
+        "rate": 0.0
+      },
+      "critical_non_null_scores": {
+        "stained": {
+          "correct": 20,
+          "total": 25
+        },
+        "tags_attached": {
+          "correct": 5,
+          "total": 25
+        },
+        "tags_intact": {
+          "correct": 0,
+          "total": 10
+        },
+        "damaged": {
+          "correct": 0,
+          "total": 10
+        },
+        "condition_origin": {
+          "correct": 15,
+          "total": 20
+        }
+      },
+      "critical_non_null_macro_accuracy": 0.35,
+      "usage_incomplete_requests": 0
+    }
+  },
+  "paired_public_regression": {
+    "legacy": {
+      "selected_examples": 32,
+      "evaluated_examples": 32,
+      "selected_conversations": 32,
+      "evaluated_conversations": 32,
+      "scored_examples": 32,
+      "scored_conversations": 32,
+      "unscored_examples": 0,
+      "unscored_conversations": 0,
+      "zero_label_policy": "evaluated for latency/errors; excluded from accuracy denominators",
+      "labeled_exact_match": 0.375,
+      "conversation_labeled_exact_match": 0.375,
+      "labeled_slot_accuracy": 0.3902,
+      "micro_f1": 0.5079,
+      "per_slot": {
+        "intent": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "order_id": {
+          "annotated": 19,
+          "positive": 19,
+          "correct": 7,
+          "tp": 7,
+          "fp": 2,
+          "fn": 12,
+          "tn": 0,
+          "precision": 0.7778,
+          "recall": 0.3684,
+          "f1": 0.5,
+          "field_coverage": 0.5938
+        },
+        "item_name": {
+          "annotated": 22,
+          "positive": 22,
+          "correct": 9,
+          "tp": 9,
+          "fp": 4,
+          "fn": 13,
+          "tn": 0,
+          "precision": 0.6923,
+          "recall": 0.4091,
+          "f1": 0.5143,
+          "field_coverage": 0.6875
+        },
+        "reason": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "used": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "opened": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "damaged": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "wants_human": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        }
+      },
+      "unannotated_slots": [
+        "intent",
+        "reason",
+        "used",
+        "opened",
+        "damaged",
+        "wants_human"
+      ],
+      "provider_errors": 0,
+      "model_calls": 32,
+      "model_attempt_errors": 0,
+      "audited_absence_checks": 0,
+      "hallucinations": 0,
+      "audited_hallucination_rate": null,
+      "unreviewed_predictions": 62,
+      "latency_ms": {
+        "p50": 2049.067,
+        "p95": 2611.519
+      },
+      "tokens": {
+        "input_tokens": 8865,
+        "output_tokens": 1470,
+        "measured_responses": 32,
+        "source": "ollama_native_response"
+      }
+    },
+    "focused": {
+      "selected_examples": 32,
+      "evaluated_examples": 32,
+      "selected_conversations": 32,
+      "evaluated_conversations": 32,
+      "scored_examples": 32,
+      "scored_conversations": 32,
+      "unscored_examples": 0,
+      "unscored_conversations": 0,
+      "zero_label_policy": "evaluated for latency/errors; excluded from accuracy denominators",
+      "labeled_exact_match": 0.375,
+      "conversation_labeled_exact_match": 0.375,
+      "labeled_slot_accuracy": 0.3902,
+      "micro_f1": 0.5333,
+      "per_slot": {
+        "intent": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "order_id": {
+          "annotated": 19,
+          "positive": 19,
+          "correct": 9,
+          "tp": 9,
+          "fp": 2,
+          "fn": 10,
+          "tn": 0,
+          "precision": 0.8182,
+          "recall": 0.4737,
+          "f1": 0.6,
+          "field_coverage": 0.5938
+        },
+        "item_name": {
+          "annotated": 22,
+          "positive": 22,
+          "correct": 7,
+          "tp": 7,
+          "fp": 1,
+          "fn": 15,
+          "tn": 0,
+          "precision": 0.875,
+          "recall": 0.3182,
+          "f1": 0.4667,
+          "field_coverage": 0.6875
+        },
+        "reason": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "used": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "opened": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "damaged": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        },
+        "wants_human": {
+          "annotated": 0,
+          "positive": 0,
+          "correct": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 0,
+          "precision": null,
+          "recall": null,
+          "f1": null,
+          "field_coverage": 0.0
+        }
+      },
+      "unannotated_slots": [
+        "intent",
+        "reason",
+        "used",
+        "opened",
+        "damaged",
+        "wants_human"
+      ],
+      "provider_errors": 0,
+      "model_calls": 32,
+      "model_attempt_errors": 0,
+      "audited_absence_checks": 0,
+      "hallucinations": 0,
+      "audited_hallucination_rate": null,
+      "unreviewed_predictions": 5,
+      "latency_ms": {
+        "p50": 9882.204,
+        "p95": 18047.04
+      },
+      "tokens": {
+        "input_tokens": 39467,
+        "output_tokens": 6658,
+        "measured_responses": 32,
+        "source": "ollama_native_response"
+      }
+    },
+    "input_sha256": "5a8bb1474f00f284c8ed2fa19688b20e615917370deddb2ab5384b6ede8c782a",
+    "note": "Same 32 native conversations, seed 42; official grounded labels only."
+  },
+  "measured_gates": {
+    "final_rule_outputs_match_frozen_heldout": true,
+    "hybrid_critical_macro_at_least_90_percent": true,
+    "unsupported_common_assertions_not_above_baseline": true,
+    "no_hybrid_provider_failures": true,
+    "critical_non_null_macro_at_least_90_percent": false,
+    "paired_public_supported_accuracy_not_regressed": true
+  },
+  "release_status": "blocked",
+  "external_gates": {
+    "human_label_audit": "not_done",
+    "Jetstream2_PostgreSQL_and_CPU_model_smoke": "not_run",
+    "restored_cloud_backup_validation": "not_run"
+  },
+  "limitations": [
+    "Legacy lacks new fields: compare common-field assertions, not apparel improvement.",
+    "Raw counts include out-of-target item_name; not all extras are hallucinations.",
+    "Critical macro accuracy includes unknowns; non-null scores expose all-null shortcuts.",
+    "24 templates x 5 catalog variants are not 120 independent customer conversations.",
+    "Metal timings are not cloud CPU timings; failed-call token totals are incomplete.",
+    "Quote validation checks source location, not entailment or physical condition."
+  ]
+}

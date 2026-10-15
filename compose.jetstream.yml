@@ -1,0 +1,76 @@
+# Standalone deployment file, not an override: use -f compose.jetstream.yml every time.
+name: returnflow
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: returnflow
+      POSTGRES_USER: returnflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - db:/var/lib/postgresql/data
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U returnflow -d returnflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: .
+    environment:
+      ENVIRONMENT: jetstream-demo
+      DATABASE_URL: postgresql+psycopg://returnflow:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/returnflow
+      LLM_PROVIDER: ${LLM_PROVIDER:-rules}
+      LLM_MODEL: ${LLM_MODEL:-qwen3:4b}
+      LLM_BASE_URL: http://ollama:11434/v1
+      LLM_TIMEOUT_SECONDS: 60
+      POLICY_RETRIEVER: lexical
+      POLICY_GENERATOR: extractive
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.25
+
+  ollama:
+    image: ${OLLAMA_IMAGE:?Pin the tested Ollama image digest in .env}
+    profiles: ["model"]
+    environment:
+      OLLAMA_NUM_PARALLEL: 1
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_CONTEXT_LENGTH: 4096
+      OLLAMA_KEEP_ALIVE: 2m
+    volumes:
+      - models:/root/.ollama
+    restart: unless-stopped
+    mem_limit: 10g
+    cpus: 6
+    # No host ports and no GPU devices. API uses private service DNS 'ollama'.
+
+volumes:
+  db:
+    name: returnflow_returnflow-db
+  models:
+    name: returnflow-ollama
