@@ -1,0 +1,172 @@
+{
+  "config": {
+    "dataset": "apparel-v31",
+    "split": "validation",
+    "revision": "v2",
+    "mode": "hybrid",
+    "limit": null,
+    "machine": "macOS-27.0.1-arm64-arm-64bit",
+    "git_revision": "b237bb181a98b58c3bd745b04ccd4cc281640ef1",
+    "working_tree_dirty": true,
+    "source_sha256": "4281bb8989f6d9bcff75fdd4c54f29dd8f47b9712ad5b007faf9ddb8fa617c3c",
+    "input_sha256": "b7ec2abab4437a96361ed31d0a15b78a28f9f50946acdb8f399b4e8f30ed8d55",
+    "model_manifest": {
+      "models": [
+        {
+          "name": "embeddinggemma:latest",
+          "model": "embeddinggemma:latest",
+          "modified_at": "2026-10-08T12:58:27.38280653-04:00",
+          "size": 621875917,
+          "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1",
+          "details": {
+            "parent_model": "embeddinggemma:300m-bf16",
+            "format": "gguf",
+            "family": "gemma3",
+            "families": [
+              "gemma3"
+            ],
+            "parameter_size": "307.58M",
+            "quantization_level": "BF16",
+            "context_length": 2048,
+            "embedding_length": 768
+          },
+          "capabilities": [
+            "embedding"
+          ]
+        },
+        {
+          "name": "qwen3:4b",
+          "model": "qwen3:4b",
+          "modified_at": "2026-09-23T20:03:01.073895998-04:00",
+          "size": 2497293931,
+          "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen3",
+            "families": [
+              "qwen3"
+            ],
+            "parameter_size": "4.0B",
+            "quantization_level": "Q4_K_M",
+            "context_length": 262144,
+            "embedding_length": 2560
+          },
+          "capabilities": [
+            "completion",
+            "tools",
+            "thinking"
+          ]
+        }
+      ]
+    }
+  },
+  "run_id": "131dbc14a0cea25f515c18ad452e0f5f3bddb9464d16b503caefcbd9f12107f5",
+  "selected": 180,
+  "complete": true,
+  "results": {
+    "examples": 180,
+    "independent_conversations": 0,
+    "template_groups": 30,
+    "per_field": {
+      "damaged": {
+        "total": 180,
+        "correct": 105,
+        "known_total": 72,
+        "known_correct": 17,
+        "known_omitted": 49,
+        "class_false_total": 36,
+        "class_false_correct": 0,
+        "class_true_total": 36,
+        "class_true_correct": 17,
+        "class_none_total": 108,
+        "class_none_correct": 88,
+        "accuracy": 0.5833333333333334
+      },
+      "stained": {
+        "total": 180,
+        "correct": 147,
+        "known_total": 72,
+        "known_correct": 59,
+        "known_omitted": 9,
+        "class_false_total": 36,
+        "class_false_correct": 23,
+        "class_true_total": 36,
+        "class_true_correct": 36,
+        "class_none_total": 108,
+        "class_none_correct": 88,
+        "accuracy": 0.8166666666666667
+      },
+      "tags_attached": {
+        "total": 180,
+        "correct": 128,
+        "known_total": 72,
+        "known_correct": 36,
+        "known_omitted": 31,
+        "class_false_total": 36,
+        "class_false_correct": 12,
+        "class_true_total": 36,
+        "class_true_correct": 24,
+        "class_none_total": 108,
+        "class_none_correct": 92,
+        "accuracy": 0.7111111111111111
+      },
+      "tags_intact": {
+        "total": 180,
+        "correct": 131,
+        "known_total": 72,
+        "known_correct": 39,
+        "known_omitted": 31,
+        "class_false_total": 40,
+        "class_false_correct": 25,
+        "class_true_total": 32,
+        "class_true_correct": 14,
+        "class_none_total": 108,
+        "class_none_correct": 92,
+        "accuracy": 0.7277777777777777
+      },
+      "condition_origin": {
+        "total": 180,
+        "correct": 158,
+        "known_total": 68,
+        "known_correct": 46,
+        "known_omitted": 22,
+        "class_customer_total": 24,
+        "class_customer_correct": 15,
+        "class_pre_existing_total": 21,
+        "class_pre_existing_correct": 21,
+        "class_none_total": 112,
+        "class_none_correct": 112,
+        "class_unknown_total": 23,
+        "class_unknown_correct": 10,
+        "accuracy": 0.8777777777777778
+      }
+    },
+    "critical_known_macro": 0.5547385620915033,
+    "audited_unsupported_fills": 72,
+    "audited_claims": 286,
+    "audited_absence_checks": 544,
+    "audited_unsupported_fill_rate": 0.2517482517482518,
+    "error_categories": {
+      "model_omission": 112,
+      "fusion_conflict": 23,
+      "rule_false_assertion": 84,
+      "model_semantic_or_span_error": 4,
+      "evidence_rejection": 8
+    },
+    "model_calls": 85,
+    "errors": 0,
+    "provider_fallbacks": 0,
+    "tokens": {
+      "prompt_eval_count": 126984,
+      "eval_count": 11288
+    },
+    "latency_seconds": {
+      "p50": 0.0001464580127503723,
+      "p95": 6.1273434170288965
+    },
+    "cold_load_seconds": 0.117395749,
+    "label_status": "automatic_provisional; not a production release or official task score"
+  },
+  "release_status": "blocked_pending_human_audit_and_quality_gates"
+}

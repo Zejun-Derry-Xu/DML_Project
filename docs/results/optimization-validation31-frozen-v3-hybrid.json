@@ -1,0 +1,169 @@
+{
+  "config": {
+    "dataset": "apparel-v31",
+    "split": "validation",
+    "revision": "v3",
+    "mode": "hybrid",
+    "limit": null,
+    "machine": "macOS-27.0.1-arm64-arm-64bit",
+    "git_revision": "b237bb181a98b58c3bd745b04ccd4cc281640ef1",
+    "working_tree_dirty": true,
+    "source_sha256": "4281bb8989f6d9bcff75fdd4c54f29dd8f47b9712ad5b007faf9ddb8fa617c3c",
+    "input_sha256": "b7ec2abab4437a96361ed31d0a15b78a28f9f50946acdb8f399b4e8f30ed8d55",
+    "model_manifest": {
+      "models": [
+        {
+          "name": "embeddinggemma:latest",
+          "model": "embeddinggemma:latest",
+          "modified_at": "2026-10-08T12:58:27.38280653-04:00",
+          "size": 621875917,
+          "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1",
+          "details": {
+            "parent_model": "embeddinggemma:300m-bf16",
+            "format": "gguf",
+            "family": "gemma3",
+            "families": [
+              "gemma3"
+            ],
+            "parameter_size": "307.58M",
+            "quantization_level": "BF16",
+            "context_length": 2048,
+            "embedding_length": 768
+          },
+          "capabilities": [
+            "embedding"
+          ]
+        },
+        {
+          "name": "qwen3:4b",
+          "model": "qwen3:4b",
+          "modified_at": "2026-09-23T20:03:01.073895998-04:00",
+          "size": 2497293931,
+          "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen3",
+            "families": [
+              "qwen3"
+            ],
+            "parameter_size": "4.0B",
+            "quantization_level": "Q4_K_M",
+            "context_length": 262144,
+            "embedding_length": 2560
+          },
+          "capabilities": [
+            "completion",
+            "tools",
+            "thinking"
+          ]
+        }
+      ]
+    }
+  },
+  "run_id": "e542f63c70259127448cdded855be7c3aa49a1301d95a2c28040441d2f7407de",
+  "selected": 180,
+  "complete": true,
+  "results": {
+    "examples": 180,
+    "independent_conversations": 0,
+    "template_groups": 30,
+    "per_field": {
+      "damaged": {
+        "total": 180,
+        "correct": 174,
+        "known_total": 72,
+        "known_correct": 66,
+        "known_omitted": 0,
+        "class_false_total": 36,
+        "class_false_correct": 30,
+        "class_true_total": 36,
+        "class_true_correct": 36,
+        "class_none_total": 108,
+        "class_none_correct": 108,
+        "accuracy": 0.9666666666666667
+      },
+      "stained": {
+        "total": 180,
+        "correct": 180,
+        "known_total": 72,
+        "known_correct": 72,
+        "known_omitted": 0,
+        "class_false_total": 36,
+        "class_false_correct": 36,
+        "class_true_total": 36,
+        "class_true_correct": 36,
+        "class_none_total": 108,
+        "class_none_correct": 108,
+        "accuracy": 1.0
+      },
+      "tags_attached": {
+        "total": 180,
+        "correct": 177,
+        "known_total": 72,
+        "known_correct": 69,
+        "known_omitted": 3,
+        "class_false_total": 36,
+        "class_false_correct": 36,
+        "class_true_total": 36,
+        "class_true_correct": 33,
+        "class_none_total": 108,
+        "class_none_correct": 108,
+        "accuracy": 0.9833333333333333
+      },
+      "tags_intact": {
+        "total": 180,
+        "correct": 175,
+        "known_total": 72,
+        "known_correct": 67,
+        "known_omitted": 0,
+        "class_false_total": 40,
+        "class_false_correct": 40,
+        "class_true_total": 32,
+        "class_true_correct": 27,
+        "class_none_total": 108,
+        "class_none_correct": 108,
+        "accuracy": 0.9722222222222222
+      },
+      "condition_origin": {
+        "total": 180,
+        "correct": 180,
+        "known_total": 68,
+        "known_correct": 68,
+        "known_omitted": 0,
+        "class_customer_total": 24,
+        "class_customer_correct": 24,
+        "class_pre_existing_total": 21,
+        "class_pre_existing_correct": 21,
+        "class_none_total": 112,
+        "class_none_correct": 112,
+        "class_unknown_total": 23,
+        "class_unknown_correct": 23,
+        "accuracy": 1.0
+      }
+    },
+    "critical_known_macro": 0.9611111111111111,
+    "audited_unsupported_fills": 0,
+    "audited_claims": 353,
+    "audited_absence_checks": 544,
+    "audited_unsupported_fill_rate": 0.0,
+    "error_categories": {
+      "rule_false_assertion": 11,
+      "model_omission": 3
+    },
+    "model_calls": 27,
+    "errors": 0,
+    "provider_fallbacks": 0,
+    "tokens": {
+      "prompt_eval_count": 40155,
+      "eval_count": 4881
+    },
+    "latency_seconds": {
+      "p50": 0.00013477049651555717,
+      "p95": 7.997406790964305
+    },
+    "cold_load_seconds": 0.035907332,
+    "label_status": "automatic_provisional; not a production release or official task score"
+  },
+  "release_status": "blocked_pending_human_audit_and_quality_gates"
+}

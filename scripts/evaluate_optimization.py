@@ -171,6 +171,9 @@ class Capture:
 
 
 async def run(args):
+    invocation_started = perf_counter()
+    max_wall = getattr(args, "max_wall_seconds", None)
+    batch_size = getattr(args, "batch_size", None)
     if args.revision == "v2":
         from app.extractors.frozen_v2.hybrid import HybridExtractor
         from app.extractors.frozen_v2.ollama import OllamaExtractor
@@ -214,13 +217,16 @@ async def run(args):
             )
         ).hexdigest(),
         "input_sha256": hashlib.sha256(json.dumps(selected, sort_keys=True).encode()).hexdigest(),
+        "evaluation_protocol": "optimization-v3-budgeted-1",
+        "evaluator_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
     }
     if args.mode != "rules":
         async with httpx.AsyncClient(timeout=5) as client:
             response = await client.get("http://127.0.0.1:11434/api/tags")
             response.raise_for_status()
             config["model_manifest"] = response.json()
-    run_id = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()
+    identity = {k: v for k, v in config.items() if k not in {"git_revision", "working_tree_dirty"}}
+    run_id = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
     output = RUN / f"{args.name}.jsonl"
     report = ROOT / f"docs/results/optimization-{args.name}.json"
     rows = []
@@ -229,12 +235,40 @@ async def run(args):
         if any(r["run_id"] != run_id for r in rows):
             raise ValueError("Existing run differs: choose another --name; never overwrite")
     done = {r["id"] for r in rows}
+    processed = 0
+    stopped_for_budget = False
+
+    def publish_progress():
+        report.write_text(
+            json.dumps(
+                {
+                    "config": config,
+                    "run_id": run_id,
+                    "selected": len(selected),
+                    "complete": len(rows) == len(selected),
+                    "stopped_for_budget": stopped_for_budget,
+                    "elapsed_this_invocation_seconds": perf_counter() - invocation_started,
+                    "results": summarize(rows),
+                    "release_status": "blocked_pending_human_audit_and_quality_gates",
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+
     RUN.mkdir(parents=True, exist_ok=True)
     with output.open("a") as handle:
         for example in selected:
             ident = example.get("id", example.get("sample_id"))
             if ident in done:
                 continue
+            # Do not manufacture a last-request timeout by shortening its 60s budget.
+            required = 60 if args.mode != "rules" else 0
+            if max_wall is not None and max_wall - (perf_counter() - invocation_started) < required:
+                stopped_for_budget = True
+                break
+            if batch_size is not None and processed >= batch_size:
+                break
             case = ReturnCase(session_id=UUID(int=0), **example["current_case"])
             pending = example.get("pending_question")
             text = example.get("text", example.get("message"))
@@ -325,16 +359,10 @@ async def run(args):
             handle.write(json.dumps(row) + "\n")
             handle.flush()
             rows.append(row)
-            summary = {
-                "config": config,
-                "run_id": run_id,
-                "selected": len(selected),
-                "complete": len(rows) == len(selected),
-                "results": summarize(rows),
-                "release_status": "blocked_pending_human_audit_and_quality_gates",
-            }
-            report.write_text(json.dumps(summary, indent=2) + "\n")
+            processed += 1
+            publish_progress()
             print(f"{args.name}: {len(rows)}/{len(selected)} {elapsed:.2f}s", flush=True)
+    publish_progress()
 
 
 if __name__ == "__main__":
@@ -357,4 +385,6 @@ if __name__ == "__main__":
     parser.add_argument("--mode", choices=["rules", "model", "hybrid"], default="hybrid")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--name", required=True)
+    parser.add_argument("--max-wall-seconds", type=float)
+    parser.add_argument("--batch-size", type=int)
     asyncio.run(run(parser.parse_args()))
