@@ -1,0 +1,188 @@
+{
+  "config": {
+    "dataset": "abcd-context",
+    "split": "validation",
+    "revision": "v2",
+    "mode": "hybrid",
+    "limit": null,
+    "machine": "macOS-27.0.1-arm64-arm-64bit",
+    "git_revision": "3678d4900a61a29384451d210f6e73de9c560a67",
+    "working_tree_dirty": true,
+    "source_sha256": "4281bb8989f6d9bcff75fdd4c54f29dd8f47b9712ad5b007faf9ddb8fa617c3c",
+    "input_sha256": "5084388d3e71d935b00e8c426b8ab613d4d0f4d73db4105859d80b6d3fdeb566",
+    "evaluation_protocol": "optimization-v3-budgeted-1",
+    "evaluator_sha256": "bac577b0175c75cbd67968a99798bd66c7d454cd2473133576aefc9bb45ec0a1",
+    "model_manifest": {
+      "models": [
+        {
+          "name": "embeddinggemma:latest",
+          "model": "embeddinggemma:latest",
+          "modified_at": "2026-10-08T12:58:27.38280653-04:00",
+          "size": 621875917,
+          "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1",
+          "details": {
+            "parent_model": "embeddinggemma:300m-bf16",
+            "format": "gguf",
+            "family": "gemma3",
+            "families": [
+              "gemma3"
+            ],
+            "parameter_size": "307.58M",
+            "quantization_level": "BF16",
+            "context_length": 2048,
+            "embedding_length": 768
+          },
+          "capabilities": [
+            "embedding"
+          ]
+        },
+        {
+          "name": "qwen3:4b",
+          "model": "qwen3:4b",
+          "modified_at": "2026-09-23T20:03:01.073895998-04:00",
+          "size": 2497293931,
+          "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen3",
+            "families": [
+              "qwen3"
+            ],
+            "parameter_size": "4.0B",
+            "quantization_level": "Q4_K_M",
+            "context_length": 262144,
+            "embedding_length": 2560
+          },
+          "capabilities": [
+            "completion",
+            "tools",
+            "thinking"
+          ]
+        }
+      ]
+    }
+  },
+  "run_id": "0bfa81868a582422b9951907802ac1d614263537b348a0a2aadc2a18f4c25e56",
+  "selected": 293,
+  "complete": true,
+  "stopped_for_budget": false,
+  "elapsed_this_invocation_seconds": 40.914616834023036,
+  "results": {
+    "examples": 293,
+    "independent_conversations": 32,
+    "template_groups": 0,
+    "per_field": {
+      "item_name": {
+        "total": 20,
+        "correct": 4,
+        "known_total": 20,
+        "known_correct": 4,
+        "known_omitted": 12,
+        "class_tommy hilfiger jeans_total": 1,
+        "class_tommy hilfiger jeans_correct": 0,
+        "class_jacket_total": 2,
+        "class_jacket_correct": 0,
+        "class_guess jeans_total": 1,
+        "class_guess jeans_correct": 0,
+        "class_tommy hilfiger jacket_total": 1,
+        "class_tommy hilfiger jacket_correct": 1,
+        "span_containment_diagnostic": 6,
+        "class_shirt_total": 4,
+        "class_shirt_correct": 0,
+        "class_michael kors shirt_total": 1,
+        "class_michael kors shirt_correct": 1,
+        "class_jeans_total": 2,
+        "class_jeans_correct": 0,
+        "class_calvin klein jeans_total": 1,
+        "class_calvin klein jeans_correct": 0,
+        "class_boots_total": 6,
+        "class_boots_correct": 2,
+        "class_michael_kors boots_total": 1,
+        "class_michael_kors boots_correct": 0,
+        "accuracy": 0.2
+      },
+      "order_id": {
+        "total": 25,
+        "correct": 19,
+        "known_total": 25,
+        "known_correct": 19,
+        "known_omitted": 6,
+        "class_6824221538_total": 1,
+        "class_6824221538_correct": 0,
+        "class_7175592794_total": 1,
+        "class_7175592794_correct": 0,
+        "class_9352857643_total": 2,
+        "class_9352857643_correct": 2,
+        "class_5110435718_total": 1,
+        "class_5110435718_correct": 1,
+        "class_7627085386_total": 1,
+        "class_7627085386_correct": 0,
+        "class_8377404170_total": 1,
+        "class_8377404170_correct": 1,
+        "class_2163033303_total": 1,
+        "class_2163033303_correct": 1,
+        "class_1615314229_total": 1,
+        "class_1615314229_correct": 1,
+        "class_4317202342_total": 1,
+        "class_4317202342_correct": 1,
+        "class_8562554860_total": 1,
+        "class_8562554860_correct": 1,
+        "class_1259726146_total": 1,
+        "class_1259726146_correct": 1,
+        "class_9916837037_total": 1,
+        "class_9916837037_correct": 1,
+        "class_0352530814_total": 1,
+        "class_0352530814_correct": 1,
+        "class_2233493810_total": 1,
+        "class_2233493810_correct": 1,
+        "class_7320812600_total": 1,
+        "class_7320812600_correct": 1,
+        "class_9929753955_total": 1,
+        "class_9929753955_correct": 1,
+        "class_0685072006_total": 1,
+        "class_0685072006_correct": 1,
+        "class_3417220443_total": 1,
+        "class_3417220443_correct": 0,
+        "class_6176415771_total": 1,
+        "class_6176415771_correct": 1,
+        "class_7114266876_total": 1,
+        "class_7114266876_correct": 1,
+        "class_3532934701_total": 1,
+        "class_3532934701_correct": 0,
+        "class_4476430943_total": 1,
+        "class_4476430943_correct": 1,
+        "class_3966721118_total": 1,
+        "class_3966721118_correct": 1,
+        "class_5346317451_total": 1,
+        "class_5346317451_correct": 0,
+        "accuracy": 0.76
+      }
+    },
+    "critical_known_macro": null,
+    "audited_unsupported_fills": 0,
+    "audited_claims": 27,
+    "audited_absence_checks": 0,
+    "audited_unsupported_fill_rate": null,
+    "error_categories": {
+      "fusion_conflict": 6,
+      "model_omission": 12,
+      "model_semantic_or_span_error": 2,
+      "evidence_rejection": 2
+    },
+    "model_calls": 293,
+    "errors": 0,
+    "provider_fallbacks": 0,
+    "tokens": {
+      "prompt_eval_count": 343226,
+      "eval_count": 34931
+    },
+    "latency_seconds": {
+      "p50": 6.237288041971624,
+      "p95": 9.993081749998964
+    },
+    "cold_load_seconds": 1.982722997,
+    "label_status": "automatic_provisional; not a production release or official task score"
+  },
+  "release_status": "blocked_pending_human_audit_and_quality_gates"
+}
