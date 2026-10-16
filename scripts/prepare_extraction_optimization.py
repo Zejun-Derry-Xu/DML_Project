@@ -168,7 +168,7 @@ CLAUSES = {
 }
 
 
-def authored_cases():
+def authored_cases(*, independent=False):
     rows = []
     for split, families in (("dev", 20), ("validation", 30)):
         for family in range(families):
@@ -178,8 +178,11 @@ def authored_cases():
                 states = {field: "absent" for field in CRITICAL}
                 pending = CRITICAL[family % 4]
                 if family < 12:
-                    # Counterbalanced multi-attribute combinations, not all-good vs all-bad.
+                    # Original v3 is archived unchanged. v3.1 exercises all 16 combinations.
                     bits = [(family + variant + offset // 2) % 2 == 0 for offset in range(4)]
+                    if independent:
+                        code = (family * 6 + variant) % 16
+                        bits = [bool(code & (1 << offset)) for offset in range(4)]
                     clauses = []
                     for index, field in enumerate(CRITICAL[:4]):
                         value = bits[index]
@@ -242,8 +245,12 @@ def authored_cases():
                             else "I cannot establish who caused any of those problems"
                         )
                         expected["condition_origin"] = "unknown"
-                    text += " " + quote + "."
-                    evidence["condition_origin"], states["condition_origin"] = quote, "stated"
+                    all_healthy = not bits[0] and not bits[1] and bits[2] and bits[3]
+                    if not independent or not all_healthy:
+                        text += " " + quote + "."
+                        evidence["condition_origin"], states["condition_origin"] = quote, "stated"
+                    else:
+                        expected["condition_origin"] = None
                 else:
                     field = CRITICAL[(family - 12) % 4]
                     pending = field
@@ -326,7 +333,34 @@ def authored_cases():
                         "label_status": "assistant_authored_provisional_not_human_reviewed",
                     }
                 )
+    if independent:
+        for row in rows:
+            row["id"] = row["id"].replace("optimization:", "optimization31:")
+            row["template_group"] = row["template_group"].replace(
+                "optimization:", "optimization31:"
+            )
     return rows
+
+
+def amend_authored():
+    """Pre-validation semantic amendment; never overwrite v3 data or original manifest."""
+    target = ROOT / "tests/fixtures/extraction_optimization_v3_1.json"
+    if target.exists():
+        raise ValueError("Amended fixture already frozen; do not overwrite")
+    cases = authored_cases(independent=True)
+    target.write_text(json.dumps(cases, indent=2) + "\n")
+    original = ROOT / "tests/fixtures/extraction_optimization_manifest.json"
+    manifest = json.loads(original.read_text())
+    manifest.update(
+        version="optimization-data-3.1.0",
+        authored_sha256=hashlib.sha256(target.read_bytes()).hexdigest(),
+        original_manifest_sha256=hashlib.sha256(original.read_bytes()).hexdigest(),
+        amendment="Before validation: independent attribute combinations; "
+        "no fault assertion when all conditions are healthy. Not prediction-based.",
+    )
+    path = ROOT / "tests/fixtures/extraction_optimization_manifest_v3_1.json"
+    path.write_text(json.dumps(manifest, indent=2) + "\n")
+    print(f"Frozen {len(cases)} amended provisional cases; originals unchanged")
 
 
 def prepare():
@@ -404,4 +438,9 @@ def prepare():
 
 
 if __name__ == "__main__":
-    prepare()
+    import sys
+
+    if "--amend-authored" in sys.argv:
+        amend_authored()
+    else:
+        prepare()

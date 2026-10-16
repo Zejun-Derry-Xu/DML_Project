@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from app.domain.models import ReturnCase, ReturnFacts
 from app.extractors.base import ExtractorError
-from app.extractors.contracts import SPEC_VERSION, EvidenceFacts, grounded, output_schema, prompt
+from app.extractors.compact import VERSION, prompt, schema, validate
 
 SYSTEM_PROMPT = """You extract explicitly stated facts from the CUSTOMER MESSAGE.
 Return only JSON matching the supplied schema. Use null for facts absent from that message.
@@ -55,7 +55,8 @@ class OpenAICompatibleExtractor:
         pending_question: str | None,
     ) -> ReturnFacts:
         headers = {"Content-Type": "application/json"}
-        self.last_diagnostics: dict[str, object] = {"spec_version": SPEC_VERSION, "attempts": 0}
+        self.last_diagnostics: dict[str, object] = {"spec_version": VERSION, "attempts": 0}
+        self.last_trace: dict[str, object] = {}
         self.last_usage: dict[str, int] = {}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
@@ -75,7 +76,9 @@ class OpenAICompatibleExtractor:
                 "json_schema": {
                     "name": "return_facts",
                     "strict": False,
-                    "schema": output_schema(pending_question),
+                    "schema": schema(
+                        pending_question, current_case.item_category == "apparel", message
+                    ),
                 },
             },
         }
@@ -97,11 +100,14 @@ class OpenAICompatibleExtractor:
                     choice = body["choices"][0]
                     if choice.get("finish_reason") == "length":
                         raise ValueError("Truncated structured output")
-                    envelope = EvidenceFacts.model_validate_json(
-                        self._strip_fence(choice["message"]["content"])
+                    facts, diagnostics, trace = validate(
+                        json.loads(self._strip_fence(choice["message"]["content"])),
+                        message,
+                        current_case,
+                        pending_question,
                     )
-                    facts, rejected = grounded(envelope, message, pending_question)
-                    self.last_diagnostics["rejected_fields"] = rejected
+                    self.last_diagnostics.update(diagnostics)
+                    self.last_trace = trace
                     self.last_usage = {
                         key: int(value)
                         for key, value in body.get("usage", {}).items()

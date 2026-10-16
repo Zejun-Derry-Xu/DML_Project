@@ -67,7 +67,13 @@ async def test_transient_connection_failure_retries_once(monkeypatch):
         if calls == 1:
             raise httpx.ConnectError("transient", request=request)
         return httpx.Response(
-            200, json={"message": {"content": '{"facts":{"used":false},"evidence":{"used":"No."}}'}}
+            200,
+            json={
+                "message": {
+                    "content": '{"answer_state":"stated",'
+                    '"facts":{"used":{"value":false,"evidence":"E0"}}}'
+                }
+            },
         )
 
     original = httpx.AsyncClient

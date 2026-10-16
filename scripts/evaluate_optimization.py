@@ -2,6 +2,7 @@
 
 import argparse
 import asyncio
+import gzip
 import hashlib
 import json
 import math
@@ -18,18 +19,41 @@ from uuid import UUID
 import httpx
 
 from app.domain.models import ReturnCase, ReturnFacts
-from app.evaluation.abcd import normalize_value
+from app.evaluation.abcd import SOURCE_SHA256, normalize_value
 from scripts.prepare_extraction_optimization import CRITICAL
 
 ROOT = Path(__file__).resolve().parents[1]
 RUN = ROOT / "data/evaluation_runs/extraction-optimization"
 
 
+def observed_questions(source):
+    """Only prior observed agent turns; no scenario, delexed text or future answer."""
+    if hashlib.sha256(source.read_bytes()).hexdigest() != SOURCE_SHA256:
+        raise ValueError("ABCD context source differs from the pinned official artifact")
+    with gzip.open(source, "rt") as handle:
+        corpus = json.load(handle)
+    questions = {}
+    for conversation in corpus["train"]:
+        last_agent = ""
+        for index, (speaker, text) in enumerate(conversation["original"]):
+            if speaker == "agent":
+                last_agent = text
+            elif speaker == "customer":
+                questions[conversation["convo_id"], index] = last_agent
+    return questions
+
+
 def examples(dataset, split):
-    if dataset in {"apparel", "old-apparel"}:
-        name = "extraction_optimization_v3" if dataset == "apparel" else "extraction_reliability_v2"
+    if dataset in {"apparel", "old-apparel", "apparel-v31"}:
+        name = (
+            "extraction_optimization_v3_1"
+            if dataset == "apparel-v31"
+            else "extraction_optimization_v3"
+            if dataset == "apparel"
+            else "extraction_reliability_v2"
+        )
         rows = json.loads((ROOT / f"tests/fixtures/{name}.json").read_text())
-        wanted = split if dataset == "apparel" else "dev" if split == "dev" else "test"
+        wanted = split if dataset != "old-apparel" else "dev" if split == "dev" else "test"
         return [r for r in rows if r["split"] == wanted]
     if dataset in {"abcd-reserve", "abcd-context"}:
         rows = [json.loads(s) for s in (RUN / "abcd-reserve.jsonl").read_text().splitlines()]
@@ -38,6 +62,14 @@ def examples(dataset, split):
         path = ROOT / f"data/evaluation_runs/abcd/prepared/{native}.jsonl"
         rows = [json.loads(s) for s in path.read_text().splitlines()]
     task = "contextual" if dataset == "abcd-context" else "self_contained"
+    if dataset == "abcd-context":
+        questions = observed_questions(ROOT / "data/evaluation_sources/abcd/abcd_v1.1.json.gz")
+        for row in rows:
+            if row["task"] == "contextual":
+                row["current_case"] = {
+                    **row["current_case"],
+                    "question_prompt": questions[row["convo_id"], row["turn_index"]],
+                }
     return [
         r
         for r in rows
@@ -48,7 +80,7 @@ def examples(dataset, split):
 def summarize(rows):
     scores = defaultdict(Counter)
     causes = Counter()
-    claims = fills = 0
+    claims = fills = absence_checks = 0
     for row in rows:
         for field, expected in row["expected"].items():
             if not row["label_mask"].get(field, False):
@@ -70,6 +102,7 @@ def summarize(rows):
             if actual is not None:
                 claims += 1
                 fills += expected is None
+            absence_checks += field in row.get("absence_audited", [])
             if not ok:
                 causes[row["error_categories"].get(field, "unclassified")] += 1
             if field == "item_name" and actual and expected:
@@ -94,10 +127,12 @@ def summarize(rows):
         "critical_known_macro": statistics.mean(critical) if critical else None,
         "audited_unsupported_fills": fills,
         "audited_claims": claims,
-        "audited_unsupported_fill_rate": fills / claims if claims else None,
+        "audited_absence_checks": absence_checks,
+        "audited_unsupported_fill_rate": fills / claims if claims and absence_checks else None,
         "error_categories": dict(causes),
         "model_calls": sum(r["model_calls"] for r in rows),
         "errors": sum(bool(r["error"]) for r in rows),
+        "provider_fallbacks": sum(r["path"] == "model_error_rules_fallback" for r in rows),
         "tokens": {
             key: sum(r["usage"].get(key, 0) for r in rows)
             for key in ("prompt_eval_count", "eval_count")
@@ -144,6 +179,9 @@ async def run(args):
         from app.extractors.hybrid import HybridExtractor
         from app.extractors.ollama import OllamaExtractor
         from app.extractors.rules import RuleBasedExtractor
+
+        if args.revision == "rules-fixed":
+            from app.extractors.frozen_v2.ollama import OllamaExtractor
     selected = examples(args.dataset, args.split)
     if args.limit:
         selected = selected[: args.limit]
@@ -215,12 +253,25 @@ async def run(args):
                 actual, error = ReturnFacts(), f"{type(exc).__name__}: {exc}"
             elapsed = perf_counter() - started
             raw = capture.bodies[-1].get("message", {}).get("content") if capture.bodies else None
+            # Count native usage even when structured parsing/evidence validation fails.
+            native_usage = {
+                key: sum(int(body.get(key, 0)) for body in capture.bodies if isinstance(body, dict))
+                for key in ("prompt_eval_count", "eval_count", "load_duration")
+            }
             trace = getattr(provider, "last_trace", {})
             try:
                 envelope = json.loads(raw) if raw else {}
             except ValueError:
                 envelope = {}
             model_facts = trace.get("model_candidates", envelope.get("facts", {}))
+            grounded_model = trace.get("grounded_model")
+            if args.revision in {"v2", "rules-fixed"} and raw:
+                from app.extractors.frozen_v2.contracts import EvidenceFacts, grounded
+
+                with suppress(ValueError):
+                    grounded_model = grounded(
+                        EvidenceFacts.model_validate_json(raw), text, pending
+                    )[0].model_dump(mode="json")
             rejected = provider.last_diagnostics.get("rejected_fields", [])
             conflicts = getattr(extractor, "last_conflicts", [])
             categories = {}
@@ -237,6 +288,8 @@ async def run(args):
                     else "rule_false_assertion"
                     if getattr(rules, field, None) is not None
                     and getattr(rules, field, None) != gold
+                    else "rule_omission"
+                    if args.mode == "rules" and gold is not None
                     else "model_omission"
                     if gold is not None and model_facts.get(field) is None
                     else "model_semantic_or_span_error"
@@ -247,20 +300,24 @@ async def run(args):
                 "convo_id": example.get("convo_id"),
                 "template_group": example.get("template_group"),
                 "text": text,
+                "pending_question": pending,
+                "case_before": example["current_case"],
                 "expected": example["expected"],
                 "label_mask": example.get(
                     "label_mask", {f: True for f in ReturnFacts.model_fields}
                 ),
+                "absence_audited": example.get("absence_audited", []),
                 "actual": actual.model_dump(mode="json"),
                 "rule_candidates": rules.model_dump(mode="json"),
                 "model_raw_output": raw,
                 "model_candidates": model_facts,
-                "grounded_model": trace.get("grounded_model"),
+                "grounded_model": grounded_model,
+                "rule_diagnostics": getattr(rule, "last_diagnostics", {}),
                 "diagnostics": provider.last_diagnostics,
                 "conflicts": conflicts,
                 "path": getattr(extractor, "last_path", args.mode),
                 "error_categories": categories,
-                "usage": provider.last_usage,
+                "usage": native_usage,
                 "model_calls": capture.calls,
                 "seconds": elapsed,
                 "error": error,
@@ -286,6 +343,7 @@ if __name__ == "__main__":
         "--dataset",
         choices=[
             "apparel",
+            "apparel-v31",
             "old-apparel",
             "abcd-dev",
             "abcd-public",
@@ -295,7 +353,7 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument("--split", choices=["dev", "validation"], default="dev")
-    parser.add_argument("--revision", choices=["v2", "v3"], default="v3")
+    parser.add_argument("--revision", choices=["v2", "v3", "rules-fixed"], default="v3")
     parser.add_argument("--mode", choices=["rules", "model", "hybrid"], default="hybrid")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--name", required=True)

@@ -121,15 +121,9 @@ async def main() -> None:
         "prompt_variant": args.prompt_variant,
         "extractor_source_sha256": hashlib.sha256(
             b"".join(
-                (ROOT / path).read_bytes()
-                for path in (
-                    "app/extractors/rules.py",
-                    "app/extractors/hybrid.py",
-                    "app/extractors/ollama.py",
-                    "app/extractors/contracts.py",
-                    "app/extractors/specs/general-v2.md",
-                    "app/extractors/specs/apparel-v2.md",
-                )
+                path.read_bytes()
+                for path in sorted((ROOT / "app/extractors").rglob("*"))
+                if path.suffix in {".py", ".md"}
             )
         ).hexdigest(),
         "split": args.split,

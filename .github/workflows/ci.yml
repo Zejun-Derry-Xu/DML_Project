@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, codex/extraction-reliability-v2]
+    branches: [main, codex/extraction-reliability-v2, codex/extraction-data-optimization]
 
 jobs:
   backend:

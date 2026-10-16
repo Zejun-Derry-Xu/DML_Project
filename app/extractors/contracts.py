@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from app.domain.models import ReturnCase, ReturnFacts
 from app.domain.state_machine import build_question
 
-SPEC_VERSION = "extraction-2.0.0"
+SPEC_VERSION = "extraction-3.0.0"
 APPAREL_FIELDS = {"stained", "tags_attached", "tags_intact", "damaged", "condition_origin"}
 
 

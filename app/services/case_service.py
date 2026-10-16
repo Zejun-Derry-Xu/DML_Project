@@ -376,10 +376,36 @@ class CaseService:
         return case, None, None
 
     def clarify(
-        self, session_id: UUID, field: QuestionField
-    ) -> tuple[ReturnCaseRecord, QuestionRequestRecord, None]:
+        self,
+        session_id: UUID,
+        field: QuestionField,
+        *,
+        retained_facts: dict[str, Any] | None = None,
+    ) -> tuple[ReturnCaseRecord, QuestionRequestRecord | None, None]:
         case = self.returns.get_or_create_case(session_id)
         self._upgrade_policy(case)
+        # Only same-item conditions may be retained while another field is clarified.
+        # Never evaluate eligibility or create an RMA on this path.
+        for key, value in (retained_facts or {}).items():
+            if (
+                key
+                not in {
+                    "used",
+                    "opened",
+                    "damaged",
+                    "stained",
+                    "tags_attached",
+                    "tags_intact",
+                    "condition_origin",
+                }
+                or key == field
+                or value is None
+            ):
+                continue
+            previous = getattr(case, key)
+            if previous is not None and previous != value:
+                return self._escalate_conflict(case)
+            setattr(case, key, value)
         case.decision = ReturnDecision.NEED_MORE_INFORMATION.value
         case.decision_reason = ReasonCode.INFORMATION_CONFLICT.value
         case.version += 1

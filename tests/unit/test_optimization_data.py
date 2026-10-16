@@ -30,3 +30,37 @@ def test_authored_data_is_frozen_balanced_and_provisional():
     assert manifest["authored_sha256"] == hashlib.sha256(fixture.read_bytes()).hexdigest()
     assert len(set(manifest["reserve_convo_ids"])) == 192
     assert len(set(manifest["contextual_convo_ids"])) == 32
+
+
+def test_amended_data_has_independent_attributes_and_no_healthy_fault_claim():
+    root = Path(__file__).parents[2]
+    fixture = root / "tests/fixtures/extraction_optimization_v3_1.json"
+    rows = json.loads(fixture.read_text())
+    assert rows == authored_cases(independent=True)
+    assert len(rows) == 300
+    dev = [r for r in rows if r["split"] == "dev"]
+    validation = [r for r in rows if r["split"] == "validation"]
+    assert (len(dev), len(validation)) == (120, 180)
+    assert not ({r["template_group"] for r in dev} & {r["template_group"] for r in validation})
+    for split in (dev, validation):
+        combinations = set()
+        for row in split:
+            values = tuple(row["expected"][f] for f in CRITICAL[:4])
+            if all(v is not None for v in values):
+                combinations.add(values)
+            if values == (False, False, True, True):
+                assert row["expected"]["condition_origin"] is None
+                assert "condition_origin" not in row["evidence"]
+            assert all(q in row["text"] for q in row["evidence"].values())
+        assert len(combinations) == 16
+    for field in CRITICAL[:4]:
+        for value in (True, False, None):
+            assert sum(r["expected"][field] is value for r in validation) >= 20
+    for value in ("customer", "pre_existing", "unknown"):
+        assert sum(r["expected"]["condition_origin"] == value for r in validation) >= 20
+    manifest = json.loads(
+        (root / "tests/fixtures/extraction_optimization_manifest_v3_1.json").read_text()
+    )
+    assert manifest["authored_sha256"] == hashlib.sha256(fixture.read_bytes()).hexdigest()
+    original = root / "tests/fixtures/extraction_optimization_manifest.json"
+    assert manifest["original_manifest_sha256"] == hashlib.sha256(original.read_bytes()).hexdigest()

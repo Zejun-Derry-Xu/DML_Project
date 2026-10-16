@@ -1,4 +1,5 @@
 import asyncio
+import json
 from time import monotonic
 
 import httpx
@@ -6,7 +7,7 @@ from pydantic import ValidationError
 
 from app.domain.models import ReturnCase, ReturnFacts
 from app.extractors.base import ExtractorError
-from app.extractors.contracts import SPEC_VERSION, EvidenceFacts, grounded, output_schema, prompt
+from app.extractors.compact import VERSION, prompt, schema, validate
 from app.extractors.openai_compatible import OpenAICompatibleExtractor
 
 
@@ -21,7 +22,8 @@ class OllamaExtractor(OpenAICompatibleExtractor):
         current_case: ReturnCase,
         pending_question: str | None,
     ) -> ReturnFacts:
-        self.last_diagnostics: dict[str, object] = {"spec_version": SPEC_VERSION, "attempts": 0}
+        self.last_diagnostics: dict[str, object] = {"spec_version": VERSION, "attempts": 0}
+        self.last_trace: dict[str, object] = {}
         self.last_usage: dict[str, int] = {}
         root_url = self.base_url.removesuffix("/v1")
         payload = {
@@ -35,12 +37,10 @@ class OllamaExtractor(OpenAICompatibleExtractor):
                 },
                 {
                     "role": "user",
-                    "content": prompt(
-                        message, current_case, pending_question, focused=self.variant == "focused"
-                    ),
+                    "content": prompt(message, current_case, pending_question),
                 },
             ],
-            "format": output_schema(pending_question),
+            "format": schema(pending_question, current_case.item_category == "apparel", message),
             "options": {"temperature": 0, "num_ctx": 4096, "num_predict": 512},
         }
         deadline = monotonic() + self.timeout_seconds
@@ -56,6 +56,8 @@ class OllamaExtractor(OpenAICompatibleExtractor):
                         response = await client.post(f"{root_url}/api/chat", json=payload)
                         response.raise_for_status()
                     body = response.json()
+                    if not isinstance(body, dict):
+                        raise ValueError("Expected response object")
                     if body.get("done_reason") == "length":
                         raise ValueError("Truncated structured response")
                     self.last_usage = {
@@ -63,14 +65,14 @@ class OllamaExtractor(OpenAICompatibleExtractor):
                         for key in ("prompt_eval_count", "eval_count", "load_duration")
                         if key in body
                     }
-                    envelope = EvidenceFacts.model_validate_json(body["message"]["content"])
-                    facts, rejected = grounded(envelope, message, pending_question)
-                    self.last_diagnostics["rejected_fields"] = rejected
-                    self.last_diagnostics["evidence_spans"] = {
-                        key: [message.find(quote), message.find(quote) + len(quote)]
-                        for key, quote in envelope.evidence.items()
-                        if key in ReturnFacts.model_fields and quote and quote in message
-                    }
+                    facts, diagnostics, trace = validate(
+                        json.loads(body["message"]["content"]),
+                        message,
+                        current_case,
+                        pending_question,
+                    )
+                    self.last_diagnostics.update(diagnostics)
+                    self.last_trace = trace
                     return facts
             except (httpx.ConnectError, httpx.ReadError, httpx.RemoteProtocolError) as exc:
                 last_error = exc

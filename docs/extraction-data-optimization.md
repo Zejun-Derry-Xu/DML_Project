@@ -41,3 +41,37 @@ Report per-field/class counts, false/unknown handling, calls, native token count
 measured follow-ups, cold/warm latency and provider failures. Unknown/conflicting/
 hypothetical/wrong-referent conditions must not lead to automatic approval. Any failed
 or unrun gate remains blocked. Even numeric success remains exploratory until label audit.
+
+## Pre-validation data amendment
+
+The original `extraction_optimization_v3.json` and its manifest are archived unchanged.
+Development data QA found correlated boolean combinations and a fault-origin sentence
+even when every condition was healthy. Before running validation, a separate v3.1
+fixture and manifest were frozen. They exercise all 16 combinations of four condition
+booleans and omit fault-origin assertions for healthy items. No validation predictions
+were used to amend labels. Both versions remain automatic/provisional; the earlier
+300 probes are not counted as another independent benchmark.
+
+## Exploratory development experiments (not release scores)
+
+On the original development probes, frozen v2 hybrid scored 67.5% explicit-condition
+macro accuracy with 24 unsupported fills. The compact contract with generated literal
+quotes scored 84.17%; some otherwise correct candidates failed exact evidence checks.
+Selecting original source-fragment IDs avoids quotation rewriting, but initially making
+the other conditions optional caused the model to omit them (18.61%). Requiring the
+condition group raised pure-model accuracy to 95%, with one provider failure in 120
+inputs. Hybrid and the new-rules/frozen-model ablation both scored 100% with 8 model
+calls. This does NOT attribute all hybrid gains to the new model prompt: the rules
+account for much of that gain. Reports and failed experiments are retained separately.
+
+On the first 48 ABCD development conversations, order labels remained 24/38 for both
+hybrids; strict item labels improved from 6/20 to 15/20. Many numeric answers lack an
+explicit order cue in customer-only concatenations, and the model often chooses an
+alphanumeric account ID. Do not reinterpret account IDs as order IDs, invent cues,
+or accept any numeric span solely to pass the score. The 90% order gate is not met.
+Observed-dialogue context evaluation is a separate test of available agent questions.
+
+All these exploratory runs used a dirty development tree, not a released candidate.
+Runtime source hashes in their reports identify the exact extractor revision. Native
+provider counters may be unavailable for failed requests; zero is not proof of free
+inference. No cloud latency or PostgreSQL acceptance is inferred from Mac results.

@@ -9,6 +9,7 @@ class HybridExtractor:
         self.fallback = fallback
         self.last_path = "not_run"
         self.last_conflicts: list[str] = []
+        self.last_diagnostics: dict[str, object] = {}
 
     async def extract(
         self,
@@ -24,8 +25,18 @@ class HybridExtractor:
                 self.fallback.last_diagnostics = {}
         rule_facts = await self.rules.extract(message, current_case, pending_question)
         self.last_conflicts = list(getattr(self.rules, "ambiguous_fields", []))
+        self.last_diagnostics = dict(getattr(self.rules, "last_diagnostics", {}))
+        field_states = self.last_diagnostics.get("field_states", {})
+        if isinstance(field_states, dict) and pending_question in field_states:
+            self.last_diagnostics["pending_state"] = field_states[pending_question]
         if self.fallback is None:
             self.last_path = "rules_only"
+            return rule_facts
+        if self.last_diagnostics.get("blocked_scope"):
+            self.last_path = "rules_scoped_abstention"
+            return rule_facts
+        if self.last_diagnostics.get("pending_state") == "uncertain":
+            self.last_path = "rules_explicit_unknown"
             return rule_facts
         complete_apparel = (
             current_case.item_category == "apparel"
@@ -38,7 +49,14 @@ class HybridExtractor:
             )
         )
         if not self.last_conflicts and (
-            complete_apparel or self._answers_pending(rule_facts, pending_question)
+            complete_apparel
+            or (
+                self._answers_pending(rule_facts, pending_question)
+                and not (
+                    current_case.item_category == "apparel"
+                    and getattr(self.rules, "unresolved_fields", [])
+                )
+            )
         ):
             self.last_path = "rules_sufficient"
             return rule_facts
@@ -48,6 +66,9 @@ class HybridExtractor:
             self.last_path = "model_error_rules_fallback"
             return rule_facts
         self.last_path = "rules_and_model"
+        model_diagnostics = getattr(self.fallback, "last_diagnostics", {})
+        if model_diagnostics:
+            self.last_diagnostics.update(model_diagnostics)
         self.last_conflicts = sorted(
             set(self.last_conflicts)
             | {

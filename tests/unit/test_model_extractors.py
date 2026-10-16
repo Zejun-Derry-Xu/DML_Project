@@ -5,7 +5,7 @@ import httpx
 import pytest
 
 from app.domain.models import ReturnCase
-from app.extractors.contracts import EvidenceFacts
+from app.extractors.compact import schema
 from app.extractors.ollama import OllamaExtractor
 from app.extractors.openai_compatible import extraction_prompt
 
@@ -38,10 +38,10 @@ async def test_ollama_uses_native_structured_chat_without_thinking(
             json={
                 "message": {
                     "content": (
-                        '{"facts":{"intent":"return","order_id":"ORD-1001","item_name":null,'
-                        '"reason":null,"used":null,"opened":false,"damaged":null,'
-                        '"wants_human":false},"evidence":{"intent":"Return",'
-                        '"order_id":"ORD-1001","opened":"unopened"}}'
+                        '{"answer_state":"stated","facts":{'
+                        '"intent":{"value":"return","evidence":"E0"},'
+                        '"order_id":{"value":"ORD-1001","evidence":"E0"},'
+                        '"opened":{"value":false,"evidence":"E1"}}}'
                     )
                 }
             },
@@ -71,4 +71,4 @@ async def test_ollama_uses_native_structured_chat_without_thinking(
     assert result.opened is False
     assert captured["think"] is False
     assert captured["stream"] is False
-    assert captured["format"] == EvidenceFacts.model_json_schema()
+    assert captured["format"] == schema(message="Return ORD-1001; it is unopened.")

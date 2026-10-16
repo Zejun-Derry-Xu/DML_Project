@@ -15,7 +15,7 @@ from app.db.models import (
 from app.domain.models import QuestionField, ReturnCase, ReturnDecision, ReturnFacts, ReturnReason
 from app.extractors.base import FactExtractor
 from app.extractors.contracts import SPEC_VERSION
-from app.extractors.rules import ORDER_PATTERN
+from app.extractors.scoped import order_identifier
 from app.repositories.order_repository import OrderRepository
 from app.repositories.return_repository import ReturnRepository
 from app.services.case_service import CaseService
@@ -42,8 +42,8 @@ class ConversationService:
         current = self._domain_case(record, session_id)
         pending = self.returns.pending_question(session_id) if record else None
         current.question_prompt = pending.prompt if pending else None
-        match = ORDER_PATTERN.search(message)
-        lookup_number = current.order_number or (f"ORD-{match.group(1)}" if match else None)
+        observed_order, _, _ = order_identifier(message, current.pending_question)
+        lookup_number = observed_order or current.order_number
         email = customer_email or current.customer_email
         if lookup_number and email:
             order = OrderRepository(self.session).by_number(lookup_number)
@@ -95,9 +95,7 @@ class ConversationService:
                     "model": getattr(getattr(self.extractor, "fallback", None), "model", None),
                     "fields_present": self._present_fields(facts),
                     "extraction_path": getattr(self.extractor, "last_path", "not_reported"),
-                    "diagnostics": getattr(
-                        getattr(self.extractor, "fallback", None), "last_diagnostics", {}
-                    ),
+                    "diagnostics": getattr(self.extractor, "last_diagnostics", {}),
                     "usage": getattr(getattr(self.extractor, "fallback", None), "last_usage", {}),
                     "conflicts": getattr(self.extractor, "last_conflicts", []),
                 },
@@ -120,7 +118,45 @@ class ConversationService:
                 "damaged",
                 "condition_origin",
             }:
-                return self.cases.clarify(session_id, cast(QuestionField, field))
+                same_item = (
+                    current.item_id is not None
+                    and "order_id" not in conflicts
+                    and facts.order_id in {None, current.order_number}
+                    and (
+                        facts.item_name is None
+                        or (
+                            current.item_name is not None
+                            and facts.item_name.casefold() == current.item_name.casefold()
+                        )
+                    )
+                    and customer_email in {None, current.customer_email}
+                )
+                retained = (
+                    {
+                        key: value
+                        for key, value in facts.model_dump().items()
+                        if key not in conflicts
+                    }
+                    if same_item
+                    else None
+                )
+                return self.cases.clarify(
+                    session_id, cast(QuestionField, field), retained_facts=retained
+                )
+
+        diagnostics = getattr(self.extractor, "last_diagnostics", {})
+        if (
+            pending
+            and pending.field in {"stained", "damaged", "tags_attached", "tags_intact"}
+            and diagnostics.get("pending_state") == "uncertain"
+            and getattr(facts, pending.field) is None
+        ):
+            return self.cases.answer_question(
+                question_id=pending.id,
+                session_id=session_id,
+                selected_value="unknown",
+                free_text=message,
+            )
 
         effective_email = customer_email or current.customer_email
         effective_order = facts.order_id or current.order_number
