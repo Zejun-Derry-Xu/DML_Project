@@ -1,0 +1,116 @@
+{
+  "config": {
+    "dataset": "apparel-v31",
+    "split": "dev",
+    "revision": "v3",
+    "mode": "rules",
+    "limit": null,
+    "machine": "macOS-27.0.1-arm64-arm-64bit",
+    "git_revision": "6a4412994e23fa5cc8efc4a1b4fd1e3cfe63a33b",
+    "working_tree_dirty": true,
+    "source_sha256": "d5e906b20b15ad9862c27cc02ee3047efd1e99376b13b447ee657f3c91560017",
+    "input_sha256": "0cb4ac4197515a7be149b231c7d9c3024b42817db3a4f2440fa240e1b9e69125"
+  },
+  "run_id": "1726a493f15a722a4d59ac95f8c4d67a388fcd242cee0a1bcb60dd48bae35fc3",
+  "selected": 120,
+  "complete": true,
+  "results": {
+    "examples": 120,
+    "independent_conversations": 0,
+    "template_groups": 20,
+    "per_field": {
+      "damaged": {
+        "total": 120,
+        "correct": 120,
+        "known_total": 72,
+        "known_correct": 72,
+        "known_omitted": 0,
+        "class_false_total": 36,
+        "class_false_correct": 36,
+        "class_true_total": 36,
+        "class_true_correct": 36,
+        "class_none_total": 48,
+        "class_none_correct": 48,
+        "accuracy": 1.0
+      },
+      "stained": {
+        "total": 120,
+        "correct": 120,
+        "known_total": 72,
+        "known_correct": 72,
+        "known_omitted": 0,
+        "class_false_total": 36,
+        "class_false_correct": 36,
+        "class_true_total": 36,
+        "class_true_correct": 36,
+        "class_none_total": 48,
+        "class_none_correct": 48,
+        "accuracy": 1.0
+      },
+      "tags_attached": {
+        "total": 120,
+        "correct": 120,
+        "known_total": 72,
+        "known_correct": 72,
+        "known_omitted": 0,
+        "class_false_total": 36,
+        "class_false_correct": 36,
+        "class_true_total": 36,
+        "class_true_correct": 36,
+        "class_none_total": 48,
+        "class_none_correct": 48,
+        "accuracy": 1.0
+      },
+      "tags_intact": {
+        "total": 120,
+        "correct": 120,
+        "known_total": 72,
+        "known_correct": 72,
+        "known_omitted": 0,
+        "class_false_total": 40,
+        "class_false_correct": 40,
+        "class_true_total": 32,
+        "class_true_correct": 32,
+        "class_none_total": 48,
+        "class_none_correct": 48,
+        "accuracy": 1.0
+      },
+      "condition_origin": {
+        "total": 120,
+        "correct": 120,
+        "known_total": 68,
+        "known_correct": 68,
+        "known_omitted": 0,
+        "class_customer_total": 24,
+        "class_customer_correct": 24,
+        "class_pre_existing_total": 21,
+        "class_pre_existing_correct": 21,
+        "class_none_total": 52,
+        "class_none_correct": 52,
+        "class_unknown_total": 23,
+        "class_unknown_correct": 23,
+        "accuracy": 1.0
+      }
+    },
+    "critical_known_macro": 1.0,
+    "audited_unsupported_fills": 0,
+    "audited_claims": 356,
+    "audited_absence_checks": 244,
+    "audited_unsupported_fill_rate": 0.0,
+    "error_categories": {},
+    "model_calls": 0,
+    "errors": 0,
+    "provider_fallbacks": 0,
+    "tokens": {
+      "prompt_eval_count": 0,
+      "eval_count": 0
+    },
+    "latency_seconds": {
+      "p50": 9.264549589715898e-05,
+      "p95": 0.00011995801469311118
+    },
+    "cold_load_seconds": 0.0,
+    "label_status": "automatic_provisional; not a production release or official task score"
+  },
+  "release_status": "blocked_pending_human_audit_and_quality_gates"
+}

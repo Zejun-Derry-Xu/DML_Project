@@ -1,0 +1,153 @@
+{
+  "kind": "actual HTTP application smoke on synthetic demo orders, not public benchmark",
+  "base_url": "http://127.0.0.1:18020",
+  "checks": [
+    {
+      "name": "liveness",
+      "passed": true
+    },
+    {
+      "name": "schema_readiness",
+      "passed": true
+    },
+    {
+      "name": "metrics",
+      "passed": true
+    },
+    {
+      "name": "policy_window_citation",
+      "passed": true
+    },
+    {
+      "name": "unsupported_policy_abstains",
+      "passed": true
+    },
+    {
+      "name": "metadata_scope_filter",
+      "passed": true
+    },
+    {
+      "name": "policy_cannot_decide_order",
+      "passed": true
+    },
+    {
+      "name": "asks_missing_apparel_condition",
+      "passed": true
+    },
+    {
+      "name": "policy_help_preserves_pending_question",
+      "passed": true
+    },
+    {
+      "name": "cross_session_answer_blocked",
+      "passed": true
+    },
+    {
+      "name": "worn_good_condition_advances_to_confirmation",
+      "passed": true
+    },
+    {
+      "name": "eligible_has_policy_basis",
+      "passed": true
+    },
+    {
+      "name": "no_rma_before_confirmation",
+      "passed": true
+    },
+    {
+      "name": "confirmed_simulated_rma_created",
+      "passed": true
+    },
+    {
+      "name": "duplicate_confirmation_rejected",
+      "passed": true
+    },
+    {
+      "name": "return_creation_is_idempotent",
+      "passed": true
+    },
+    {
+      "name": "resume_returns_same_rma",
+      "passed": true
+    },
+    {
+      "name": "cross_session_duplicate_return_blocked",
+      "passed": true
+    },
+    {
+      "name": "final_sale",
+      "passed": true
+    },
+    {
+      "name": "final_sale_citation",
+      "passed": true
+    },
+    {
+      "name": "expired",
+      "passed": true
+    },
+    {
+      "name": "expired_citation",
+      "passed": true
+    },
+    {
+      "name": "not_delivered",
+      "passed": true
+    },
+    {
+      "name": "not_delivered_citation",
+      "passed": true
+    },
+    {
+      "name": "duplicate_order_return",
+      "passed": true
+    },
+    {
+      "name": "duplicate_order_return_citation",
+      "passed": true
+    },
+    {
+      "name": "used",
+      "passed": true
+    },
+    {
+      "name": "used_citation",
+      "passed": true
+    },
+    {
+      "name": "defect",
+      "passed": true
+    },
+    {
+      "name": "defect_citation",
+      "passed": true
+    },
+    {
+      "name": "multi_item_requires_selection",
+      "passed": true
+    },
+    {
+      "name": "wrong_owner_denied",
+      "passed": true
+    }
+  ],
+  "check_count": 32,
+  "passed_count": 32,
+  "all_passed": true,
+  "elapsed_seconds": 0.158,
+  "resume_session_id": "60dfedbc-3164-4020-a372-5a5365739eba",
+  "created_return_id": "5445b1ce-f64e-4daf-8d4f-bfecfebec3d7",
+  "observed_main_case": {
+    "unique_questions": 2,
+    "question_fields": [
+      "stained",
+      "confirm_return"
+    ],
+    "user_submissions": 3,
+    "note": "Observed for this synthetic flow only, not a user-study average."
+  },
+  "limitations": [
+    "SQLite demo, not PostgreSQL concurrency or deployment load testing.",
+    "One deterministic flow, not a complete native tau2 benchmark score."
+  ]
+}

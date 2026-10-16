@@ -1,0 +1,161 @@
+{
+  "config": {
+    "dataset": "apparel-v31",
+    "split": "dev",
+    "revision": "v3",
+    "mode": "model",
+    "limit": null,
+    "machine": "macOS-27.0.1-arm64-arm-64bit",
+    "git_revision": "6a4412994e23fa5cc8efc4a1b4fd1e3cfe63a33b",
+    "working_tree_dirty": true,
+    "source_sha256": "e9a91135085470affa2c9acba12bd4d65d11225945fb4f1000a1954fac601fa2",
+    "input_sha256": "0cb4ac4197515a7be149b231c7d9c3024b42817db3a4f2440fa240e1b9e69125",
+    "model_manifest": {
+      "models": [
+        {
+          "name": "embeddinggemma:latest",
+          "model": "embeddinggemma:latest",
+          "modified_at": "2026-10-08T12:58:27.38280653-04:00",
+          "size": 621875917,
+          "digest": "85462619ee721b466c5927d109d4cb765861907d5417b9109caebc4e614679f1",
+          "details": {
+            "parent_model": "embeddinggemma:300m-bf16",
+            "format": "gguf",
+            "family": "gemma3",
+            "families": [
+              "gemma3"
+            ],
+            "parameter_size": "307.58M",
+            "quantization_level": "BF16",
+            "context_length": 2048,
+            "embedding_length": 768
+          },
+          "capabilities": [
+            "embedding"
+          ]
+        },
+        {
+          "name": "qwen3:4b",
+          "model": "qwen3:4b",
+          "modified_at": "2026-09-23T20:03:01.073895998-04:00",
+          "size": 2497293931,
+          "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen3",
+            "families": [
+              "qwen3"
+            ],
+            "parameter_size": "4.0B",
+            "quantization_level": "Q4_K_M",
+            "context_length": 262144,
+            "embedding_length": 2560
+          },
+          "capabilities": [
+            "completion",
+            "tools",
+            "thinking"
+          ]
+        }
+      ]
+    }
+  },
+  "run_id": "f98b2e6150b19405dc33d1b154c0321d42f1235cb953dab9fb5219fba44151d4",
+  "selected": 120,
+  "complete": false,
+  "results": {
+    "examples": 43,
+    "independent_conversations": 0,
+    "template_groups": 8,
+    "per_field": {
+      "damaged": {
+        "total": 43,
+        "correct": 32,
+        "known_total": 43,
+        "known_correct": 32,
+        "known_omitted": 11,
+        "class_false_total": 22,
+        "class_false_correct": 16,
+        "class_true_total": 21,
+        "class_true_correct": 16,
+        "accuracy": 0.7441860465116279
+      },
+      "stained": {
+        "total": 43,
+        "correct": 43,
+        "known_total": 43,
+        "known_correct": 43,
+        "known_omitted": 0,
+        "class_false_total": 22,
+        "class_false_correct": 22,
+        "class_true_total": 21,
+        "class_true_correct": 21,
+        "accuracy": 1.0
+      },
+      "tags_attached": {
+        "total": 43,
+        "correct": 43,
+        "known_total": 43,
+        "known_correct": 43,
+        "known_omitted": 0,
+        "class_false_total": 23,
+        "class_false_correct": 23,
+        "class_true_total": 20,
+        "class_true_correct": 20,
+        "accuracy": 1.0
+      },
+      "tags_intact": {
+        "total": 43,
+        "correct": 34,
+        "known_total": 43,
+        "known_correct": 34,
+        "known_omitted": 9,
+        "class_false_total": 24,
+        "class_false_correct": 22,
+        "class_true_total": 19,
+        "class_true_correct": 12,
+        "accuracy": 0.7906976744186046
+      },
+      "condition_origin": {
+        "total": 43,
+        "correct": 43,
+        "known_total": 41,
+        "known_correct": 41,
+        "known_omitted": 0,
+        "class_customer_total": 18,
+        "class_customer_correct": 18,
+        "class_pre_existing_total": 12,
+        "class_pre_existing_correct": 12,
+        "class_none_total": 2,
+        "class_none_correct": 2,
+        "class_unknown_total": 11,
+        "class_unknown_correct": 11,
+        "accuracy": 1.0
+      }
+    },
+    "critical_known_macro": 0.9069767441860465,
+    "audited_unsupported_fills": 0,
+    "audited_claims": 193,
+    "audited_absence_checks": 2,
+    "audited_unsupported_fill_rate": 0.0,
+    "error_categories": {
+      "evidence_rejection": 5,
+      "model_omission": 15
+    },
+    "model_calls": 43,
+    "errors": 0,
+    "provider_fallbacks": 0,
+    "tokens": {
+      "prompt_eval_count": 61980,
+      "eval_count": 6421
+    },
+    "latency_seconds": {
+      "p50": 3.474987916997634,
+      "p95": 4.899982167000417
+    },
+    "cold_load_seconds": 1.5898983740000001,
+    "label_status": "automatic_provisional; not a production release or official task score"
+  },
+  "release_status": "blocked_pending_human_audit_and_quality_gates"
+}
