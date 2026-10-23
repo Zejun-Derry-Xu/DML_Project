@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, codex/extraction-reliability-v2, codex/extraction-data-optimization, codex/extraction-guardrails-v4, codex/apparel-llm-delivery]
+    branches: [main, codex/extraction-reliability-v2, codex/extraction-data-optimization, codex/extraction-guardrails-v4, codex/apparel-llm-delivery, codex/extraction-harness-v1]
     tags: ['returnflow-candidate-*']
   workflow_dispatch:
     inputs:

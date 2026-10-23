@@ -90,6 +90,65 @@ def test_demo_is_allowlisted_and_cookies_are_signed(demo, db_session):
     assert demo.get("/api/v1/orders").status_code == 401
 
 
+@pytest.mark.parametrize("bad_id", [False, True])
+def test_experimental_harness_adapter_through_api_keeps_missing_state_safe(
+    demo, monkeypatch, bad_id
+):
+    import json
+
+    import httpx
+
+    from app.extractors.apparel_harness import HarnessExtractor
+    from app.services import apparel_service
+
+    result = start(demo)
+    result = chat(demo, result["session_id"], "too small")
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "extraction_mode", "llm")
+    monkeypatch.setattr(get_settings(), "llm_provider", "ollama")
+    monkeypatch.setattr(
+        apparel_service, "LLMFactExtractor", lambda s: HarnessExtractor(s, "span_ids")
+    )
+    original = httpx.AsyncClient
+
+    def respond(request):
+        payload = json.loads(request.content)
+        assert "source_spans" in json.loads(payload["messages"][1]["content"])
+        return httpx.Response(
+            200,
+            json={
+                "message": {
+                    "content": json.dumps(
+                        {
+                            "intent": "unclear",
+                            "intent_evidence_ids": [],
+                            "facts": [
+                                {
+                                    "field": "stained",
+                                    "value": None,
+                                    "state": "uncertain",
+                                    "evidence_ids": ["S99" if bad_id else "S1"],
+                                }
+                            ],
+                        }
+                    )
+                },
+                "done_reason": "stop",
+            },
+        )
+
+    monkeypatch.setattr(
+        httpx, "AsyncClient", lambda **kw: original(transport=httpx.MockTransport(respond), **kw)
+    )
+    result = chat(demo, result["session_id"], "I am not sure.")
+    assert result["return_request"] is None
+    assert result["decision"] != "eligible"
+    assert result["degraded"] is bad_id
+    assert result["facts"]["stained"].get("value") is None
+    assert result["facts"]["stained"]["state"] in {"missing", "unknown"}
+
+
 def test_owned_orders_and_case_answers_are_isolated(demo):
     orders = demo.get("/api/v1/orders").json()
     assert all(o["order_number"].startswith("DEMO-1") for o in orders)
