@@ -105,11 +105,91 @@ def test_success_orders_pull_backup_migrate_switch_and_logs_no_password(deployme
 
 def test_arbitrary_rollback_is_rejected_before_docker(deployment):
     root, args, calls, _ = deployment
-    (root / ".current-release.json").write_text(json.dumps({"compatible_rollbacks": []}))
+    (root / ".current-release.json").write_text(json.dumps(manifest(COMMIT, API, FRONTEND)))
     args.rollback = True
     with pytest.raises(ValueError, match="Rollback"):
         delivery.deploy(args)
     assert not calls
+
+
+def test_older_release_cannot_bypass_rollback_flag(deployment):
+    root, args, calls, _ = deployment
+    current = manifest("b" * 40, API, FRONTEND, sequence=2)
+    (root / ".current-release.json").write_text(json.dumps(current))
+    with pytest.raises(ValueError, match="Older release"):
+        delivery.deploy(args)
+    assert not calls
+
+
+def test_same_commit_cannot_replace_tested_frontend(deployment):
+    root, args, calls, _ = deployment
+    current = manifest(COMMIT, API, FRONTEND.replace("2" * 64, "3" * 64))
+    (root / ".current-release.json").write_text(json.dumps(current))
+    with pytest.raises(ValueError, match="Same commit"):
+        delivery.deploy(args)
+    assert not calls
+
+
+@pytest.mark.parametrize("tamper", [False, True])
+def test_rollback_requires_exact_pair_evidence(deployment, tamper):
+    root, args, calls, _ = deployment
+    current = manifest("b" * 40, API, FRONTEND, sequence=2)
+    current["compatible_rollbacks"] = [COMMIT]
+    current["rollback_evidence"] = {
+        COMMIT: {
+            "status": "compatible_pair",
+            "current_commit": "b" * 40,
+            "previous_commit": COMMIT,
+            "current_api": API,
+            "current_frontend": FRONTEND,
+            "previous_api": API,
+            "previous_frontend": FRONTEND,
+            "schema": "0004",
+        }
+    }
+    if tamper:
+        current["rollback_evidence"][COMMIT]["previous_frontend"] = "different-image"
+    (root / ".current-release.json").write_text(json.dumps(current))
+    args.rollback = True
+    if tamper:
+        with pytest.raises(ValueError, match="Rollback"):
+            delivery.deploy(args)
+        assert not calls
+    else:
+        delivery.deploy(args)
+        assert json.loads((root / ".current-release.json").read_text())["commit"] == COMMIT
+
+
+def test_backup_failure_does_not_migrate_or_switch(deployment, monkeypatch):
+    root, args, calls, fake = deployment
+
+    def failed(command, **kwargs):
+        if "pg_dump" in command:
+            raise subprocess.CalledProcessError(1, command)
+        return fake(command, **kwargs)
+
+    monkeypatch.setattr(delivery, "run", failed)
+    with pytest.raises(delivery.DeployError) as error:
+        delivery.deploy(args)
+    assert error.value.code == 3
+    assert (root / ".release.env").read_text() == "old-version\n"
+    assert not any("alembic" in command for command in calls)
+
+
+def test_failed_smoke_retains_pending_not_current(deployment, monkeypatch):
+    root, args, _, fake = deployment
+
+    def failed(command, **kwargs):
+        if "scripts.smoke_apparel" in command:
+            raise subprocess.CalledProcessError(1, command)
+        return fake(command, **kwargs)
+
+    monkeypatch.setattr(delivery, "run", failed)
+    with pytest.raises(delivery.DeployError) as error:
+        delivery.deploy(args)
+    assert error.value.code == 4
+    assert (root / ".pending-release.json").exists()
+    assert not (root / ".current-release.json").exists()
 
 
 def test_llm_deploy_without_qualification_is_rejected_before_pull(deployment, monkeypatch):

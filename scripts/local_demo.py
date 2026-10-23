@@ -1,6 +1,7 @@
 """Supervise a loopback-only SQLite demo without Docker, PostgreSQL, or Qdrant."""
 
 import argparse
+import errno
 import json
 import os
 import secrets
@@ -43,6 +44,8 @@ def require_free_port(port: int) -> None:
         try:
             listener.bind(("127.0.0.1", port))
         except OSError as error:
+            if error.errno != errno.EADDRINUSE:
+                raise ValueError(f"Cannot bind loopback port {port}: {error.strerror}") from error
             raise ValueError(
                 f"Port {port} is busy; stop its owner or choose a different port"
             ) from error

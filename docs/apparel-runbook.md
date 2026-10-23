@@ -1,0 +1,192 @@
+# Apparel delivery operator runbook
+
+Status: candidate implementation on `codex/apparel-llm-delivery`, not deployed to Jetstream2.
+This supersedes `jetstream-v2-runbook.md` for the new apparel workflow only.
+Do not run these cloud commands until the owner opens the VM and approves deployment.
+
+## 1. What is being delivered
+
+Three always-on services: frontend (Nginx), API (FastAPI), database (PostgreSQL).
+A fourth service, Ollama, is optional and only starts with the `model` profile.
+The default deployment is **guided**: users answer condition cards, and unresolved
+facts produce a simulated support ticket. It is not a successful LLM qualification.
+There is no Qdrant requirement for the default lexical/extractive policy path.
+
+The fictional account picker is NOT real authentication. Only synthetic data may be
+loaded. No payment, actual refund, email notification or external ticket integration exists.
+The service is loopback-only and accessed through SSH, not exposed as a public storefront.
+
+## 2. Release and approval
+
+1. Work on an experimental branch. PR/push CI runs backend checks, a real PostgreSQL
+   workflow test, frontend checks, and actual Linux image HTTP smoke.
+2. Only an approved merge/push to `main` publishes the SAME tested API/frontend images
+   to GHCR. This plan does not authorize such a merge automatically.
+3. Download `returnflow-release-<commit>` from that CI run. It contains the operator
+   bundle, checksum and `release.json` binding both image digests, commit, CI sequence,
+   migration head and policy checksum. CI does NOT log into the VM or deploy.
+4. A person checks the CI result, manifest and intended extraction mode, then runs the
+   deployment script on the VM. This is continuous delivery with a manual promotion
+   gate, not automatic continuous deployment.
+
+Publication/GHCR permissions and the download path are still unexercised on this
+experimental branch. A successful branch CI does not prove publication works.
+Keep the artifact checksum from the trusted GitHub run: a checksum bundled alongside
+an untrusted download is not an independent authenticity signature.
+
+## 3. Before touching the existing VM
+
+- Confirm host identity, current allocation, disk/RAM and the actual current IP.
+- Inventory running containers, networks, volume names, migration head and existing
+  `.env`; do not assume the 2026-10-15 manual installation matches this candidate.
+- The deployment file preserves `returnflow_returnflow-db` and `returnflow-ollama`.
+  Verify they really are the intended volumes before using this file.
+- Existing DB password must remain the CURRENT volume password. Changing `.env`
+  alone does not rotate a PostgreSQL password stored in an existing volume.
+- Preserve old Compose files/config and take a database backup before first adoption.
+  Old manual releases have no compatible-pair evidence: do not invent it.
+- Use a separate operator directory for the downloaded bundle; preserve private `.env`
+  and manifest files across upgrades. Do not unpack a new bundle over private state.
+
+Private `.env` is based on `.env.jetstream.example`. Generate secrets locally/on the
+server, never paste them into chat, commit them or print Compose's resolved config.
+Use hex-only DB passwords to avoid URL-encoding errors in `DATABASE_URL`.
+Set `chmod 600 .env`. For SSH-tunnel HTTP use `DEMO_COOKIE_SECURE=false`; set it true
+only after serving through HTTPS. The default is `EXTRACTION_MODE=guided`.
+
+## 4. First deployment (VM, explicitly approved only)
+
+From the verified, extracted operator bundle directory, with its private `.env`:
+
+```bash
+sha256sum -c returnflow-release.sha256 # run beside the downloaded archive before extraction
+bash scripts/deploy.sh release.json --initialize --seed-demo
+```
+
+The checksum command belongs in the download directory. The deploy command belongs
+inside the extracted bundle. `--seed-demo` is for a synthetic demo DB only; it creates
+fictional accounts idempotently, never converts real customers into demo customers.
+
+The script locks concurrent deployment, validates immutable digests, pulls both
+images before stopping anything, verifies OCI commit labels, stops API/UI writes,
+backs up PostgreSQL, checks the archive listing, applies expand-only migrations,
+optionally seeds, starts the pair, verifies frontend/API/schema/policy identity,
+and performs a read-only HTTP smoke. It never rebuilds an image on the VM.
+
+`pg_restore --list` checks archive readability, not full recovery. Test recovery separately:
+
+```bash
+python3 -m scripts.verify_backup backups/EXACT_BACKUP_FILENAME.dump \
+  --database returnflow_unique_trial_restore_test
+```
+
+Replace the filename and choose a NEW database name. This command refuses existing
+databases and intentionally leaves the test copy. It does not restore over live data.
+There is no automatic live restore in this project; real recovery needs an explicit
+data-preservation decision, rehearsal and maintenance window.
+
+## 5. Every start / stop
+
+After a successful deployment generated `.release.env`:
+
+```bash
+docker compose --env-file .env --env-file .release.env -f compose.jetstream.yml up -d --no-build --wait db api frontend
+curl --fail http://127.0.0.1:8000/ready
+curl --fail http://127.0.0.1:5173/version.json
+docker compose --env-file .env --env-file .release.env -f compose.jetstream.yml exec -T api python -m scripts.smoke_apparel
+```
+
+For an already qualified LLM installation, include `--profile model` before `up`
+and add `ollama` to the service names. Starting Ollama does not download the model.
+
+On the Mac (replace `CURRENT_HOST` with the verified current IP or working DNS):
+
+```bash
+ssh -N -L 15173:127.0.0.1:5173 -L 18000:127.0.0.1:8000 exouser@CURRENT_HOST
+```
+
+Open `http://127.0.0.1:15173`. Closing that tunnel stops access, not server containers.
+To stop this application's containers without deleting volumes:
+
+```bash
+docker compose --env-file .env --env-file .release.env -f compose.jetstream.yml --profile model stop
+```
+
+Then the owner can shelve the VM. Never use `down -v`, volume prune, migration downgrade,
+or blind database restoration as a shutdown/rollback shortcut.
+
+## 6. Failure and rollback
+
+| Stage | Meaning | Response |
+|---|---|---|
+| 2 | configuration, qualification, pull or precondition failed | No image switch; inspect private config and current services |
+| 3 | backup/migration/seed failed | API/UI may be stopped; preserve backup and inspect before restarting |
+| 4 | switch/readiness/smoke failed | Pending images may be running; preserve pending/previous manifests and DB |
+
+`deploy.log` records stage/commit, not secrets. `.current-release.json` is updated only
+after checks pass. `.pending-release.json` is a diagnostic marker, not proof of success.
+The script does not automatically restore a backup or roll the DB back after failure.
+
+Before granting rollback permission, run the compatibility checker on a disposable
+Linux/Docker test host, NOT this 16 GB Mac or live DB:
+
+```bash
+python3 -m scripts.check_rollback --current release.json --previous previous-release.json \
+  --approved-manifest approved-release.json
+```
+
+It creates a uniquely named isolated PostgreSQL project, migrates with the current
+image, creates a completed simulated return and a future-workflow record, switches
+to the previous pair, and checks data readability and unknown-workflow read-only
+behavior. No live volumes are attached. Its output binds exact API AND frontend
+digests; merely listing an old commit is insufficient. Retained stopped test containers
+block reuse, and cleanup removes only that test project's containers (not volumes).
+
+Use the approved manifest for the NEW deployment so `.current-release.json` carries
+the evidence. Only then is this manual rollback allowed:
+
+```bash
+bash scripts/deploy.sh previous-release.json --rollback
+```
+
+The DB stays at the expanded schema and receives another backup. New business rows
+are retained. An old release must be tested compatible; lack of a tested prior image
+pair is a blocker, not permission to bypass the gate. The checker itself has unit
+coverage locally; a real two-release Docker compatibility run is still pending.
+
+## 7. Qwen qualification is a separate, blocking step
+
+Qwen3 8B is a CPU target, not an available or qualified model claim. Ollama is limited
+to one loaded model, single parallel request, 4096 context and 512 output tokens;
+the adapter has a 60-second total budget. There is no GPU configuration.
+
+Use an isolated CPU staging setup with the SAME API image, policy, Ollama image digest
+and model digest, a disposable DB, and `ENVIRONMENT=ci-smoke`. Do not first enable the
+live `llm` deployment to get a report: the deploy gate correctly blocks that circular
+path. Staging qualification provisioning is a manual follow-up when the VM is open.
+
+`scripts/qualify_apparel_model.py` provides serial/resumable calibration (three
+temperatures, two seeds) and validation (24 diagnostic + 180 regression examples),
+sharing a 90-minute model-call budget. Output goes under ignored `data/evaluation_runs/`.
+It checks dataset/source/model identities before resuming. Automatic labels stay
+provisional; human review of every scored validation ID is required. `false` is scored.
+The final gate also needs real-model application smoke, observed memory peak below
+12 GiB, warm P95 at most 30 seconds, CPU-only proof, >=90% known-field macro accuracy,
+zero extraction errors and zero unsupported fills on reviewed absence labels.
+This is not proof of all business safety or public-benchmark quality.
+
+The write smoke is permitted only on loopback with a disposable `local-demo`/`ci-smoke`
+DB, never `jetstream-demo`. Resetting a smoke's returned demo item is not automatic;
+use a fresh disposable DB instead. The production deployment smoke is read-only.
+If qualification fails, keep guided mode; a 4B fallback is an explicit separate
+configuration/qualification decision, never an automatic silent downgrade.
+
+## 8. Remaining limitations
+
+- No real identity provider, physical inspection, shipping, refunds, email or staffed tickets.
+- Lexical policy QA can abstain on broad/paraphrased questions; citations do not prove retrieval quality.
+- Single VM, no replicas/load balancing/automatic failover; updates cause planned downtime.
+- Resource caps are protective starting limits, not demonstrated CPU throughput guarantees.
+- Backups are local to the VM: off-host retention and live recovery rehearsal remain follow-up work.
+- Logs/metrics exist, but no alert delivery or complete distributed tracing dashboard.
+- Manual approval means a human runs the promotion script; no GitHub Environment approval/SSH CD yet.

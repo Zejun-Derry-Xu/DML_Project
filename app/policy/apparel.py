@@ -42,6 +42,24 @@ class ApparelPolicy(BaseModel):
 
     def corpus(self) -> PolicyCorpus:
         values = self.model_dump(exclude={"clauses"})
+        condition_labels = {
+            "stained": ("no stains", "stains present"),
+            "damaged": ("no clothing damage", "clothing damage present"),
+            "tags_attached": ("tags removed", "original tags attached"),
+            "tags_intact": ("tags damaged", "tags undamaged"),
+        }
+        values["required_conditions"] = "; ".join(
+            condition_labels[field][int(value)] for field, value in self.required_conditions.items()
+        )
+        origin_labels = {
+            "customer": "customer-caused",
+            "pre_existing": "present on delivery",
+            "unknown": "unknown cause",
+        }
+        values["origin_actions"] = "; ".join(
+            f"{origin_labels[origin]}: {action.replace('_', ' ')}"
+            for origin, action in self.origin_actions.items()
+        )
         rendered = [
             PolicyClause(
                 id=c["id"],

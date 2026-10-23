@@ -9,6 +9,16 @@ const welcome: ChatMessage = {
   content: "Hi! Describe your clothing return. You can select an order — no order number to remember.",
 };
 
+function displayFact(value: unknown): string {
+  if (value === null || value === undefined) return "Not provided";
+  if (typeof value !== "object") return String(value);
+  const fact = value as { state?: string; value?: unknown };
+  if (fact.state === "unknown") return "Not sure — review needed";
+  if (fact.state === "conflict") return "Conflicting answers — confirm or review";
+  if (fact.state !== "known") return "Not yet answered";
+  return fact.value === true ? "Yes" : fact.value === false ? "No" : String(fact.value);
+}
+
 export default function ApparelApp() {
   const [accounts, setAccounts] = useState<DemoCustomer[]>([]);
   const [account, setAccount] = useState<DemoCustomer | null>(null);
@@ -105,8 +115,7 @@ export default function ApparelApp() {
           </div></div>}
         {current && Object.keys(current.facts).length > 0 && <details open={current.question?.field === "confirm_return"}>
           <summary>Review reported facts</summary><dl>{Object.entries(current.facts).map(([key, value]) =>
-            <div key={key}><dt>{key.replaceAll("_", " ")}</dt><dd>{typeof value === "object" && value !== null
-              ? JSON.stringify(value) : String(value ?? "not provided")}</dd></div>)}</dl>
+            <div key={key}><dt>{key.replaceAll("_", " ")}</dt><dd>{displayFact(value)}</dd></div>)}</dl>
         </details>}
         {current?.policy_evidence.map((c) => <aside key={c.clause_id} className="policy-evidence">
           <strong>{c.clause_id} · {c.policy_version}</strong><p>{c.content}</p></aside>)}

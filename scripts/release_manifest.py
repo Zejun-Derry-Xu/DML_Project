@@ -12,14 +12,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DIGEST_IMAGE = re.compile(r"ghcr\.io/[a-z0-9_./-]+@sha256:[a-f0-9]{64}\Z")
 
 
-def manifest(commit: str, api: str, frontend: str) -> dict[str, object]:
+def manifest(commit: str, api: str, frontend: str, sequence: int = 1) -> dict[str, object]:
     if not re.fullmatch(r"[a-f0-9]{40}", commit):
         raise ValueError("A complete immutable commit is required")
     if not DIGEST_IMAGE.fullmatch(api) or not DIGEST_IMAGE.fullmatch(frontend):
         raise ValueError("Both images must be GHCR immutable digest references")
+    if type(sequence) is not int or sequence < 1:
+        raise ValueError("Release sequence must be a positive CI run number")
     return {
         "format": 1,
         "commit": commit,
+        "sequence": sequence,
         "api_image": api,
         "frontend_image": frontend,
         "schema": "0004",
@@ -40,8 +43,9 @@ if __name__ == "__main__":
     parser.add_argument("--commit", required=True)
     parser.add_argument("--api", required=True)
     parser.add_argument("--frontend", required=True)
+    parser.add_argument("--sequence", type=int, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.write_text(
-        json.dumps(manifest(args.commit, args.api, args.frontend), indent=2) + "\n"
+        json.dumps(manifest(args.commit, args.api, args.frontend, args.sequence), indent=2) + "\n"
     )

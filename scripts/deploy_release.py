@@ -31,6 +31,10 @@ def validate_release(release: dict[str, Any]) -> None:
         raise ValueError("Use paired immutable GHCR digest images, never latest or mutable tags")
     if release.get("schema") != "0004" or release.get("workflow") != "apparel":
         raise ValueError("This operator bundle supports schema 0004 / apparel only")
+    if type(release.get("sequence")) is not int or release["sequence"] < 1:
+        raise ValueError("Release sequence must be a positive CI run number")
+    if not re.fullmatch(r"[a-f0-9]{64}", release.get("policy_sha256", "")):
+        raise ValueError("Policy digest is required")
     if not re.fullmatch(r"apparel-\d+\.\d+\.\d+", release.get("policy_version", "")):
         raise ValueError("Unsupported policy")
 
@@ -68,10 +72,32 @@ def deploy(args: argparse.Namespace) -> None:
         )
     current_path = ROOT / ".current-release.json"
     current = json.loads(current_path.read_text()) if current_path.exists() else None
-    if args.rollback and (
-        not current or release["commit"] not in current.get("compatible_rollbacks", [])
-    ):
-        raise ValueError("Rollback pair is not validated; no image/data changes made")
+    if current:
+        validate_release(current)
+        if release["sequence"] < current["sequence"] and not args.rollback:
+            raise ValueError("Older release requires an explicitly validated --rollback")
+        if release["commit"] == current["commit"] and any(
+            release[key] != current[key] for key in ("api_image", "frontend_image")
+        ):
+            raise ValueError("Same commit cannot silently replace its tested image pair")
+    if args.rollback:
+        evidence = (current or {}).get("rollback_evidence", {}).get(release["commit"], {})
+        expected = {
+            "status": "compatible_pair",
+            "current_commit": (current or {}).get("commit"),
+            "previous_commit": release["commit"],
+            "current_api": (current or {}).get("api_image"),
+            "current_frontend": (current or {}).get("frontend_image"),
+            "previous_api": release["api_image"],
+            "previous_frontend": release["frontend_image"],
+            "schema": release["schema"],
+        }
+        if (
+            not current
+            or release["commit"] not in current.get("compatible_rollbacks", [])
+            or any(evidence.get(key) != value for key, value in expected.items())
+        ):
+            raise ValueError("Rollback pair is not validated; no image/data changes made")
     env_file = ROOT / ".release.env"
     candidate = ROOT / ".candidate-release.env"
     atomic_text(
@@ -144,20 +170,25 @@ def deploy(args: argparse.Namespace) -> None:
     backup_dir.mkdir(mode=0o700, exist_ok=True)
     backup = backup_dir / (datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ") + ".dump")
     # Stop writes before taking the backup. DB and model volumes are never removed.
-    run(compose + ["stop", "api", "frontend"])
-    with backup.open("xb") as stream:
-        os.chmod(backup, 0o600)
-        run(
-            compose
-            + ["exec", "-T", "db", "pg_dump", "-U", "returnflow", "-d", "returnflow", "-Fc"],
-            stdout=stream,
-        )
-    with backup.open("rb") as stream:
-        run(
-            compose + ["exec", "-T", "db", "pg_restore", "--list"],
-            stdin=stream,
-            stdout=subprocess.DEVNULL,
-        )
+    try:
+        run(compose + ["stop", "api", "frontend"])
+        with backup.open("xb") as stream:
+            os.chmod(backup, 0o600)
+            run(
+                compose
+                + ["exec", "-T", "db", "pg_dump", "-U", "returnflow", "-d", "returnflow", "-Fc"],
+                stdout=stream,
+            )
+        with backup.open("rb") as stream:
+            run(
+                compose + ["exec", "-T", "db", "pg_restore", "--list"],
+                stdin=stream,
+                stdout=subprocess.DEVNULL,
+            )
+    except (subprocess.CalledProcessError, OSError) as error:
+        raise DeployError(
+            3, "Backup failed; app may be stopped, images unchanged; inspect before recovery"
+        ) from error
     try:
         run(compose + ["run", "--rm", "--no-deps", "api", "alembic", "upgrade", "head"])
         if args.seed_demo:

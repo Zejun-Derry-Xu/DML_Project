@@ -1,5 +1,41 @@
 # ReturnFlow
 
+## Current candidate: apparel / LLM-first / manual delivery
+
+The `codex/apparel-llm-delivery` branch replaces the product workflow with fictional
+account selection, owned-order cards, LLM-first evidence extraction, natural-language
+questions with deterministic answer cards, and durable simulated support tickets.
+Eligibility comes from validated versioned **policy configuration**, not retrieved text
+or an LLM verdict. Only apparel is automated; other categories go to support.
+Old cases stay read-only. No real refunds or real authentication are implemented.
+
+- [Current architecture and source map](docs/apparel-architecture.md)
+- [Manual deployment, shutdown, backup and guarded rollback](docs/apparel-runbook.md)
+- [Verification ledger and pending work](docs/apparel-delivery-status.md)
+
+For a 16 GB Mac, start without Docker or a model:
+
+```bash
+uv sync --frozen --all-groups
+cd frontend
+npm ci
+cd ..
+make demo-guided
+```
+
+Choose a fictional account, describe a return, select an order and use the answer
+cards. `Ctrl+C` stops this invocation's API/UI; its SQLite DB remains. With a separately
+running Ollama and sufficient memory, `make demo` requests Qwen3 8B. The target is
+**not yet qualified** on Jetstream CPU. A missing model degrades to guided cards, not
+semantic keyword extraction. Do not load 8B just to demonstrate the UI on a busy Mac.
+
+The historical sections below describe the earlier MVP/evaluation architecture.
+Their 4B/rules results are not scores for the new product path. Use the current
+runbook above for deployment. The runtime image no longer auto-migrates or seeds:
+deployment invokes those steps explicitly before starting the image.
+
+## Historical MVP reference
+
 ReturnFlow is a context-aware return request agent. It combines trusted order data, persisted
 conversation state, deterministic policy, and replaceable fact extractors to ask only the questions
 that are still necessary. The UI and API are English-first; policy behavior depends only on stable
@@ -31,7 +67,7 @@ React/Vite UI -> FastAPI -> Conversation service -> Rule/model extractor
                                      |-> Return service -> simulated RMA
 ```
 
-The local default is the deterministic rules extractor. Set `LLM_PROVIDER=ollama` to enable the
+In the historical legacy workflow the default was the rules extractor. Set `LLM_PROVIDER=ollama` to enable the
 hybrid rules + Qwen path. The Ollama adapter uses its native structured-output API so model thinking
 can be disabled; a cloud-compatible endpoint can be selected with `LLM_PROVIDER=openai_compatible`
 and the same configuration fields.
@@ -53,7 +89,7 @@ uv sync --all-groups
 cd frontend
 npm ci
 cd ..
-make demo
+uv run python -m scripts.local_demo --workflow legacy --provider rules --database data/local_demo/legacy.db
 ```
 
 Open <http://127.0.0.1:5173>. `Ctrl+C` stops this command's API/UI; the demo DB persists.
@@ -66,8 +102,8 @@ SQLite is a local demonstration profile, not the production database architectur
 ## Docker Compose (optional)
 
 The following is **local development only**, not safe public-server configuration.
-For the private CPU Jetstream2 profile, use the standalone `compose.jetstream.yml` and
-[migration/start/stop/rollback runbook](docs/jetstream-v2-runbook.md). Its database/model
+For the current private CPU Jetstream2 profile, use the standalone `compose.jetstream.yml` and
+[current migration/start/stop/rollback runbook](docs/apparel-runbook.md). Its database/model
 ports are not published; API/UI bind to loopback and are accessed through an SSH tunnel.
 Do not run local Docker on a memory-constrained Mac just to test this change.
 
@@ -79,8 +115,10 @@ docker compose up --build
 ```
 
 Open <http://localhost:5173>. API docs are at <http://localhost:8000/docs>, liveness at `/health`,
-readiness at `/ready`, and Prometheus metrics at `/metrics`. The compose startup applies migrations
-and idempotently seeds the ten demo orders.
+readiness at `/ready`, and Prometheus metrics at `/metrics`. The runtime image no longer
+applies migrations or seeds at startup. For legacy development invoke migrations and seed
+explicitly in the API service before bringing up the frontend; prefer the isolated no-Docker
+demo above. Never use this legacy Compose file on the cloud.
 
 Demo order/email pairs include:
 

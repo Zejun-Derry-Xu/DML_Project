@@ -12,6 +12,7 @@ def smoke(
     base: str, expected_commit: str | None, write_demo: bool = False, require_model: bool = False
 ) -> dict[str, object]:
     checks = []
+    session_id = None
     with httpx.Client(base_url=base.rstrip("/"), timeout=65) as client:
         health = client.get("/health")
         health.raise_for_status()
@@ -86,6 +87,7 @@ def smoke(
             "model_quality_tested": False,
             "model_transport_exercised": require_model,
             "model": body["model"],
+            "session_id": session_id,
         }
 
 

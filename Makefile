@@ -1,4 +1,4 @@
-.PHONY: install test lint typecheck check dev seed up down demo eval-baseline
+.PHONY: install test lint typecheck check dev seed up down demo demo-guided eval-baseline
 
 install:
 	uv sync --all-groups
@@ -22,6 +22,9 @@ dev:
 
 demo:
 	uv run python -m scripts.local_demo
+
+demo-guided:
+	uv run python -m scripts.local_demo --provider rules --workflow apparel --database data/local_demo/apparel-guided.db
 
 eval-baseline:
 	uv run python -m scripts.run_public_evaluation --profile baseline --resume
