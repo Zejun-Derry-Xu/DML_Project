@@ -7,6 +7,7 @@ type ErrorEnvelope = { error?: { message?: string } };
 async function request<T = CaseResponse>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
   const body = (await response.json()) as T & ErrorEnvelope;
@@ -50,6 +51,14 @@ export function askPolicy(question: string): Promise<PolicyExplanation> {
   return request<PolicyExplanation>("/api/v1/policy/ask", {
     method: "POST",
     body: JSON.stringify({ question }),
+  });
+}
+
+export type DemoCustomer = { id: string; name: string };
+export function demoCustomers() { return request<DemoCustomer[]>("/api/v1/demo/customers"); }
+export function selectDemoCustomer(customerId: string) {
+  return request<DemoCustomer>("/api/v1/demo/session", {
+    method: "POST", body: JSON.stringify({ customer_id: customerId }),
   });
 }
 

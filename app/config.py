@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     question_ttl_minutes: int = 10
     question_cleanup_interval_seconds: int = 60
     llm_provider: str = "rules"
-    llm_model: str = "qwen3:4b"
+    llm_model: str = "qwen3:8b"
     llm_base_url: str = "http://localhost:11434/v1"
     llm_api_key: str = ""
     llm_timeout_seconds: float = 60.0

@@ -58,6 +58,9 @@ def create_app() -> FastAPI:
     application.include_router(policy_router, prefix="/api/v1")
     application.include_router(questions_router, prefix="/api/v1")
     application.include_router(returns_router, prefix="/api/v1")
+    from app.api.v1.demo import router as demo_router
+
+    application.include_router(demo_router, prefix="/api/v1")
 
     @application.middleware("http")
     async def observe_request(request: Request, call_next: RequestResponseEndpoint) -> Response:
@@ -68,6 +71,8 @@ def create_app() -> FastAPI:
             response = await call_next(request)
             status_code = response.status_code
             response.headers["X-Request-ID"] = request_id
+            if request.url.path.startswith("/api/"):
+                response.headers["Cache-Control"] = "no-store"
             return response
         finally:
             route_object = request.scope.get("route")
@@ -112,6 +117,27 @@ def create_app() -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok", "environment": settings.environment}
 
+    @application.get("/model/status", tags=["operations"])
+    async def model_status() -> dict[str, object]:
+        import httpx
+
+        try:
+            async with httpx.AsyncClient(timeout=2) as client:
+                result = await client.get(
+                    settings.llm_base_url.removesuffix("/v1").rstrip("/") + "/api/tags"
+                )
+                result.raise_for_status()
+                models = result.json().get("models", [])
+            model = next((m for m in models if m.get("name") == settings.llm_model), None)
+            return {
+                "status": "available" if model else "missing_model",
+                "model": settings.llm_model,
+                "digest": model.get("digest") if model else None,
+                "inference_tested": False,
+            }
+        except (httpx.HTTPError, ValueError, TypeError, AttributeError):
+            return {"status": "unavailable", "model": settings.llm_model, "inference_tested": False}
+
     @application.get("/metrics", tags=["operations"], response_model=None)
     def metrics() -> Response:
         return PlainTextResponse(generate_latest(), media_type=CONTENT_TYPE_LATEST)
@@ -121,7 +147,23 @@ def create_app() -> FastAPI:
         try:
             with SessionLocal() as session:
                 database_is_ready(session)
-            return JSONResponse(content={"status": "ready"})
+            from app.policy.apparel import VERSION, load_apparel_policy
+
+            if settings.workflow_mode == "apparel":
+                load_apparel_policy()
+            return JSONResponse(
+                content={
+                    "status": "ready",
+                    "commit": settings.build_commit,
+                    "workflow": settings.workflow_mode,
+                    "policy_version": VERSION
+                    if settings.workflow_mode == "apparel"
+                    else "mvp-2.0.0",
+                    "schema": "0004",
+                    "extraction_mode": settings.extraction_mode,
+                    "model": settings.llm_model,
+                }
+            )
         except SQLAlchemyError:
             return JSONResponse(status_code=503, content={"status": "not_ready"})
 

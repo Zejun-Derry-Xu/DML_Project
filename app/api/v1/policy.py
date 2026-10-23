@@ -43,7 +43,12 @@ class PolicyExplanation(BaseModel):
 @router.post("/ask", response_model=PolicyExplanation)
 def ask_policy(payload: PolicyQuestion) -> PolicyExplanation:
     settings = get_settings()
-    corpus = load_policy()
+    if settings.workflow_mode == "apparel":
+        from app.policy.apparel import load_apparel_policy
+
+        corpus = load_apparel_policy().corpus()
+    else:
+        corpus = load_policy()
     with httpx.Client(timeout=15) as client:
         retriever: PolicyRetriever
         if settings.policy_retriever == "qdrant":

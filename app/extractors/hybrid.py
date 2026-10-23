@@ -3,7 +3,7 @@ from app.extractors.base import ExtractorError, FactExtractor
 from app.extractors.rules import RuleBasedExtractor
 
 
-class HybridExtractor:
+class RuleFirstFactExtractor:
     def __init__(self, fallback: FactExtractor | None = None) -> None:
         self.rules = RuleBasedExtractor()
         self.fallback = fallback
@@ -122,3 +122,7 @@ class HybridExtractor:
         if primary.intent == "unclear":
             merged["intent"] = secondary.intent
         return ReturnFacts.model_validate(merged)
+
+
+# Historical evaluation imports only. The apparel runtime uses LLMFactExtractor.
+HybridExtractor = RuleFirstFactExtractor

@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
+import ApparelApp from "./ApparelApp";
 
 import { answerQuestion, askPolicy, resumeCase, sendMessage } from "./api";
 import type { CaseResponse, ChatMessage, PolicyExplanation, QuestionOption } from "./types";
@@ -15,7 +16,9 @@ function newSession(): string {
   return crypto.randomUUID();
 }
 
-export default function App() {
+export default function App() { return <ApparelApp />; }
+
+export function LegacyApp() {
   const [sessionId, setSessionId] = useState(
     () => localStorage.getItem(SESSION_KEY) ?? newSession(),
   );

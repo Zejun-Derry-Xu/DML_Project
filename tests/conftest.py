@@ -1,3 +1,4 @@
+import os
 from collections.abc import Generator
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
@@ -9,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.config import get_settings
 from app.db.models import CustomerRecord, OrderItemRecord, OrderRecord
 from app.db.session import Base, get_db
 from app.main import create_app
@@ -16,21 +18,39 @@ from app.main import create_app
 
 @pytest.fixture
 def db_session() -> Generator[Session, None, None]:
-    engine = create_engine(
-        "sqlite+pysqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    test_url = os.environ.get("TEST_DATABASE_URL")
+    if test_url:
+        from sqlalchemy.engine import make_url
+
+        parsed = make_url(test_url)
+        if not parsed.drivername.startswith("postgresql") or not (parsed.database or "").endswith(
+            "_test"
+        ):
+            raise ValueError(
+                "TEST_DATABASE_URL must be a dedicated PostgreSQL database ending _test"
+            )
+        engine = create_engine(test_url)
+        Base.metadata.drop_all(engine)
+    else:
+        engine = create_engine(
+            "sqlite+pysqlite:///:memory:",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
     Base.metadata.create_all(engine)
     local_session = sessionmaker(bind=engine, expire_on_commit=False)
     with local_session() as session:
         seed_test_orders(session)
         yield session
     Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
 @pytest.fixture
-def client(db_session: Session) -> Generator[TestClient, None, None]:
+def client(
+    db_session: Session, monkeypatch: pytest.MonkeyPatch
+) -> Generator[TestClient, None, None]:
+    monkeypatch.setattr(get_settings(), "workflow_mode", "legacy")
     app = create_app()
 
     def override_db():

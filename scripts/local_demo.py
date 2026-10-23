@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+import secrets
 import shutil
 import signal
 import socket
@@ -63,7 +64,9 @@ def stop_children(children: list[subprocess.Popen[Any]]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, default=ROOT / "data/local_demo/returnflow.db")
-    parser.add_argument("--provider", choices=("rules", "ollama"), default="rules")
+    parser.add_argument("--provider", choices=("rules", "ollama"), default="ollama")
+    parser.add_argument("--workflow", choices=("apparel", "legacy"), default="apparel")
+    parser.add_argument("--model", default="qwen3:8b")
     parser.add_argument("--api-port", type=int, default=8000)
     parser.add_argument("--ui-port", type=int, default=5173)
     parser.add_argument("--api-only", action="store_true")
@@ -85,6 +88,13 @@ def main() -> None:
     database = args.database.resolve()
     database.parent.mkdir(parents=True, exist_ok=True)
     environment = demo_environment(database, args.provider, args.api_port, args.ui_port)
+    environment.update(
+        WORKFLOW_MODE=args.workflow,
+        DEMO_ENABLED="true",
+        DEMO_SESSION_SECRET=os.environ.get("DEMO_SESSION_SECRET") or secrets.token_hex(32),
+        EXTRACTION_MODE="guided" if args.provider == "rules" else "llm",
+        LLM_MODEL=args.model,
+    )
     subprocess.run(
         [sys.executable, "-m", "alembic", "upgrade", "head"],
         cwd=ROOT,
@@ -94,6 +104,13 @@ def main() -> None:
     subprocess.run(
         [sys.executable, "-m", "scripts.seed_data"], cwd=ROOT, env=environment, check=True
     )
+    if args.workflow == "apparel":
+        subprocess.run(
+            [sys.executable, "-m", "scripts.seed_demo_accounts"],
+            cwd=ROOT,
+            env=environment,
+            check=True,
+        )
     children: list[subprocess.Popen[Any]] = []
     try:
         api = subprocess.Popen(

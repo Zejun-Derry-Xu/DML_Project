@@ -1,13 +1,13 @@
 from app.config import Settings
 from app.extractors.base import FactExtractor
-from app.extractors.hybrid import HybridExtractor
+from app.extractors.hybrid import RuleFirstFactExtractor
 from app.extractors.ollama import OllamaExtractor
 from app.extractors.openai_compatible import OpenAICompatibleExtractor
 
 
 def build_extractor(settings: Settings) -> FactExtractor:
     if settings.llm_provider == "rules":
-        return HybridExtractor()
+        return RuleFirstFactExtractor()
     provider_class = (
         OllamaExtractor if settings.llm_provider == "ollama" else OpenAICompatibleExtractor
     )
@@ -17,4 +17,4 @@ def build_extractor(settings: Settings) -> FactExtractor:
         api_key=settings.llm_api_key,
         timeout_seconds=settings.llm_timeout_seconds,
     )
-    return HybridExtractor(provider)
+    return RuleFirstFactExtractor(provider)

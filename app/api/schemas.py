@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Literal, Self
+from typing import Any, Literal, Self
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
@@ -69,6 +69,11 @@ class CaseResponse(BaseModel):
     policy_evidence: list[PolicyCitation] = Field(default_factory=list)
     policy_warning: str | None = None
     request_id: UUID = Field(default_factory=uuid4)
+    workflow_version: str = "legacy"
+    read_only: bool = False
+    degraded: bool = False
+    facts: dict[str, Any] = Field(default_factory=dict)
+    support_ticket: dict[str, str] | None = None
 
 
 class EvaluateRequest(BaseModel):

@@ -41,6 +41,11 @@ export type CaseResponse = {
   policy_evidence: PolicyCitation[];
   policy_warning: string | null;
   request_id: string;
+  workflow_version: string;
+  read_only: boolean;
+  degraded: boolean;
+  facts: Record<string, unknown>;
+  support_ticket: { id: string; status: string; notice: string } | null;
 };
 
 export type ChatMessage = {
