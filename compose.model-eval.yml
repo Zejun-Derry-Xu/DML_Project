@@ -1,0 +1,69 @@
+# Independent, disposable 8B application trial. Never a production promotion.
+# Supply tested API/FRONTEND image digests and a pinned Ollama runtime via env files.
+name: returnflow-model-eval
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: returnflow_test
+      POSTGRES_USER: returnflow
+      POSTGRES_PASSWORD: disposable-evaluation-only
+    mem_limit: 1g
+    cpus: 0.5
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U returnflow -d returnflow_test"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  ollama:
+    image: ${OLLAMA_IMAGE:?Set a pinned official Ollama image digest}
+    environment:
+      OLLAMA_NUM_PARALLEL: 1
+      OLLAMA_MAX_LOADED_MODELS: 1
+      OLLAMA_CONTEXT_LENGTH: 4096
+      OLLAMA_KEEP_ALIVE: 2m
+    volumes: ["models:/root/.ollama"]
+    mem_limit: 12g
+    cpus: 6
+    healthcheck:
+      test: [CMD, ollama, list]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  api:
+    image: ${API_IMAGE:?Set the tested API digest}
+    environment:
+      DATABASE_URL: postgresql+psycopg://returnflow:disposable-evaluation-only@db:5432/returnflow_test
+      ENVIRONMENT: ci-smoke
+      WORKFLOW_MODE: apparel
+      EXTRACTION_MODE: llm
+      DEMO_ENABLED: "true"
+      DEMO_SESSION_SECRET: disposable-fictional-evaluation-key-000000000000000000
+      LLM_PROVIDER: ollama
+      LLM_MODEL: qwen3:8b
+      LLM_BASE_URL: http://ollama:11434/v1
+      LLM_TEMPERATURE: 0
+      LLM_TIMEOUT_SECONDS: 60
+      POLICY_RETRIEVER: lexical
+      POLICY_GENERATOR: extractive
+    mem_limit: 1g
+    cpus: 1
+    depends_on:
+      db: {condition: service_healthy}
+      ollama: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 3s
+      timeout: 2s
+      retries: 30
+  frontend:
+    image: ${FRONTEND_IMAGE:?Set the matching tested frontend digest}
+    ports: ["127.0.0.1:${EVAL_FRONTEND_PORT:-18173}:80"]
+    depends_on:
+      api: {condition: service_healthy}
+    mem_limit: 128m
+    cpus: 0.25
+volumes:
+  models:
+    external: true
+    name: ${EVAL_MODEL_VOLUME:?Set the existing model-cache volume; never a DB volume}
