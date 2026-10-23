@@ -20,8 +20,12 @@ The service is loopback-only and accessed through SSH, not exposed as a public s
 
 1. Work on an experimental branch. PR/push CI runs backend checks, a real PostgreSQL
    workflow test, frontend checks, and actual Linux image HTTP smoke.
-2. Only an approved merge/push to `main` publishes the SAME tested API/frontend images
-   to GHCR. This plan does not authorize such a merge automatically.
+2. An approved merge/push to `main` publishes the SAME tested API/frontend images
+   to GHCR. A separately approved candidate can instead be released with a manually
+   created `returnflow-candidate-*` tag, without merging main. Ordinary experimental
+   branch pushes never publish. Manual workflow dispatch on `codex/apparel-llm-delivery`
+   also requires the explicit `publish_candidate=true` input. Every release path runs
+   the full checks and image smoke before publication; none deploys to the VM.
 3. Download `returnflow-release-<commit>` from that CI run. It contains the operator
    bundle, checksum and `release.json` binding both image digests, commit, CI sequence,
    migration head and policy checksum. CI does NOT log into the VM or deploy.
@@ -29,8 +33,8 @@ The service is loopback-only and accessed through SSH, not exposed as a public s
    deployment script on the VM. This is continuous delivery with a manual promotion
    gate, not automatic continuous deployment.
 
-Publication/GHCR permissions and the download path are still unexercised on this
-experimental branch. A successful branch CI does not prove publication works.
+Candidate publication/GHCR permissions and the download path require their own
+verified run. A successful ordinary branch CI does not prove publication works.
 Keep the artifact checksum from the trusted GitHub run: a checksum bundled alongside
 an untrusted download is not an independent authenticity signature.
 

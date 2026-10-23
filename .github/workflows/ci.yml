@@ -4,6 +4,14 @@ on:
   pull_request:
   push:
     branches: [main, codex/extraction-reliability-v2, codex/extraction-data-optimization, codex/extraction-guardrails-v4, codex/apparel-llm-delivery]
+    tags: ['returnflow-candidate-*']
+  workflow_dispatch:
+    inputs:
+      publish_candidate:
+        description: 'Publish the tested candidate image pair (no cloud deployment)'
+        type: boolean
+        required: true
+        default: false
 
 jobs:
   backend:
@@ -67,6 +75,7 @@ jobs:
       packages: write
     env:
       BUILD_COMMIT: ${{ github.sha }}
+      PUBLISH_RELEASE: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/returnflow-candidate-'))) || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/codex/apparel-llm-delivery' && inputs.publish_candidate) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -98,7 +107,7 @@ jobs:
           curl --fail --silent http://127.0.0.1:15173/version.json | python3 -c 'import json,os,sys; assert json.load(sys.stdin)["commit"] == os.environ["BUILD_COMMIT"]'
           curl --fail --silent http://127.0.0.1:15173/ready | python3 -c 'import json,os,sys; assert json.load(sys.stdin)["commit"] == os.environ["BUILD_COMMIT"]'
       - uses: docker/login-action@v3
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: env.PUBLISH_RELEASE == 'true'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -107,7 +116,7 @@ jobs:
         run: |
           tar -cf /tmp/returnflow-operator-sources.tar compose.jetstream.yml compose.ci.yml scripts/deploy.sh scripts/deploy_release.py scripts/verify_backup.py scripts/check_rollback.py .env.jetstream.example docs/apparel-runbook.md
       - name: Publish the tested images without rebuilding
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: env.PUBLISH_RELEASE == 'true'
         env:
           RELEASE_REPOSITORY: ${{ github.repository }}
         run: |
@@ -125,7 +134,7 @@ jobs:
           tar -czf returnflow-release.tar.gz compose.jetstream.yml compose.ci.yml scripts/deploy.sh scripts/deploy_release.py scripts/verify_backup.py scripts/check_rollback.py .env.jetstream.example docs/apparel-runbook.md release.json
           sha256sum returnflow-release.tar.gz > returnflow-release.sha256
       - uses: actions/upload-artifact@v4
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: env.PUBLISH_RELEASE == 'true'
         with:
           name: returnflow-release-${{ github.sha }}
           path: |
