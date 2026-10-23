@@ -150,7 +150,22 @@ def create_app() -> FastAPI:
             from app.policy.apparel import VERSION, load_apparel_policy
 
             if settings.workflow_mode == "apparel":
+                if not settings.demo_enabled or len(settings.demo_session_secret) < 32:
+                    return JSONResponse(
+                        status_code=503,
+                        content={"status": "not_ready", "reason": "demo_identity_not_configured"},
+                    )
                 load_apparel_policy()
+            import hashlib
+            from pathlib import Path
+
+            policy_hash = (
+                hashlib.sha256(
+                    (Path(__file__).parent / "policy" / f"{VERSION}.json").read_bytes()
+                ).hexdigest()
+                if settings.workflow_mode == "apparel"
+                else None
+            )
             return JSONResponse(
                 content={
                     "status": "ready",
@@ -160,6 +175,7 @@ def create_app() -> FastAPI:
                     if settings.workflow_mode == "apparel"
                     else "mvp-2.0.0",
                     "schema": "0004",
+                    "policy_sha256": policy_hash,
                     "extraction_mode": settings.extraction_mode,
                     "model": settings.llm_model,
                 }

@@ -1,0 +1,36 @@
+name: returnflow-ci
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: returnflow_test
+      POSTGRES_USER: returnflow
+      POSTGRES_PASSWORD: ci-disposable-only
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U returnflow -d returnflow_test"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  api:
+    image: returnflow-api:${BUILD_COMMIT:?Set BUILD_COMMIT}
+    environment:
+      DATABASE_URL: postgresql+psycopg://returnflow:ci-disposable-only@db:5432/returnflow_test
+      ENVIRONMENT: ci-smoke
+      WORKFLOW_MODE: apparel
+      EXTRACTION_MODE: guided
+      DEMO_ENABLED: "true"
+      DEMO_SESSION_SECRET: ci-fictional-account-key-000000000000000000000000
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  frontend:
+    image: returnflow-frontend:${BUILD_COMMIT:?Set BUILD_COMMIT}
+    ports: ["127.0.0.1:15173:80"]
+    depends_on:
+      api:
+        condition: service_healthy

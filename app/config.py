@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     demo_cookie_secure: bool = False
     build_commit: str = "development"
     llm_temperature: float = Field(default=0, ge=0, le=1)
+    llm_seed: int = 0
 
 
 @lru_cache

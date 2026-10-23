@@ -82,6 +82,8 @@ class LLMFactExtractor:
         self.rejected_fields: list[str] = []
 
     async def extract(self, message: str, context: dict[str, Any]) -> Extraction:
+        self.last_usage = {}
+        self.rejected_fields = []
         if self.settings.extraction_mode == "guided":
             raise ExtractorError("Guided mode: natural-language semantics are unavailable")
         if self.settings.llm_provider != "ollama":
@@ -107,6 +109,7 @@ class LLMFactExtractor:
             "format": Extraction.model_json_schema(),
             "options": {
                 "temperature": self.settings.llm_temperature,
+                "seed": self.settings.llm_seed,
                 "top_p": 0.8,
                 "top_k": 20,
                 "min_p": 0,

@@ -1,5 +1,7 @@
 """Validated configuration is authoritative; retrieval never decides eligibility."""
 
+import json
+import re
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
@@ -10,12 +12,14 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from app.domain.models import OrderItem, OrderSnapshot
 from app.policy.corpus import PolicyClause, PolicyCorpus
 
-VERSION = "apparel-1.0.0"
+POLICY_DIRECTORY = Path(__file__).parent
+CATALOG = json.loads((POLICY_DIRECTORY / "catalog.json").read_text())
+VERSION: str = CATALOG["active"]
 CONDITIONS = ("stained", "damaged", "tags_attached", "tags_intact")
 
 
 class ApparelPolicy(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
     version: str
     return_window_days: int = Field(ge=1, le=365)
     requires_delivered: bool
@@ -53,11 +57,12 @@ class ApparelPolicy(BaseModel):
 
 @lru_cache
 def load_apparel_policy(version: str = VERSION) -> ApparelPolicy:
-    if version != VERSION:
+    if not re.fullmatch(r"apparel-\d+\.\d+\.\d+", version) or version not in CATALOG["versions"]:
         raise ValueError("Unsupported apparel policy version")
-    return ApparelPolicy.model_validate_json(
-        (Path(__file__).parent / f"{version}.json").read_text()
-    )
+    policy = ApparelPolicy.model_validate_json((POLICY_DIRECTORY / f"{version}.json").read_text())
+    if policy.version != version:
+        raise ValueError("Policy filename and version differ")
+    return policy
 
 
 def precheck(

@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, codex/extraction-reliability-v2, codex/extraction-data-optimization, codex/extraction-guardrails-v4]
+    branches: [main, codex/extraction-reliability-v2, codex/extraction-data-optimization, codex/extraction-guardrails-v4, codex/apparel-llm-delivery]
 
 jobs:
   backend:
@@ -12,18 +12,19 @@ jobs:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_DB: returnflow
+          POSTGRES_DB: returnflow_test
           POSTGRES_USER: returnflow
           POSTGRES_PASSWORD: returnflow
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U returnflow -d returnflow"
+          --health-cmd "pg_isready -U returnflow -d returnflow_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql+psycopg://returnflow:returnflow@localhost:5432/returnflow
+      DATABASE_URL: postgresql+psycopg://returnflow:returnflow@localhost:5432/returnflow_test
       LLM_PROVIDER: rules
+      WORKFLOW_MODE: legacy
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -33,10 +34,14 @@ jobs:
       - run: uv sync --frozen --all-groups
       - run: uv run ruff check .
       - run: uv run mypy app
-      - run: uv run pytest --cov=app --cov-report=term-missing
       - run: uv run alembic upgrade head
       - run: uv run alembic check
       - run: uv run python -m scripts.seed_data
+      - run: uv run pytest --cov=app --cov-report=term-missing
+      - name: PostgreSQL HTTP workflow isolation, ticket and RMA tests
+        env:
+          TEST_DATABASE_URL: postgresql+psycopg://returnflow:returnflow@localhost:5432/returnflow_test
+        run: uv run pytest -q tests/integration/test_apparel_delivery.py
 
   frontend:
     runs-on: ubuntu-latest
@@ -55,7 +60,13 @@ jobs:
       - run: npm run build
 
   containers:
+    needs: [backend, frontend]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      BUILD_COMMIT: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -63,9 +74,63 @@ jobs:
         with:
           context: .
           push: false
-          tags: returnflow-api:test
+          load: true
+          platforms: linux/amd64
+          build-args: BUILD_COMMIT=${{ github.sha }}
+          tags: returnflow-api:${{ github.sha }}
       - uses: docker/build-push-action@v6
         with:
           context: frontend
           push: false
-          tags: returnflow-frontend:test
+          load: true
+          platforms: linux/amd64
+          build-args: BUILD_COMMIT=${{ github.sha }}
+          tags: returnflow-frontend:${{ github.sha }}
+      - name: Migrate and seed the isolated image-smoke database
+        run: |
+          docker compose -f compose.ci.yml up -d --wait db
+          docker compose -f compose.ci.yml run --rm --no-deps api alembic upgrade head
+          docker compose -f compose.ci.yml run --rm --no-deps api python -m scripts.seed_demo_accounts
+          docker compose -f compose.ci.yml up -d --wait api frontend
+      - name: HTTP test exactly the images built above (guided, not Qwen quality)
+        run: |
+          docker compose -f compose.ci.yml exec -T api python -m scripts.smoke_apparel --write-demo --expected-commit "$BUILD_COMMIT"
+          curl --fail --silent http://127.0.0.1:15173/version.json | python3 -c 'import json,os,sys; assert json.load(sys.stdin)["commit"] == os.environ["BUILD_COMMIT"]'
+          curl --fail --silent http://127.0.0.1:15173/ready | python3 -c 'import json,os,sys; assert json.load(sys.stdin)["commit"] == os.environ["BUILD_COMMIT"]'
+      - uses: docker/login-action@v3
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish the tested images without rebuilding
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          task_repo="ghcr.io/${RELEASE_REPOSITORY,,}"
+          task_api="${task_repo}-api:sha-${BUILD_COMMIT}"
+          task_frontend="${task_repo}-frontend:sha-${BUILD_COMMIT}"
+          docker tag "returnflow-api:${BUILD_COMMIT}" "$task_api"
+          docker tag "returnflow-frontend:${BUILD_COMMIT}" "$task_frontend"
+          docker push "$task_api"
+          docker push "$task_frontend"
+          task_api_digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "$task_api")
+          task_frontend_digest=$(docker image inspect --format '{{index .RepoDigests 0}}' "$task_frontend")
+          docker run --rm "returnflow-api:${BUILD_COMMIT}" python -m scripts.release_manifest --commit "$BUILD_COMMIT" --api "$task_api_digest" --frontend "$task_frontend_digest" --output /dev/stdout > release.json
+          tar -czf returnflow-release.tar.gz compose.jetstream.yml scripts/deploy.sh scripts/deploy_release.py release.json
+          sha256sum returnflow-release.tar.gz > returnflow-release.sha256
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: returnflow-release-${{ github.sha }}
+          path: |
+            returnflow-release.tar.gz
+            returnflow-release.sha256
+      - name: Isolated CI container logs on failure
+        if: failure()
+        run: docker compose -f compose.ci.yml logs --tail 80
+      - name: Stop only the isolated CI project
+        if: always()
+        run: docker compose -f compose.ci.yml down --remove-orphans

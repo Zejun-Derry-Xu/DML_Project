@@ -125,7 +125,10 @@ class ApparelService:
         if case.workflow_version != WORKFLOW or case.status in TERMINAL:
             return self.response(case)
         pending = self.returns.pending_question(session_id)
-        self.db.add(MessageRecord(session_id=session_id, role="user", content=message))
+        message_id = uuid4()
+        self.db.add(
+            MessageRecord(id=message_id, session_id=session_id, role="user", content=message)
+        )
         case.version += 1
         control = message.strip().casefold().rstrip(".!?")
         if control in {"cancel", "cancel return", "cancel this return"}:
@@ -133,7 +136,15 @@ class ApparelService:
             case.pending_question = None
             self.returns.replace_pending_questions(session_id)
             return self._finish(case)
-        if control in {"human", "human support", "talk to a human"}:
+        if control in {
+            "human",
+            "human support",
+            "talk to a human",
+            "can i talk to a human",
+            "i want a human",
+            "speak to a human",
+            "human please",
+        }:
             return self._ticket(case, "USER_REQUESTED_HUMAN")
         if not case.order_number:
             # Narrow optional shortcut; numeric answers are not guessed out of arbitrary text.
@@ -145,6 +156,7 @@ class ApparelService:
                     case.item_id, case.item_name = order.items[0].id, order.items[0].product_name
             observations = dict(case.field_observations)
             observations["_intake"] = message
+            observations["_intake_message_id"] = str(message_id)
             case.field_observations = observations
         if self._selected_item(case) is None:
             return self._advance(case)
@@ -155,11 +167,21 @@ class ApparelService:
             # Natural text cannot silently submit an irreversible action.
             return self._advance(case)
         await self._extract(
-            case, message, pending.field if pending and pending.field != "confirm_return" else None
+            case,
+            message,
+            pending.field if pending and pending.field != "confirm_return" else None,
+            message_id=str(message_id),
         )
         return self._advance(case)
 
-    async def _extract(self, case: ReturnCaseRecord, message: str, pending: str | None) -> None:
+    async def _extract(
+        self,
+        case: ReturnCaseRecord,
+        message: str,
+        pending: str | None,
+        *,
+        message_id: str | None = None,
+    ) -> None:
         extractor = LLMFactExtractor(self.settings)
         started = perf_counter()
         observations = dict(case.field_observations)
@@ -172,7 +194,9 @@ class ApparelService:
                     "target": pending,
                     "selected_item": case.item_name,
                     "known_facts_reference_only": {
-                        k: v for k, v in observations.items() if not k.startswith("_")
+                        k: {"value": v.get("value"), "state": v.get("state")}
+                        for k, v in observations.items()
+                        if not k.startswith("_")
                     },
                 },
             )
@@ -219,6 +243,7 @@ class ApparelService:
                 "value": previous.get("value") if conflict else fact.value,
                 "candidate": fact.value if conflict else None,
                 "evidence": fact.evidence,
+                "message_id": message_id,
                 "source": "manual" if degraded else "llm",
                 "attempts": previous.get("attempts", 0)
                 + int(pending == fact.field and state == "conflict"),
@@ -453,6 +478,7 @@ class ApparelService:
                 "value": result,
                 "state": "unknown" if value == "unknown" else "known",
                 "source": "card",
+                "question_id": str(question.id),
                 "evidence": str(value),
                 "attempts": 1,
             }
@@ -468,7 +494,7 @@ class ApparelService:
                 obs = dict(case.field_observations)
                 obs.pop("_intake", None)
                 case.field_observations = obs
-                await self._extract(case, intake, None)
+                await self._extract(case, intake, None, message_id=obs.get("_intake_message_id"))
         return self._advance(case)
 
     def _confirm(self, case: ReturnCaseRecord, question: QuestionRequestRecord) -> CaseResponse:

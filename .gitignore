@@ -19,3 +19,11 @@ data/evaluation_runs/
 data/local_demo/
 backups/
 *.dump
+.release.env
+.candidate-release.env
+.current-release.json
+.previous-release.json
+.pending-release.json
+.deploy.lock
+deploy.log
+model-qualification.json
