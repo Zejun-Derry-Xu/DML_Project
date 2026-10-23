@@ -36,6 +36,21 @@ def git(*args):
 
 
 def candidate_hash():
+    snapshot = ROOT / "app/extractors/frozen_v3"
+    if snapshot.exists():
+        manifest = json.loads((snapshot / "manifest.json").read_text())
+        blocks = []
+        for name in sorted(manifest["original_files"]):
+            source = (
+                (ROOT / "app/extractors" / name)
+                if name.startswith("frozen_v2/")
+                else snapshot / name
+            )
+            content = source.read_text()
+            if not name.startswith("frozen_v2/") and name.endswith(".py"):
+                content = content.replace("app.extractors.frozen_v3.", "app.extractors.")
+            blocks.append(content.encode())
+        return hashlib.sha256(b"".join(blocks)).hexdigest()
     return hashlib.sha256(
         b"".join(
             p.read_bytes()

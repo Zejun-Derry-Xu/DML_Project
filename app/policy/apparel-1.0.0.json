@@ -1,0 +1,15 @@
+{
+  "version": "apparel-1.0.0",
+  "return_window_days": 30,
+  "requires_delivered": true,
+  "allow_final_sale": false,
+  "required_conditions": {"stained": false, "damaged": false, "tags_attached": true, "tags_intact": true},
+  "origin_actions": {"customer": "ineligible", "pre_existing": "human_review", "unknown": "human_review"},
+  "clauses": [
+    {"id": "A-WINDOW", "scope": "eligibility", "content": "Delivered apparel must be requested within {return_window_days} days after delivery (UTC); the boundary is inclusive.", "keywords": ["deadline", "days", "window", "delivered", "delivery"], "reason_codes": ["OUTSIDE_RETURN_WINDOW", "ORDER_NOT_DELIVERED"]},
+    {"id": "A-RESTRICTIONS", "scope": "eligibility", "content": "Delivery is required: {requires_delivered}. Final-sale returns allowed: {allow_final_sale}. Duplicate returns are never allowed. Non-apparel is referred to simulated support.", "keywords": ["final sale", "duplicate", "non-apparel"], "reason_codes": ["FINAL_SALE", "ORDER_ALREADY_RETURNED", "NON_APPAREL"]},
+    {"id": "A-CONDITION", "scope": "eligibility", "content": "Customer-reported resale requirements: {required_conditions}. Wearing alone is not disqualifying. Unknown conditions are never assumed good; this is not physical inspection.", "keywords": ["stains", "damage", "tags", "worn", "wearing", "condition"], "reason_codes": ["MISSING_INFORMATION", "ELIGIBLE", "CONDITION_REVIEW"]},
+    {"id": "A-ORIGIN", "scope": "eligibility", "content": "When resale requirements fail, use these origin-specific actions: {origin_actions}. Never infer who caused a problem. Wrong-item and defect claims require human review.", "keywords": ["cause", "arrived", "defect", "wrong item", "origin"], "reason_codes": ["APPAREL_RESALE_CONDITION", "CLAIM_REVIEW", "CONDITION_REVIEW"]},
+    {"id": "A-PROCESS", "scope": "process", "content": "An eligible case needs explicit confirmation to create a simulated RMA. Unresolved questions are collected into a simulated support ticket; no external agent is notified and no real refund is processed.", "keywords": ["confirmation", "refund", "policy", "support", "ticket"], "reason_codes": ["ELIGIBLE", "USER_REQUESTED_HUMAN", "UNRESOLVED_INFORMATION"]}
+  ]
+}

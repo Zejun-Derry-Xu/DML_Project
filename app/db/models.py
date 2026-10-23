@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, Uuid
@@ -21,6 +22,7 @@ class CustomerRecord(TimestampMixin, Base):
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(200))
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
     orders: Mapped[list[OrderRecord]] = relationship(back_populates="customer")
 
 
@@ -82,6 +84,13 @@ class ReturnCaseRecord(TimestampMixin, Base):
     decision_reason: Mapped[str | None] = mapped_column(String(60), nullable=True)
     status: Mapped[str] = mapped_column(String(30), default="started")
     version: Mapped[int] = mapped_column(Integer, default=1)
+    workflow_version: Mapped[str] = mapped_column(
+        String(30), default="legacy", server_default="legacy"
+    )
+    reason_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    field_observations: Mapped[dict[str, Any]] = mapped_column(
+        JSON, default=dict, server_default="{}"
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
@@ -143,3 +152,15 @@ class ReturnRequestRecord(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(30), default="requested")
     idempotency_key: Mapped[str] = mapped_column(String(200), unique=True, index=True)
     return_case: Mapped[ReturnCaseRecord] = relationship(back_populates="return_request")
+
+
+class SupportTicketRecord(TimestampMixin, Base):
+    __tablename__ = "support_tickets"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    return_case_id: Mapped[UUID] = mapped_column(
+        ForeignKey("return_cases.id"), unique=True, index=True
+    )
+    customer_id: Mapped[UUID] = mapped_column(ForeignKey("customers.id"), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="open")
+    snapshot: Mapped[dict[str, Any]] = mapped_column(JSON)

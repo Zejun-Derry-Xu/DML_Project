@@ -32,6 +32,8 @@ class ConversationService:
         self, *, session_id: UUID, message: str, customer_email: str | None
     ) -> tuple[ReturnCaseRecord, QuestionRequestRecord | None, ReturnRequestRecord | None]:
         record = self.returns.case_by_session(session_id)
+        if record and record.workflow_version != "legacy":
+            return record, None, record.return_request
         if record and (
             record.status in {"return_created", "escalated", "cancelled"}
             or (record.status == "closed" and record.policy_version != "mvp-2.0.0")

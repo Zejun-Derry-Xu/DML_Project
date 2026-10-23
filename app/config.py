@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     policy_embedding_model: str = "embeddinggemma"
     policy_min_vector_score: float = 0.25
     log_level: str = "INFO"
+    workflow_mode: Literal["legacy", "apparel"] = "apparel"
+    extraction_mode: Literal["llm", "guided"] = "llm"
+    demo_enabled: bool = False
+    demo_session_secret: str = ""
+    demo_cookie_secure: bool = False
+    build_commit: str = "development"
+    llm_temperature: float = Field(default=0, ge=0, le=1)
 
 
 @lru_cache

@@ -179,9 +179,9 @@ async def run(args):
         from app.extractors.frozen_v2.ollama import OllamaExtractor
         from app.extractors.frozen_v2.rules import RuleBasedExtractor
     else:
-        from app.extractors.hybrid import HybridExtractor
-        from app.extractors.ollama import OllamaExtractor
-        from app.extractors.rules import RuleBasedExtractor
+        from app.extractors.frozen_v3.hybrid import HybridExtractor
+        from app.extractors.frozen_v3.ollama import OllamaExtractor
+        from app.extractors.frozen_v3.rules import RuleBasedExtractor
 
         if args.revision == "rules-fixed":
             from app.extractors.frozen_v2.ollama import OllamaExtractor

@@ -1,0 +1,33 @@
+{
+  "source_revision": "a47065a",
+  "source_sha256": "4281bb8989f6d9bcff75fdd4c54f29dd8f47b9712ad5b007faf9ddb8fa617c3c",
+  "original_files": {
+    "__init__.py": "0cc9021a52d83d5e42a828d18758a2f2fd840d84c871306a6961aa184de5b04f",
+    "base.py": "1fc02ef6e9c46d741dd9825bfb87b453db40a2598416b59a85a701ae00aa30fe",
+    "compact.py": "481084e0b29b922565dd88397a6e47318dc42327f1e220f58b44a1b35cb80d1a",
+    "contracts.py": "d0bf35e61ffff418ac9396e2100da0874a712af571d28cb793ccc30ec1127bf8",
+    "evidence_sources.py": "47f631ea0e0b8789b352fb6fc9f3848f75c49fcef377a95bdad55544a819061c",
+    "factory.py": "c82539dbe79251dc4d93f315420bdc419874bd37a2623aae8385302775cbcd1a",
+    "fake.py": "09328a9ccf858497e40be40fbf631923ad0594f9944b88cafc342c95808d11fe",
+    "frozen_v2/__init__.py": "483045502cd15b5ea54591d893114005f162a8ce9be46db20680c124b4bd7d57",
+    "frozen_v2/contracts.py": "2f41b959bea7ceca3c6f6fffbc56576546b341a1f9b921df45f9d06826c2640e",
+    "frozen_v2/hybrid.py": "a8aec8449c3d50376470f705e5d896e1d0c20d65c30b68164c79bbf17a10628b",
+    "frozen_v2/ollama.py": "65e10a5bf7611aa784050ac7efc29671687be6312f68f7a58ed17f1f8707503d",
+    "frozen_v2/openai_compatible.py": "0cde747859d6e9e32d2f22451e431ffce47e563ebe0071261bf38025e7e2a7d1",
+    "frozen_v2/rules.py": "dfa3e0123f16f76b3445986454b8a43d1ce7755e346ae8cc2cde6b4e094bc687",
+    "frozen_v2/specs/apparel-v2.md": "678d445eec8e1c4f7126abbafbe8ac6f3ffde4934297b459908b0b2d350903bb",
+    "frozen_v2/specs/general-v2.md": "246fab14a100c633947c8fe026cc70de95fb7762d25dbc97c24e0f9209c02cf7",
+    "hybrid.py": "741532fb2a0a60a6e542fc8893c57ac61a12e90976da615b1c49c150dccb1644",
+    "legacy.py": "411cf348ab22c0da47d6ee89f238383b185e59f71329bcc4cd132170b24ec30f",
+    "ollama.py": "3654892c3e57559fcd3b1959c632bd02e41540413a5b7499b04f320306ddc8e8",
+    "openai_compatible.py": "f3f3e1ca7df385845e37f33c1cd1082fe324c29f242a907a0fc838c078299c75",
+    "products.py": "ff04670ed074d0cbfdac5f9fcc5a48be179984ac2e50d7757e70bede169e086f",
+    "rules.py": "08060f1b62454d97b3946f61d50d8bdfb931fc3337ebcb6123c522ff67306c89",
+    "scoped.py": "c7af93fe9d0c7308f97bb656f8dc05dffb0d92e7d3f3267c707131ae3ab54b9e",
+    "specs/apparel-v2.md": "678d445eec8e1c4f7126abbafbe8ac6f3ffde4934297b459908b0b2d350903bb",
+    "specs/apparel-v3.md": "a30d01ea0f3f1972762fb6852cfb0a990cbd136d9b9d91802fa58f29070f52f1",
+    "specs/general-v2.md": "246fab14a100c633947c8fe026cc70de95fb7762d25dbc97c24e0f9209c02cf7",
+    "specs/general-v3.md": "f570d39594defc207425efe9011f252b5a949b5ec2bd067a6a2a16c3c63d4fde"
+  },
+  "namespace_only_rewrite": "app.extractors. -> app.extractors.frozen_v3."
+}

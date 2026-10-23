@@ -55,6 +55,7 @@ class CaseService:
         condition_origin: Literal["customer", "pre_existing", "unknown"] | None = None,
     ) -> tuple[ReturnCaseRecord, QuestionRequestRecord | None, ReturnRequestRecord | None]:
         case = self.returns.get_or_create_case(session_id)
+        self._require_legacy(case)
         if case.status in {"return_created", "escalated", "cancelled"} or (
             case.status == "closed" and case.policy_version != "mvp-2.0.0"
         ):
@@ -171,6 +172,7 @@ class CaseService:
         case = self.returns.case_by_session(session_id)
         if case is None:
             raise AppError("CASE_NOT_FOUND", "The return case could not be found.", 404)
+        self._require_legacy(case)
         if self._upgrade_policy(case):
             self.session.commit()
             raise AppError(
@@ -346,6 +348,7 @@ class CaseService:
         return record
 
     def _upgrade_policy(self, case: ReturnCaseRecord) -> bool:
+        self._require_legacy(case)
         if case.policy_version == "mvp-2.0.0" or case.status in {
             "return_created",
             "closed",
@@ -364,6 +367,7 @@ class CaseService:
 
     def cancel(self, session_id: UUID) -> tuple[ReturnCaseRecord, None, ReturnRequestRecord | None]:
         case = self.returns.get_or_create_case(session_id)
+        self._require_legacy(case)
         if case.status in {"return_created", "closed", "escalated", "cancelled"}:
             return case, None, case.return_request
         case.status = CaseStatus.CANCELLED.value
@@ -426,6 +430,7 @@ class CaseService:
     def create_return_request(
         self, case: ReturnCaseRecord, *, idempotency_key: str
     ) -> ReturnRequestRecord:
+        self._require_legacy(case)
         existing = self.returns.return_request_by_key(idempotency_key)
         if existing:
             return existing
@@ -460,3 +465,12 @@ class CaseService:
         self.session.add(request)
         self.session.flush()
         return request
+
+    @staticmethod
+    def _require_legacy(case: ReturnCaseRecord) -> None:
+        if case.workflow_version != "legacy":
+            raise AppError(
+                "READ_ONLY_WORKFLOW",
+                "This release can only read this workflow; start a compatible release.",
+                409,
+            )
