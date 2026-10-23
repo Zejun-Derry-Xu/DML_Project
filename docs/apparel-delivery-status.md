@@ -13,7 +13,7 @@ from these checkpoints. The unapplied v4 patch and its stopped budget remain arc
 3. Build-once CI, pinned-image manual deployment / backup / compatible rollback: committed
    `3ad1930`, pushed. That commit's GitHub PostgreSQL and real image smoke passed.
 4. Local regression, browser verification, guarded rollback checker and documentation:
-   implemented and verified locally; final checkpoint CI recorded below. Real model
+   committed `cd7c5e8`, pushed and CI passed; final checkpoint evidence below. Real model
    qualification and live cloud adoption are deliberately NOT completed.
 
 No local Docker, no cloud changes, no main merge. Model runs, if available, are serial.
@@ -43,7 +43,10 @@ No local Docker, no cloud changes, no main merge. Model runs, if available, are 
 
 - [CI for 3ad1930](https://github.com/Zejun-Derry-Xu/DML_Project/actions/runs/40002428153):
   completed successfully, including real PostgreSQL API tests and Linux container smoke.
-- Final checkpoint CI: pending push/result; do not substitute the old success above.
+- [Final implementation CI for cd7c5e8](https://github.com/Zejun-Derry-Xu/DML_Project/actions/runs/40015198640):
+  completed successfully on 2026-10-23. Backend, frontend and container jobs all passed,
+  including the new operator-bundle input check. This evidence refers to that exact
+  implementation commit, not an untested successor or an actual cloud deployment.
 - No publication on this experimental branch. Main-only GHCR push/artifact publication,
   first real image-pair rollback exercise, existing-volume adoption, restore rehearsal
   and 8B CPU validation remain explicit follow-ups when the owner opens Jetstream2.
