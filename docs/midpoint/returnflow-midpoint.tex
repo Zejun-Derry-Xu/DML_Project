@@ -10,11 +10,11 @@
 \hypersetup{colorlinks=true,urlcolor=blue!55!black,linkcolor=blue!55!black,
   pdftitle={ReturnFlow: Midpoint Check-in},pdfauthor={Zejun (Derry) Xu}}
 
-% Update these fields after endpoint acceptance and confirmation of the team roster.
+% Recheck the IP-dependent HTTPS endpoint and confirm the complete team roster before class.
 \newcommand{\TeamMembers}{Zejun (Derry) Xu}
 \newcommand{\TeamRosterNote}{Complete team roster pending confirmation.}
-\newcommand{\ReportDate}{October 23, 2026}
-\newcommand{\ApplicationURL}{\textcolor{orange!65!black}{Pending instructor-access acceptance}}
+\newcommand{\ReportDate}{October 24, 2026}
+\newcommand{\ApplicationURL}{\url{https://http-149-165-174-228-5173.proxy-js2-iu.exosphere.app/}}
 \newcommand{\DeployedCommit}{847c7b3}
 \newcommand{\SourceCommit}{073f31b}
 \newcommand{\RepoURL}{https://github.com/Zejun-Derry-Xu/DML_Project}
@@ -61,7 +61,7 @@
 
 \begin{document}
 
-% PAGE 1: scope, identity and status. No externally reachable URL is invented.
+% PAGE 1: HTTPS access was verified externally; availability is a point-in-time claim.
 {\huge\bfseries ReturnFlow}\par
 {\Large A deployable, policy-grounded apparel return assistant}\par
 \vspace{4pt}
@@ -70,10 +70,11 @@
 \textbf{Date:} \ReportDate\par
 \textbf{GitHub:} \url{\RepoURL}\par
 \textbf{Jetstream2 application URL:} \ApplicationURL\par
-\notice{\textbf{Working draft, not submission-ready.} The candidate has a recorded Jetstream2
-deployment, but its normal UI is accessible through an SSH tunnel, not an instructor-facing
-public URL. Replace the URL above only after external access is tested. Confirm all team names
-before submission. No current VM uptime is asserted by this document.}
+\notice{\textbf{Access verified; final roster still pending.} On October 24, the HTTPS URL
+above served the UI and supported fictional-account selection, a return message, order
+selection, condition questions and cited policy lookup without an SSH tunnel. Confirm all
+team names and recheck availability before submission. Shelving stops access; a new public
+IP after unshelving requires a new proxy URL.}
 
 \sectiontitle{1}{Problem, users and midpoint scope}
 Customers often describe a return incompletely: they mention fit, but omit the order,
@@ -105,12 +106,12 @@ model's valid JSON is not proof of a true statement.
 \textbf{Checkpoint status} & \textbf{What the evidence supports} \\
 \midrule
 Deployed candidate & Release \texttt{\DeployedCommit}: frontend, API and PostgreSQL;
-guided cards; policy explanations; recorded HTTP and persistence acceptance. \\
+guided cards; public HTTPS interaction verified on October 24; earlier persistence acceptance. \\
 Implemented / CI-tested & Source snapshot \texttt{\SourceCommit}: delivery tooling,
 automated checks and opt-in extraction-harness experiments. Newer source is not
 automatically the deployed release. \\
 Experimental / pending & Qwen 4B/8B trials are not formal production qualification.
-Public access, a real two-release rollback rehearsal and enforced merge checks remain open. \\
+A real two-release rollback rehearsal and enforced merge checks remain open. \\
 \bottomrule
 \end{tabularx}
 \vfill
@@ -202,8 +203,10 @@ VM; no GPU is required for the installed guided prototype.
 \node[box,text width=2.7cm] (web) at (5.3,-1.35) {frontend / Nginx\\React files\\API reverse proxy};
 \node[box,text width=2.9cm] (api) at (9.4,-1.35) {api / FastAPI\\Routes + workflow};
 \node[box,text width=2.7cm] (db) at (14.9,-1.35) {db container\\PostgreSQL};
-\node[label,text width=2.7cm] at (1.65,-.47) {SSH tunnel today\\Public URL pending};
-\draw[request] (browser)--(web);
+\node[label,text width=2.7cm] at (1.65,-.47) {Public HTTPS\\No SSH tunnel};
+\node[smallbox,text width=2.25cm] (gateway) at (1.45,-3) {Platform proxy\\HTTPS / TLS};
+\draw[request] (browser.south)--(gateway.north);
+\draw[request] (gateway.east)--(3.05,-3)--(3.05,-1.35)--(web.west);
 \draw[request] (web)--node[label,above] {\texttt{/api/*}} (api);
 \draw[request] (api)--node[label,above] {private \texttt{db:5432}} (db);
 \node[smallbox,text width=3.2cm] (policy) at (5.7,-3) {Versioned policy\\JSON in API image\\Decision + clause QA};
@@ -214,7 +217,7 @@ VM; no GPU is required for the installed guided prototype.
 \draw[request] (db)--(dbv);
 \node[smallbox,text width=3.2cm] (private) at (5.7,-4.65) {Private \texttt{.env}\\Release manifest\\Backups + deploy log};
 \node[smallbox,text width=3.4cm] (modelv) at (10.1,-4.65) {Persistent model-cache volume\\One loaded model / request at a time};
-\node[smallbox,text width=2.7cm] (bounds) at (14.9,-4.65) {Private DB + model\\No host ports\\UI / API: loopback};
+\node[smallbox,text width=2.7cm] (bounds) at (14.9,-4.65) {Public UI: 5173\\API: loopback\\DB / model: private};
 \draw[request,dashed] (model)--(modelv);
 \draw[delivery] (private.north)--(policy.south);
 \node[smallbox,text width=2.6cm] (git) at (1.65,-7) {Git branch / pull request\\Source version control};
@@ -230,8 +233,10 @@ VM; no GPU is required for the installed guided prototype.
 The installed guided stack has \textbf{three containers}: frontend, API and database.
 A qualified model deployment would add Ollama as a fourth service. The API addresses
 PostgreSQL and Ollama by Compose service DNS; container \texttt{localhost} is not the
-host or another container. Qdrant is not needed for the installed lexical/extractive
-policy path, although a vector-retrieval adapter exists as an optional extension.
+host or another container. The platform proxy terminates TLS and forwards HTTP to Nginx
+on VM port 5173; this is not end-to-end TLS to the container. API port 8000 stays
+loopback-only; database/model ports are not published. Qdrant is not required by the
+installed lexical/extractive policy path.
 
 \subheading{Configuration, persistence and restart behavior}
 Deployment uses \codefile{compose.jetstream.yml}, private environment settings,
@@ -265,9 +270,11 @@ show an eligibility result or refusal with relevant clauses.
 \item Only an eligible case with explicit confirmation creates a simulated RMA.
 Reopening the case returns its stored state. No money is transferred.
 \end{enumerate}
-This is an \textbf{illustrative walkthrough}, not a new measured test result. Recorded
-cloud acceptance separately exercised order ownership, unknown-condition handoff,
-ticket persistence/resume and cross-account denial.
+The full sequence above is an \textbf{illustrative walkthrough}. On October 24, a separate
+browser session verified the public HTTPS path through account selection, return text,
+an owned-order card, reason entry and a condition question, plus cited policy lookup.
+It did not submit an RMA. Earlier cloud acceptance separately tested ticket persistence
+and cross-account denial.
 
 \subheading{Representative API surface}
 \begin{tabularx}{\linewidth}{@{}p{0.52\linewidth}Y@{}}
@@ -394,9 +401,9 @@ throughput SLA or concurrent-load capacity claim. Cloud and Mac timings are not 
 
 \subheading{Known deployment limitations}
 \begin{itemize}
-\item \textbf{Access:} the instructor-facing application URL is pending. The recorded
-installation is loopback-only; \texttt{localhost} on an instructor's laptop is not our VM.
-Only an application entry point should be made reachable, not database/model ports.
+\item \textbf{Access:} public HTTPS interaction was verified on October 24. Its proxy
+hostname embeds the VM's public IP; shelving stops access and unshelving may change
+the URL. Plain IP/HTTP is not the supported interactive entry.
 \item \textbf{Reliability:} one VM, no replicas or automatic failover; upgrades have
 planned downtime. Local backups need off-host retention. Metrics are exposed but no
 deployed monitoring/alerting platform is claimed.
@@ -409,8 +416,8 @@ prototype is not presented as a qualified Qwen-powered production service.
 
 \subheading{Finish the checkpoint without expanding the architecture}
 \begin{enumerate}
-\item Confirm the team roster and instructor access method; reopen the VM only when
-needed, verify a meaningful input/output path and replace the application URL on page 1.
+\item Confirm the full team roster and recheck the HTTPS URL before class. Keep the VM
+running for the agreed demonstration; update the report if its public IP changes.
 \item Refresh deployment/diagram evidence against the exact selected release. Clearly
 label installed, experimental and planned components; retain the guided/model distinction.
 \item Add required CI checks for main, complete a disposable two-version rollback

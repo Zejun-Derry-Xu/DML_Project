@@ -52,7 +52,8 @@ services:
   frontend:
     image: ${FRONTEND_IMAGE:?Use the matching tested frontend image digest}
     ports:
-      - "127.0.0.1:5173:80"
+      # Loopback by default. Explicitly opt in for a synthetic public course demo.
+      - "${FRONTEND_BIND_ADDRESS:-127.0.0.1}:5173:80"
     depends_on:
       api:
         condition: service_healthy

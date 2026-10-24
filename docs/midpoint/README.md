@@ -5,6 +5,11 @@ This directory contains an English LaTeX draft for DSAN 6700 Deliverable 2.
 `output/pdf/returnflow-midpoint.pdf`; both architecture diagrams are native TikZ
 inside the source, so there are no external figure assets to lose or regenerate.
 
+**2026-10-24 source update:** the open `.tex` document now includes the externally
+verified HTTPS demo URL and updated network diagram. Its built-in editor preview
+is the current report. The checked-in exported PDF remains the 2026-10-23 snapshot;
+it was not separately re-exported during this edit. Do not submit that older PDF.
+
 ## Scope and evidence
 
 - Six pages: project/status; solution architecture; technical architecture;
@@ -16,18 +21,23 @@ inside the source, so there are no external figure assets to lose or regenerate.
 - Snapshot CI: <https://github.com/Zejun-Derry-Xu/DML_Project/actions/runs/40035335912>.
 - The normal installed workflow is guided; Qwen trials and the opt-in harness are
   not represented as a qualified production deployment.
-- No private raw evaluations, numeric operational model results, secrets, IP
-  addresses, private backup paths or infrastructure credentials are included.
-- This is a documentation change only. No application code, cloud configuration,
-  database, model process or user-owned evaluation files are changed.
+- No private raw evaluations, numeric operational model results, secrets, private
+  backup paths or infrastructure credentials are included. The explicitly requested
+  public application URL contains the current VM IP as part of its proxy hostname.
+- The October 24 access change makes only the Nginx binding configurable. The cloud
+  frontend was recreated with its unchanged tested image and public binding. API
+  loopback binding, database/model exposure and extraction mode were not changed.
+  Browser acceptance created one fictional unfinished case; no RMA was submitted.
 
 ## Required edits before submission
 
 1. **Team roster:** confirm `\TeamMembers` and remove/update `\TeamRosterNote`.
    Only Zejun (Derry) Xu is currently known; other names are not invented.
-2. **Application URL:** replace `\ApplicationURL` after instructor access is
-   actually tested. Neither a loopback address nor the presence of a public IP
-   proves external reachability. Leave database and model services private.
+2. **Application URL:** HTTPS interaction was verified on October 24 at
+   <https://http-149-165-174-228-5173.proxy-js2-iu.exosphere.app/> without an SSH
+   tunnel. Recheck it before submission; shelving stops the VM and unshelving may
+   change the IP-dependent hostname. Do not use the raw IP/HTTP link for the current
+   interactive UI. Leave database and model services private.
 3. Confirm the running release and demo path; update `\DeployedCommit` and the
    status statements if a different release is deployed. Do not merely substitute
    a commit string while leaving incompatible claims unchanged.

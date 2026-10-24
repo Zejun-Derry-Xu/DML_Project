@@ -1,6 +1,7 @@
 # Apparel delivery operator runbook
 
-Status: candidate implementation on `codex/apparel-llm-delivery`, not deployed to Jetstream2.
+Status: candidate `847c7b3` was deployed to Jetstream2 in guided mode. Newer source
+and experimental model trials are not automatically the installed release.
 This supersedes `jetstream-v2-runbook.md` for the new apparel workflow only.
 Do not run these cloud commands until the owner opens the VM and approves deployment.
 
@@ -14,7 +15,9 @@ There is no Qdrant requirement for the default lexical/extractive policy path.
 
 The fictional account picker is NOT real authentication. Only synthetic data may be
 loaded. No payment, actual refund, email notification or external ticket integration exists.
-The service is loopback-only and accessed through SSH, not exposed as a public storefront.
+The default service is loopback-only and accessed through SSH. An explicitly approved
+synthetic course demo can expose only its Nginx entry point as described below;
+this is not a public production storefront.
 
 ## 2. Release and approval
 
@@ -110,6 +113,51 @@ ssh -N -L 15173:127.0.0.1:5173 -L 18000:127.0.0.1:8000 exouser@CURRENT_HOST
 ```
 
 Open `http://127.0.0.1:15173`. Closing that tunnel stops access, not server containers.
+
+### Optional instructor-facing synthetic demo
+
+Only after explicit approval, use the configurable UI binding in
+`compose.jetstream.yml` and set `FRONTEND_BIND_ADDRESS=0.0.0.0` in the server's
+private `.env`. Keep the API binding at `127.0.0.1:8000`; do not publish database
+or model ports. Preserve private `.env` and Compose backups before changing them.
+Recreate only Nginx, using the already tested image:
+
+```bash
+docker compose --env-file .env --env-file .release.env -f compose.jetstream.yml config --quiet
+docker compose --env-file .env --env-file .release.env -f compose.jetstream.yml up -d --no-deps --no-build --wait frontend
+```
+
+Check the HTTPS platform-proxy URL from outside the VM. For the public IP observed
+on 2026-10-24, the verified entry is:
+
+<https://http-149-165-174-228-5173.proxy-js2-iu.exosphere.app/>
+
+The raw `http://CURRENT_PUBLIC_IP:5173/` origin serves HTML, but is **not** the
+supported interactive link: the current frontend uses `crypto.randomUUID`, which
+requires a secure browser context. Localhost previously masked that constraint.
+Use the verified HTTPS entry rather than disabling browser security or injecting
+a runtime polyfill into a tested image. TLS terminates at the platform proxy;
+the hop from that proxy to the VM is HTTP, not end-to-end TLS.
+
+Check HTML, API calls through Nginx, the version, and a synthetic input/output
+interaction in a fresh browser context without an SSH tunnel. Check the
+actual Docker bindings too: `8000` remains loopback, and PostgreSQL/Ollama have no
+published host ports. If cloud security rules need changing, allow only the app's
+TCP `5173` entry for the intended audience; never disable the firewall or open
+all ports as a shortcut.
+
+The origin remains HTTP with fictional accounts and is not suitable for real customer
+information, passwords or payments. A public demo permits visitors to select demo
+accounts and modify their simulated cases; the selector is not access control.
+The demo's HTTPS proxy alone is not production security: a real service also needs
+real authentication and protection of the origin connection. Never put `.env` in Git.
+
+To make the demo private again, set `FRONTEND_BIND_ADDRESS=127.0.0.1` in `.env` and
+run the same frontend-only command, then verify the public URL is no longer reachable.
+Shelving stops access; unshelving may change the public IP. Recheck and update the
+report URL before class. Do not run migrations, reset cases or enable a model merely
+to change this network binding.
+
 To stop this application's containers without deleting volumes:
 
 ```bash
