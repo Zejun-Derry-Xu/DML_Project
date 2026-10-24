@@ -1,0 +1,10 @@
+# Keep the reviewed PDF; do not commit compiler caches or temporary renders.
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.xdv
+*.fls
+*.fdb_latexmk
+preview/
