@@ -142,6 +142,8 @@ def deploy(args: argparse.Namespace) -> None:
     )
     api_env = rendered["services"]["api"]["environment"]
     if api_env.get("EXTRACTION_MODE") == "llm":
+        if release.get("model_name") != api_env.get("LLM_MODEL"):
+            raise ValueError("Release model does not match the operator's configured model")
         full_model_config = json.loads(
             run(
                 compose + ["--profile", "model", "config", "--format", "json"],

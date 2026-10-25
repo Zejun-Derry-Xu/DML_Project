@@ -1,6 +1,12 @@
 import pytest
 
 from scripts.deploy_release import demo_exception_allowed
+from scripts.release_manifest import manifest
+
+
+def test_default_release_model_matches_requested_4b_demo():
+    image = "ghcr.io/example/app@sha256:" + "b" * 64
+    assert manifest("a" * 40, image, image)["model_name"] == "qwen3:4b"
 
 
 def test_normal_deployment_keeps_qualification_gate():
