@@ -2,7 +2,7 @@
 
 ## Current candidate: apparel / LLM-first / manual delivery
 
-The `codex/apparel-llm-delivery` branch replaces the product workflow with fictional
+The current `codex/extraction-harness-v1` candidate extends the apparel workflow with fictional
 account selection, owned-order cards, LLM-first evidence extraction, natural-language
 questions with deterministic answer cards, and durable simulated support tickets.
 Eligibility comes from validated versioned **policy configuration**, not retrieved text
@@ -14,6 +14,13 @@ Old cases stay read-only. No real refunds or real authentication are implemented
 - [Verification ledger and pending work](docs/apparel-delivery-status.md)
 - [Natural-language-first interaction and local UX verification](docs/natural-language-experience.md)
 - [Current checklist declaration, inline policy help and one-step simulated submission](docs/checklist-experience.md)
+- [2026-10-25 cloud deployment: infrastructure passed, real 4B submission timed out](docs/checklist-deployment-20261025.md)
+
+The installed synthetic course demo is `da62fb3` with Qwen3 4B and checklist collection.
+It is explicitly **not model-quality-qualified**: real CPU natural-language submission
+timed out at 60 seconds; the explicit checklist button, recovery and policy checks passed.
+See the deployment ledger above rather than treating CI or a healthy container as proof
+that every natural-language interaction succeeds.
 
 For a 16 GB Mac, start without Docker or a model:
 
