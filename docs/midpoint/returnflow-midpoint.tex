@@ -1,444 +1,256 @@
 \documentclass[10pt,letterpaper]{article}
-\usepackage[margin=0.68in,headheight=15pt,footskip=24pt]{geometry}
+\usepackage[margin=0.65in,headheight=14pt,footskip=22pt]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern,microtype}
 \usepackage[table]{xcolor}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
-\usepackage{booktabs,tabularx,array,enumitem,fancyhdr}
-\usepackage{hyperref}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{booktabs,tabularx,array,enumitem,fancyhdr,hyperref}
 \hypersetup{colorlinks=true,urlcolor=blue!55!black,linkcolor=blue!55!black,
-  pdftitle={ReturnFlow: Midpoint Check-in},pdfauthor={Zejun (Derry) Xu}}
-
-% Recheck the IP-dependent HTTPS endpoint and confirm the complete team roster before class.
-\newcommand{\TeamMembers}{Zejun (Derry) Xu}
-\newcommand{\TeamRosterNote}{Complete team roster pending confirmation.}
-\newcommand{\ReportDate}{October 24, 2026}
-\newcommand{\ApplicationURL}{\url{https://http-149-165-174-228-5173.proxy-js2-iu.exosphere.app/}}
-\newcommand{\DeployedCommit}{847c7b3}
-\newcommand{\SourceCommit}{073f31b}
+pdftitle={ReturnFlow: Midpoint Architecture},pdfauthor={Zejun Xu, Peixuan Ji, Shuchen Liu}}
+\newcommand{\TeamMembers}{Zejun Xu, Peixuan Ji, Shuchen Liu}
+\newcommand{\ReportDate}{October 25, 2026}
 \newcommand{\RepoURL}{https://github.com/Zejun-Derry-Xu/DML_Project}
-
-\definecolor{ink}{HTML}{173344}
-\definecolor{live}{HTML}{245DC1}
-\definecolor{measure}{HTML}{A76821}
-\definecolor{release}{HTML}{AF4141}
-\definecolor{lightblue}{HTML}{EDF3FB}
-\definecolor{lightgreen}{HTML}{EDF5F0}
-\definecolor{lightgold}{HTML}{FCF4E8}
-\definecolor{muted}{HTML}{52616B}
+% Historical endpoint; update only after acceptance of the chosen 4B/checklist release.
+\newcommand{\ApplicationURL}{https://http-149-165-174-228-5173.proxy-js2-iu.exosphere.app/}
+\definecolor{ink}{HTML}{19384A}
+\definecolor{live}{HTML}{285FB6}
+\definecolor{measure}{HTML}{A86A20}
+\definecolor{release}{HTML}{AD4040}
+\definecolor{storage}{HTML}{237865}
+\definecolor{bluewash}{HTML}{EDF3FB}
+\definecolor{goldwash}{HTML}{FCF3E6}
+\definecolor{greenwash}{HTML}{EDF5F0}
+\definecolor{muted}{HTML}{53616D}
 \color{ink}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{5pt}
-\setlist[itemize]{leftmargin=1.25em,itemsep=3pt,topsep=3pt}
-\setlist[enumerate]{leftmargin=1.5em,itemsep=3pt,topsep=3pt}
-\renewcommand{\arraystretch}{1.2}
+\setlength{\parindent}{0pt}\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.18}
+\setlist[itemize]{leftmargin=1.2em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=2pt,topsep=3pt}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\small\textbf{ReturnFlow} \enspace / \enspace DSAN 6700}
-\fancyhead[R]{\small Midpoint check-in \textbullet\ Draft}
-\fancyfoot[L]{\footnotesize Evidence snapshot: \ReportDate}
-\fancyfoot[R]{\footnotesize\thepage\ / 6}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\textbf{ReturnFlow} / DSAN 6700}
+\fancyhead[R]{\small Midpoint architecture / Candidate draft}
+\fancyfoot[L]{\footnotesize\ReportDate}
+\fancyfoot[R]{\footnotesize\thepage\ / \pageref*{report-end}}
 \renewcommand{\headrulewidth}{0.3pt}
-\newcommand{\sectiontitle}[2]{\vspace{1pt}{\Large\bfseries #1\quad #2}\par\vspace{5pt}}
-\newcommand{\subheading}[1]{\vspace{4pt}{\bfseries #1}\par}
-\newcommand{\notice}[1]{\begingroup\setlength{\fboxsep}{8pt}\noindent
-  \colorbox{lightgold}{\parbox{\dimexpr\linewidth-16pt\relax}{\small #1}}\endgroup\par}
-\newcommand{\codefile}[1]{\texttt{\small\detokenize{#1}}}
-\newcommand{\src}[2]{\href{https://github.com/Zejun-Derry-Xu/DML_Project/blob/073f31b573f2bafdecce3fd22163c1f4ce7a0dc8/#1}{#2}}
+\newcommand{\heading}[1]{\vspace{3pt}{\large\bfseries #1}\par\vspace{2pt}}
+\newcommand{\notice}[1]{\begingroup\setlength{\fboxsep}{7pt}
+\colorbox{goldwash}{\parbox{\dimexpr\linewidth-14pt\relax}{\small #1}}\endgroup\par}
+\newcommand{\code}[1]{\texttt{\small\detokenize{#1}}}
 \tikzset{
-  box/.style={draw=ink!45,rounded corners=3pt,fill=white,align=center,
-    font=\sffamily\footnotesize,inner sep=5pt,minimum height=0.85cm},
-  smallbox/.style={box,font=\sffamily\scriptsize,inner sep=4pt},
-  lane/.style={rounded corners=5pt,draw=none},
-  request/.style={-{Stealth[length=2mm]},line width=0.9pt,draw=live},
-  metrics/.style={-{Stealth[length=2mm]},dashed,line width=0.85pt,draw=measure},
-  delivery/.style={-{Stealth[length=2mm]},dashed,line width=0.85pt,draw=release},
-  optional/.style={draw=muted,dashed},
-  label/.style={font=\sffamily\scriptsize,align=center,text=muted}
-}
+box/.style={draw=ink!45,rounded corners=3pt,fill=white,align=center,
+font=\sffamily\small,inner sep=5pt,minimum height=.9cm},
+smallbox/.style={box,font=\sffamily\footnotesize,inner sep=4pt},
+request/.style={-{Stealth[length=2mm]},draw=live,line width=.9pt},
+measurement/.style={-{Stealth[length=2mm]},draw=measure,dashed,line width=.85pt},
+delivery/.style={-{Stealth[length=2mm]},draw=release,dashed,line width=.85pt},
+label/.style={font=\sffamily\scriptsize,text=muted,align=center}}
 
 \begin{document}
+{\LARGE\bfseries ReturnFlow: a simpler path to a return}\par
+\textbf{Team:} \TeamMembers\hfill\textbf{Midpoint check-in}\par
+\textbf{Repository:} \url{\RepoURL}\par
+\textbf{Jetstream2 application entry (last verified October 24):}\par
+{\small\url{\ApplicationURL}}\par
+\notice{\textbf{Deployment status.} The URL above served the earlier guided prototype.
+The latest local candidate adds the checklist-led conversation below; its selected model
+is Qwen3 4B. Deployment and real-model cloud acceptance for this candidate are pending.
+The VM is currently shelved; recheck the IP-dependent URL before submission.}
 
-% PAGE 1: HTTPS access was verified externally; availability is a point-in-time claim.
-{\huge\bfseries ReturnFlow}\par
-{\Large A deployable, policy-grounded apparel return assistant}\par
-\vspace{4pt}
-\textbf{DSAN 6700 --- Final Project, Deliverable 2: Midpoint Check-in}\par
-\textbf{Team:} \TeamMembers\quad {\small\textit{\TeamRosterNote}}\par
-\textbf{Date:} \ReportDate\par
-\textbf{GitHub:} \url{\RepoURL}\par
-\textbf{Jetstream2 application URL:} \ApplicationURL\par
-\notice{\textbf{Access verified; final roster still pending.} On October 24, the HTTPS URL
-above served the UI and supported fictional-account selection, a return message, order
-selection, condition questions and cited policy lookup without an SSH tunnel. Confirm all
-team names and recheck availability before submission. Shelving stops access; a new public
-IP after unshelving requires a new proxy URL.}
-
-\sectiontitle{1}{Problem, users and midpoint scope}
-Customers often describe a return incompletely: they mention fit, but omit the order,
-item condition or tag status. A conventional form asks every question up front; an
-unconstrained chatbot may invent missing facts or make inconsistent policy decisions.
-ReturnFlow separates \textbf{collecting a customer's statements} from
-\textbf{authorizing a simulated return}. It guides customers through only the missing
-information, explains the applicable policy, and routes unresolved cases to a durable
-simulated support ticket.
-
-\subheading{What a user can do}
-Choose a fictional account, describe an apparel return, select an owned order/item,
-answer condition questions with cards or text, review the result, and explicitly confirm
-an eligible simulated return. A separate policy-help panel answers general questions
-without modifying the active return. A refreshed page can recover the case.
-
-\subheading{Engineering priorities}
-\begin{itemize}
-\item \textbf{Reliable deployment first:} one small application stack, reproducible images,
-bounded model resources, version identity, backups and visible failure states.
-\item \textbf{A replaceable AI boundary:} Qwen extracts candidate facts; application code owns
-account/order checks, missing-information handling, policy decisions and confirmation.
-\item \textbf{Explicit uncertainty:} an omitted condition is not a negative answer, and a
-model's valid JSON is not proof of a true statement.
-\end{itemize}
-
-\begin{tabularx}{\linewidth}{@{}p{0.23\linewidth}Y@{}}
-\toprule
-\textbf{Checkpoint status} & \textbf{What the evidence supports} \\
-\midrule
-Deployed candidate & Release \texttt{\DeployedCommit}: frontend, API and PostgreSQL;
-guided cards; public HTTPS interaction verified on October 24; earlier persistence acceptance. \\
-Implemented / CI-tested & Source snapshot \texttt{\SourceCommit}: delivery tooling,
-automated checks and opt-in extraction-harness experiments. Newer source is not
-automatically the deployed release. \\
-Experimental / pending & Qwen 4B/8B trials are not formal production qualification.
-A real two-release rollback rehearsal and enforced merge checks remain open. \\
-\bottomrule
-\end{tabularx}
-\vfill
-{\small\textbf{Prototype boundary.} All customers, orders, tickets and return authorizations
-are simulated. There is no real payment, refund, shipment, staffed help desk or production login.}
-
-\newpage
-% PAGE 2: solution architecture explicitly includes Process, Execution and State.
-\sectiontitle{2}{Solution architecture}
-The diagram connects the user journey to development, monitoring and the artifacts
-that persist. Solid arrows are request/workflow paths; dashed arrows are measurement
-or release feedback. Proposed services are explicitly marked as pending.
+\heading{1. Solution architecture: what problem do we solve?}
+Customers should not need to discover every return condition or complete a long series
+of cards. ReturnFlow accepts a natural-language request, checks trusted order data,
+then presents the applicable conditions \textbf{together}. Customers can confirm them
+collectively or describe only exceptions. Cards remain an explicit fallback, not the
+primary goal. The prototype creates simulated return requests, not real refunds.
 
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\path[use as bounding box] (0,-8.65) rectangle (17.7,0.2);
-\fill[lane,lightblue] (0,0) rectangle (17.7,-3.2);
-\fill[lane,lightgold] (0,-3.4) rectangle (17.7,-4.9);
-\fill[lane,lightgreen] (0,-5.1) rectangle (17.7,-6.7);
-\fill[lane,ink!6] (0,-6.9) rectangle (17.7,-8.55);
-\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (.25,-.25) {USE / CUSTOMER EXPERIENCE};
-\node[box,text width=2.4cm] (u1) at (1.7,-1.02) {Choose account\\Describe return};
-\node[box,text width=2.4cm] (u2) at (5.2,-1.02) {Select owned\\order and item};
-\node[box,text width=2.4cm] (u3) at (8.8,-1.02) {Order prechecks\\Date / delivery\\Sale / duplicates};
-\node[box,text width=2.4cm] (u4) at (12.4,-1.02) {Collect conditions\\Cards or text};
-\node[box,text width=2.4cm] (u5) at (16,-1.02) {Evaluate policy\\Explain next step};
-\draw[request] (u1)--(u2); \draw[request] (u2)--(u3); \draw[request] (u3)--(u4); \draw[request] (u4)--(u5);
-\node[smallbox,text width=3.8cm] (q) at (5.2,-2.45) {Missing answer: ask one question\\Unknown: collect other facts, then hand off};
-\node[smallbox,text width=3.3cm] (r) at (12.4,-2.45) {Eligible: review and confirm\\Then create simulated RMA};
-\node[smallbox,text width=2.5cm] (t) at (16,-2.45) {Refusal explanation\\or support ticket};
-\draw[request] (u4.south)--(12.4,-1.85)--(5.2,-1.85)--(q.north);
-\draw[request] (q.east)--(10.2,-2.45)--(10.2,-1.65)--(u4.south west);
-\draw[request] (u5.south)--++(0,-.18)-|(r.north);
-\draw[request] (u5.south)--(t.north);
-
-\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (.25,-3.65) {MONITOR / MEASURE USE};
-\node[smallbox,text width=3.8cm] (m1) at (2.65,-4.25) {Request IDs, errors, latency\\Health and readiness endpoints};
-\node[smallbox,text width=4.1cm] (m2) at (8.65,-4.25) {HTTP metrics and outcome counters\\Inspect logs / metrics manually};
-\node[smallbox,optional,text width=3.8cm] (m3) at (14.8,-4.25) {Pending: dashboard\\and alert delivery};
-\draw[metrics] (u1.west)--++(-.1,0)|-(m1.west);
-\draw[metrics] (m1)--(m2); \draw[metrics] (m2)--(m3);
-
-\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (.25,-5.35) {BUILD / VERIFY / DELIVER};
-\node[smallbox,text width=3.5cm] (b1) at (2.35,-6.02) {Policy + test data\\Public-data adapters};
-\node[smallbox,text width=3.5cm] (b2) at (6.7,-6.02) {Unit / PostgreSQL / HTTP tests\\Model evaluation is separate};
-\node[smallbox,text width=3.2cm] (b3) at (10.95,-6.02) {CI builds and tests images\\Publish matching image pair};
-\node[smallbox,text width=3.3cm] (b4) at (15.2,-6.02) {Human promotion\\Backup, migrate, switch, check};
-\draw[metrics] (b1)--(b2); \draw[delivery] (b2)--(b3); \draw[delivery] (b3)--(b4);
-
-\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (.25,-7.15) {STATE / WHAT SURVIVES A RESTART OR RELEASE};
-\node[smallbox,text width=3.4cm] at (2.35,-7.9) {Database volume\\Orders / cases / RMAs\\Questions / tickets};
-\node[smallbox,text width=3.4cm] at (6.7,-7.9) {Model volume\\Weights and digests};
-\node[smallbox,text width=3.4cm] at (11,-7.9) {Git + GHCR\\Code / policy / images\\Release manifests};
-\node[smallbox,text width=3.3cm] at (15.3,-7.9) {Private configuration\\Secrets / backups};
+\path[use as bounding box] (0,-6.5) rectangle (17.7,.15);
+\fill[rounded corners=5pt,bluewash] (0,0) rectangle (17.7,-3.5);
+\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (.2,-.25) {USE: CUSTOMER JOURNEY};
+\node[box,text width=2.8cm] (describe) at (2,-1.05) {Describe return\\Choose owned item};
+\node[box,text width=2.8cm] (check) at (6.5,-1.05) {Check order\\Delivery / deadline};
+\node[box,text width=2.8cm] (conditions) at (10.95,-1.05) {Show all conditions\\Accept one response};
+\node[box,text width=2.8cm] (finish) at (15.4,-1.05) {Final policy decision\\Return or explain};
+\draw[request] (describe)--(check);\draw[request] (check)--(conditions);
+\draw[request] (conditions)--node[label,above,text width=1.4cm] {all clear +\\submit} (finish);
+\node[smallbox,text width=3.5cm] (refusal) at (4,-2.7) {Precheck fails:\\explain the policy};
+\node[smallbox,text width=4cm] (exception) at (10.95,-2.7) {Exception or uncertainty:\\cite policy; ask what matters};
+\node[smallbox,text width=2.7cm] (support) at (15.4,-2.7) {Still uncertain:\\support ticket};
+\draw[request] (check.south)--++(0,-.22)-|(refusal.north);
+\draw[request] (conditions)--(exception);\draw[request] (exception)--(support);
+\draw[request] (exception.east)--++(.4,0)--(13.45,-1.85)-|(finish.south);
+\node[label] at (14.05,-2.08) {resolved};
+\fill[rounded corners=5pt,goldwash] (0,-3.65) rectangle (17.7,-5.1);
+\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (.2,-3.9) {BUILD / MONITOR};
+\node[smallbox,text width=4cm] (build) at (3.1,-4.55) {Version policy + code\\Test, build, approve release};
+\node[smallbox,text width=4cm] (monitor) at (10.95,-4.55) {Health / errors / latency\\Review results and improve};
+\draw[measurement] (exception.south)--(monitor.north);
+\draw[delivery] (monitor.west)--node[label,above] {feedback} (build.east);
+\fill[rounded corners=5pt,greenwash] (0,-5.25) rectangle (17.7,-6.45);
+\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (.2,-5.5) {STATE: WHAT PERSISTS};
+\node[font=\sffamily\footnotesize,align=center] at (8.85,-6.0)
+{PostgreSQL: cases, answers, returns, tickets \quad|\quad Model volume: weights\\
+Git / registry: code, policy, images \quad|\quad Private configuration and backups};
 \end{tikzpicture}
 \end{center}
+{\footnotesize\textcolor{live}{Solid blue: user flow}\quad
+\textcolor{measure}{Dashed amber: measurement}\quad
+\textcolor{release}{Dashed red: improvement / release}}
 
-\subheading{Process: build, use and monitor}
-The midpoint focuses on a complete small user journey, not on adding agents or training
-a model. Development uses synthetic policy cases and public-data adapters; automated
-checks protect the application path. Operational metrics support inspection, while
-automated alerts and a dashboard remain planned.
-
-\subheading{Execution: questions are normal API responses}
-The backend returns the next question and approved choices as part of its response.
-The browser renders them. The customer's next button click or text message starts a
-new request; the server does not keep a connection waiting for an answer.
-
-\subheading{State: uncertainty and final actions are durable}
-Known, false, missing and conflicting observations are not interchangeable. Case state
-and active questions persist in PostgreSQL. Support tickets are internal records, not
-notifications to a real agent. A simulated RMA requires an explicit confirmation and
-a duplicate-return check; refreshing the browser must not create another one.
+\heading{Brief example in tabular form}
+\begin{tabularx}{\linewidth}{@{}p{.14\linewidth}Y@{}}
+\toprule\textbf{Dimension} & \textbf{Our design decisions} \\
+\midrule
+Process & \textbf{Build:} version policy and test cases; validate images.
+\textbf{Use:} describe, select, review one checklist, confirm or explain exceptions.
+\textbf{Monitor:} inspect health, request failures, latency and outcomes. \\
+Execution & \textbf{Frontend:} chat, order cards and a visible checklist.
+\textbf{Backend:} account/order checks, one bounded extraction call, deterministic
+policy decision and cited clause lookup. The model cannot authorize a return. \\
+State & \textbf{PostgreSQL:} cases, checklist snapshots, consent, simulated RMAs and tickets.
+\textbf{Volumes:} database and model weights. \textbf{Git / GHCR:} code, policy and image
+versions. Secrets and backups stay outside Git. \\
+\bottomrule\end{tabularx}
 
 \newpage
-% PAGE 3: actual container boundaries, private networking and optional model path.
-\sectiontitle{3}{Technical architecture and deployment boundary}
-ReturnFlow uses a \textbf{modular monolith}: one FastAPI process with separate route,
-workflow, extraction, policy and persistence modules. It avoids the network and
-coordination overhead of multiple agent services. The target is a CPU-only Jetstream2
-VM; no GPU is required for the installed guided prototype.
+\heading{2. Technical architecture: how the components connect}
+One CPU-only Jetstream2 VM runs Docker Compose. The backend is a \textbf{modular
+monolith}, not a collection of agents: a single FastAPI application owns workflow,
+policy and transactions. The selected model-enabled topology has \textbf{four containers};
+guided fallback uses three. This figure specifies the candidate deployment, not a
+claim that all four services have passed current cloud acceptance.
 
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
-\path[use as bounding box] (0,-8.1) rectangle (17.7,0.2);
-\draw[rounded corners=5pt,draw=ink!40,dashed,fill=lightblue!60] (3.45,0) rectangle (17.6,-5.75);
-\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (3.65,-.25) {JETSTREAM2 CPU VM / COMPOSE PRIVATE NETWORK};
-\node[box,text width=2.25cm] (browser) at (1.45,-1.35) {Browser\\React interface};
-\node[box,text width=2.7cm] (web) at (5.3,-1.35) {frontend / Nginx\\React files\\API reverse proxy};
-\node[box,text width=2.9cm] (api) at (9.4,-1.35) {api / FastAPI\\Routes + workflow};
-\node[box,text width=2.7cm] (db) at (14.9,-1.35) {db container\\PostgreSQL};
-\node[label,text width=2.7cm] at (1.65,-.47) {Public HTTPS\\No SSH tunnel};
-\node[smallbox,text width=2.25cm] (gateway) at (1.45,-3) {Platform proxy\\HTTPS / TLS};
-\draw[request] (browser.south)--(gateway.north);
-\draw[request] (gateway.east)--(3.05,-3)--(3.05,-1.35)--(web.west);
+\path[use as bounding box] (0,-6.7) rectangle (17.7,.15);
+\draw[rounded corners=5pt,dashed,draw=ink!50,fill=bluewash!70]
+(3.5,0) rectangle (17.65,-4.9);
+\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (3.7,-.27)
+{JETSTREAM2 m3.medium / 8 vCPU / 30 GB RAM / COMPOSE PRIVATE NETWORK};
+\node[box,text width=2cm] (browser) at (1.4,-1.35) {Customer\\browser};
+\node[smallbox,text width=2.1cm] (proxy) at (1.4,-3.5) {Exosphere proxy\\Public HTTPS};
+\node[box,text width=2.5cm] (web) at (5.4,-1.35) {frontend\\React + Nginx};
+\node[box,text width=2.6cm] (api) at (9.7,-1.35) {api\\FastAPI workflow};
+\node[box,draw=storage,text width=2.6cm] (db) at (14.9,-1.35)
+{db\\PostgreSQL\\Persistent volume};
+\draw[request] (browser)--(proxy);
+\draw[request] (proxy.east)--(3.05,-3.5)--(3.05,-1.35)--(web.west);
+\node[label,text width=1.8cm] at (3.1,-2.25) {HTTP to UI\\port 5173};
 \draw[request] (web)--node[label,above] {\texttt{/api/*}} (api);
-\draw[request] (api)--node[label,above] {private \texttt{db:5432}} (db);
-\node[smallbox,text width=3.2cm] (policy) at (5.7,-3) {Versioned policy\\JSON in API image\\Decision + clause QA};
-\node[smallbox,optional,text width=3.4cm] (model) at (10.1,-3) {Optional Ollama container\\Qwen extraction; not normal guided mode};
-\node[smallbox,text width=2.7cm] (dbv) at (14.9,-3) {Persistent database volume\\Not replaced with application images};
-\draw[request] (api.south)--++(0,-.22)-|(policy.north);
-\draw[request,dashed] (api.south)--++(0,-.22)-|(model.north);
-\draw[request] (db)--(dbv);
-\node[smallbox,text width=3.2cm] (private) at (5.7,-4.65) {Private \texttt{.env}\\Release manifest\\Backups + deploy log};
-\node[smallbox,text width=3.4cm] (modelv) at (10.1,-4.65) {Persistent model-cache volume\\One loaded model / request at a time};
-\node[smallbox,text width=2.7cm] (bounds) at (14.9,-4.65) {Public UI: 5173\\API: loopback\\DB / model: private};
-\draw[request,dashed] (model)--(modelv);
-\draw[delivery] (private.north)--(policy.south);
-\node[smallbox,text width=2.6cm] (git) at (1.65,-7) {Git branch / pull request\\Source version control};
-\node[smallbox,text width=3.2cm] (ci) at (6.2,-7) {GitHub Actions\\Checks + Linux image smoke};
-\node[smallbox,text width=3cm] (registry) at (10.75,-7) {GHCR + operator artifact\\Paired immutable image digests};
-\node[smallbox,text width=2.6cm] (human) at (15.2,-7) {Human approval\\Deployment script};
-\draw[delivery] (git)--(ci); \draw[delivery] (ci)--(registry); \draw[delivery] (registry)--(human);
-\draw[delivery] (human.north)--++(0,.35)-|(private.south);
+\draw[request] (api)--node[label,above] {SQL read / write\\\texttt{db:5432}} (db);
+\node[smallbox,text width=2.8cm] (ops) at (5.4,-3.65)
+{Health / readiness\\Request logs\\Errors and latency};
+\node[box,text width=2.8cm] (model) at (9.7,-3.65)
+{ollama\\Qwen3 4B\\Extraction\\Weights volume};
+\node[smallbox,draw=storage,text width=2.8cm] (policy) at (14.9,-3.65)
+{In API process:\\Policy JSON\\Rules + clause lookup};
+\draw[request,<->] (api)--node[label,left,pos=.72,text width=2cm] {text / facts\\\texttt{ollama:11434}} (model);
+\draw[request] (api.south east)--++(0,-.25)-|(policy.north);
+\draw[measurement] (api.south west)--++(0,-.25)-|(ops.north);
+\node[label,anchor=west] at (3.7,-4.65)
+{Only the UI entry is public. API: host loopback. PostgreSQL / Ollama: no host ports.};
+\fill[rounded corners=5pt,goldwash] (0,-5.15) rectangle (17.7,-6.65);
+\node[anchor=west,font=\sffamily\bfseries\scriptsize] at (.2,-5.4) {DELIVERY: BUILD ONCE; HUMAN PROMOTES};
+\node[smallbox,text width=2.7cm] (git) at (1.85,-6.03) {Git branch / PR\\Versioned source};
+\node[smallbox,text width=2.7cm] (ci) at (6.25,-6.03) {GitHub Actions\\Tests + image smoke};
+\node[smallbox,text width=2.7cm] (registry) at (10.65,-6.03) {GHCR + manifest\\Tested image pair};
+\node[smallbox,text width=2.7cm] (human) at (15.05,-6.03) {Human approval\\Backup / switch / smoke};
+\draw[delivery] (git)--(ci);\draw[delivery] (ci)--(registry);\draw[delivery] (registry)--(human);
+\draw[delivery] (human.north)--(15.05,-4.9);
 \end{tikzpicture}
 \end{center}
 
-\subheading{Containers and communication}
-The installed guided stack has \textbf{three containers}: frontend, API and database.
-A qualified model deployment would add Ollama as a fourth service. The API addresses
-PostgreSQL and Ollama by Compose service DNS; container \texttt{localhost} is not the
-host or another container. The platform proxy terminates TLS and forwards HTTP to Nginx
-on VM port 5173; this is not end-to-end TLS to the container. API port 8000 stays
-loopback-only; database/model ports are not published. Qdrant is not required by the
-installed lexical/extractive policy path.
-
-\subheading{Configuration, persistence and restart behavior}
-Deployment uses \codefile{compose.jetstream.yml}, private environment settings,
-named data/model volumes, health checks and \texttt{restart: unless-stopped}.
-The restart policy restarts an exited process; an unhealthy flag alone does not imply
-automatic repair. CPU/memory caps limit contention. Only synthetic data are permitted:
-the fictional-account selector is not production authentication.
-
-\subheading{Version identity}
-The API and frontend images carry the source commit. A release manifest binds their
-digests, schema expectation and policy checksum. Readiness checks database tables and
-columns as well as application identity. A responding model endpoint or a green
-\texttt{/ready} is not evidence that real model inference is accurate or fast enough.
-
-\newpage
-% PAGE 4: reproducible interaction, API and analytic responsibility.
-\sectiontitle{4}{Prototype interaction, API and core analytic}
-\subheading{A representative customer interaction}
+\heading{One request, end to end}
 \begin{enumerate}
-\item Choose a fictional account and enter: \emph{``The jacket is too small;
-I would like to return it.''} The interface requests selection of an owned order/item.
-\item The API checks trusted order data: delivery, the 30-day return window,
-final-sale status and an existing return. A failed precheck produces a policy-based
-explanation rather than unnecessary condition questions.
-\item For an eligible order, collect the raw return reason and the missing resale
-conditions: stains, garment damage, attached tags and intact tags. The installed
-guided mode uses explicit choices; an enabled LLM may interpret natural language.
-\item If a condition remains unknown, collect the remaining information and create
-a persistent simulated support ticket. Otherwise evaluate the versioned policy and
-show an eligibility result or refusal with relevant clauses.
-\item Only an eligible case with explicit confirmation creates a simulated RMA.
-Reopening the case returns its stored state. No money is transferred.
+\item The browser posts the message and active question ID. Nginx forwards it to
+FastAPI over the private Compose network; the response returns on the same path.
+\item FastAPI checks the fictional account's order ownership and trusted order facts.
+If configured, one Ollama call interprets text; exact-evidence/type checks filter candidates.
+\item Application code binds a collective declaration to the current item, question
+and policy snapshot, checks exceptions and eligibility, and persists the result in
+PostgreSQL. A final check and atomic creation prevent duplicate simulated returns.
+\item Policy lookup retrieves clauses from the same versioned policy source and
+returns citations. It explains the policy; it does not replace the eligibility engine.
 \end{enumerate}
-The full sequence above is an \textbf{illustrative walkthrough}. On October 24, a separate
-browser session verified the public HTTPS path through account selection, return text,
-an owned-order card, reason entry and a condition question, plus cited policy lookup.
-It did not submit an RMA. Earlier cloud acceptance separately tested ticket persistence
-and cross-account denial.
 
-\subheading{Representative API surface}
-\begin{tabularx}{\linewidth}{@{}p{0.52\linewidth}Y@{}}
-\toprule
-\textbf{HTTP endpoint} & \textbf{Responsibility} \\
+\begin{tabularx}{\linewidth}{@{}p{.46\linewidth}Y@{}}
+\toprule\textbf{Representative documented API} & \textbf{Purpose} \\
 \midrule
-\codefile{GET /api/v1/demo/customers}\newline
-\codefile{POST /api/v1/demo/session} & Select a fictional account; issue a signed demo cookie.
-This is a demo identity mechanism, not real authentication. \\
-\codefile{POST /api/v1/chat} & Submit new text; return case state, explanation and the next question. \\
-\codefile{POST /api/v1/questions/{id}/answer} & Submit a card choice or permitted free-text answer;
-the server validates question ownership and state. \\
-\codefile{GET /api/v1/return-cases/{session}} & Restore the authorized customer's case, question,
-ticket or simulated return. \\
-\codefile{POST /api/v1/policy/ask} & Retrieve policy clauses and provide a cited explanation;
-do not mutate the active return. \\
-\codefile{GET /health}, \codefile{/ready}, \codefile{/metrics} & Operational probes, version/schema
-readiness and Prometheus-format application metrics. FastAPI exposes API docs at \codefile{/docs}. \\
-\bottomrule
-\end{tabularx}
-
-\subheading{Core analytic: language, policy and retrieval have different jobs}
-The semantic component extracts only customer-stated candidate facts with evidence.
-It does not decide eligibility. The configured policy requires appropriate resale
-conditions; wearing alone does not cause refusal. Customer-caused adverse conditions
-can be ineligible; arrival issues, defects and uncertain responsibility require review.
-
-The current apparel policy is \codefile{apparel-1.0.0.json}. It supplies decision
-parameters and rendered explanation clauses from one versioned source. Policy help
-uses lexical retrieval and extractive answers in the installed configuration. This is
-not a claim that an LLM or vector search authorizes returns. A policy change still
-needs tests and a release; a new kind of policy may require application changes.
-
-\notice{\textbf{Model boundary.} Exact evidence checks and structured JSON prevent some
-mechanical errors, not all semantic mistakes. Wrong-item references, unsupported values,
-negation and instructions inside user text remain known risks. Qwen trials and harness
-experiments are not formal qualification or a claim of production readiness.}
+\code{POST /api/v1/chat} & Text in; case, explanation and next question out. \\
+\code{POST /api/v1/questions/{id}/answer} & Explicit card answer or declaration + submission. \\
+\code{POST /api/v1/policy/ask} & Cited policy help without changing the active return. \\
+\code{GET /health}, \code{GET /ready} & Process health; database/schema and version readiness. \\
+\bottomrule\end{tabularx}
+\par\smallskip
+{\small\textbf{Deployment choices.} Private environment settings; matching API/frontend
+image digests; named volumes; restart and health policies. Ollama is CPU-only, one
+request/model at a time, with 4096 context, 512 output tokens and a 60-second request
+budget. Qdrant is not required by this lexical/extractive policy path.}
 
 \newpage
-% PAGE 5: course-aligned CI/CD, smoke and data-safe recovery.
-\sectiontitle{5}{Continuous delivery, testing and recovery}
-\subheading{Build once; promote deliberately}
-GitHub Actions checks Python lint/types/tests, runs database migrations against real
-PostgreSQL, exercises API workflows, and lints/builds the frontend. It then builds
-Linux AMD64 API/frontend images, starts those exact images with an isolated database,
-and performs HTTP smoke. An approved release trigger publishes the \emph{same} tested
-images to GHCR and uploads an operator bundle; there is no second build on the VM.
+\heading{3. Prototype, verification and delivery status}
+\heading{A brief user example: normal path and exception}
+These are intended interactions of the local candidate, not a recorded cloud trial.
+Assume a fictional customer's owned item has passed delivery, deadline, sale and
+duplicate-return checks. The reason is optional.
 
-Main pushes and explicitly authorized candidate tags can publish. Ordinary experiment
-pushes only validate. The manually published candidate \texttt{\DeployedCommit} passed
-\href{https://github.com/Zejun-Derry-Xu/DML_Project/actions/runs/40016963668}{CI validation,
-image publication and artifact upload}. The newer \texttt{\SourceCommit} snapshot also
-passed \href{https://github.com/Zejun-Derry-Xu/DML_Project/actions/runs/40035335912}{CI};
-that does not mean it was deployed. \textbf{This is continuous delivery with manual
-promotion, not automatic continuous deployment.}
-
-\subheading{What smoke tests establish}
-\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth}Y@{}}
-\toprule
-\textbf{Layer} & \textbf{Checks and limits} \\
+\begin{tabularx}{\linewidth}{@{}p{.13\linewidth}>{\raggedright\arraybackslash}p{.32\linewidth}Y@{}}
+\toprule\textbf{Stage} & \textbf{Customer / interface} & \textbf{System behavior} \\
 \midrule
-CI image smoke & Health/readiness, workflow/schema/commit identity, a known policy citation,
-and a guided account/order/cards/confirmation path to a simulated RMA. Tests use an
-isolated disposable database; they do not establish Qwen accuracy. \\
-Deployment smoke & Read-only application health, expected identity, policy citation and
-matching frontend/API versions. It does not create a live return merely to test uptime. \\
-Model acceptance & Separate serial inference/evaluation and a real-model application
-workflow check. Downloading weights, seeing a model name or passing guided smoke does
-not satisfy this gate. Formal qualification remains incomplete. \\
-\bottomrule
-\end{tabularx}
+Request & ``The shirt is too loose. I want to return it.'' & Verify ownership; select
+the order/item. Do not assume clean, undamaged or intact tags from a fit complaint. \\
+Checklist & Show stains, garment damage, removed tags and damaged tags together.
+Invite a collective answer or exceptions. & Bind the displayed list to this item,
+case version, policy and question. Do not preselect an answer. \\
+Normal path & ``None of those problems apply, and please submit my return.'' & In
+the intended model path, interpret declaration and consent together; perform final
+checks and create one simulated RMA. The explicit button supports the same action. \\
+Exception path & ``The shirt is clean, but the tags were cut off. Can I return it?'' &
+Cite the relevant condition/origin clauses; ask whether this was already true on
+arrival or happened later. Do not repeat unrelated questions or invent an exception. \\
+\bottomrule\end{tabularx}
 
-\subheading{Manual deployment sequence}
-\begin{enumerate}
-\item Validate the release manifest and immutable image pair; acquire a deployment lock.
-Pull images and check commit labels before switching the application.
-\item Stop API/frontend writes, take a PostgreSQL dump and verify archive readability.
-Apply additive migrations using the new image; preserve existing volumes and records.
-\item Start the selected image pair without rebuilding. Check frontend/API commit,
-schema expectation, policy checksum and read-only smoke; record success only afterward.
-\end{enumerate}
-Failures stop the process with stage-specific errors. Some failures leave the app
-stopped or a pending pair running; the runbook describes inspection and recovery.
-No automatic database overwrite or destructive downgrade is used as a repair shortcut.
-
-\subheading{Persistent data makes rollback different from code checkout}
-The cloud adoption included a database backup and restoration into a separate test
-database, then additive migration from schema \texttt{0002} to \texttt{0004}, preserving
-historical cases and the existing simulated return. Archive listing alone would not
-prove recovery, so the distinct restore check matters.
-
-A rollback checker and unit tests exist, but a \textbf{real two-release compatibility
-rehearsal is pending}. The deployment script refuses an unapproved old image pair.
-Rolling back code must retain new business records and a compatible expanded schema;
-it must not mean deleting a volume or restoring an old dump over new data.
-
-\notice{\textbf{Current governance gap.} CI reports pass/fail, but main has no enforced
-required-check rule in the last repository inspection. Branch protection, formal version
-releases/change notes and the actual rollback rehearsal are next delivery tasks.}
-
-\newpage
-% PAGE 6: evidence limits, scale/cost/usability and a concrete finishing checklist.
-\sectiontitle{6}{Evaluation, limitations and next steps}
-\subheading{Evaluate the deployed system, not just a model score}
-\begin{tabularx}{\linewidth}{@{}p{0.22\linewidth}YY@{}}
-\toprule
-\textbf{Dimension} & \textbf{Current approach} & \textbf{Limit / next evidence} \\
-\midrule
-Functional correctness & Unit, API, PostgreSQL and image-smoke checks; ownership,
-persistence, unknown handoff and duplicate/confirmation safeguards. & Isolated tests
-do not prove high availability or all real-world return behavior. \\
-Extraction / retrieval & Public ABCD adapters and authored apparel diagnostics;
-score labelled fields, unsupported fills and policy citations separately. & Unlabelled
-fields are not gold negatives. Authored labels are provisional; tau2 end-to-end
-benchmarking remains future work. \\
-Efficiency / usability & Track request latency/errors and outcome counters. Guided
-cards give a usable no-model path; only missing facts are requested. & Measure actual
-completion time, extra questions, abandonment and user ease of use; no user study claimed. \\
-Cost / capacity & CPU VM, small Compose stack, resource-limited optional model,
-single model request concurrency and reusable cached weights. & No billed-cost saving,
-throughput SLA or concurrent-load capacity claim. Cloud and Mac timings are not interchangeable. \\
-\bottomrule
-\end{tabularx}
-
-\subheading{Known deployment limitations}
+\heading{CI, smoke and manual continuous delivery}
 \begin{itemize}
-\item \textbf{Access:} public HTTPS interaction was verified on October 24. Its proxy
-hostname embeds the VM's public IP; shelving stops access and unshelving may change
-the URL. Plain IP/HTTP is not the supported interactive entry.
-\item \textbf{Reliability:} one VM, no replicas or automatic failover; upgrades have
-planned downtime. Local backups need off-host retention. Metrics are exposed but no
-deployed monitoring/alerting platform is claimed.
-\item \textbf{Security and scope:} fictional accounts and synthetic orders only.
-No production identity provider, real refund integration or physical-condition inspection.
-\item \textbf{Model operation:} CPU cold starts/timeouts and unsupported facts remain
-risks. Model experimentation is paused in favor of delivery work; the normal guided
-prototype is not presented as a qualified Qwen-powered production service.
+\item \textbf{CI checks the candidate:} Python lint/types/tests, PostgreSQL migrations
+and API flows, frontend tests/build, then Linux AMD64 API/frontend image builds.
+Image smoke runs those exact images with an isolated database and a guided demo flow.
+Passing this smoke does not establish real Qwen performance.
+\item \textbf{CD prepares a deployable release:} approved triggers publish the tested
+image pair to GHCR with a commit/digest manifest. A human promotes it; the VM does not
+rebuild source. This is continuous delivery, not automatic continuous deployment.
+\item \textbf{Deployment protects state:} stop writes, back up PostgreSQL, migrate,
+switch the paired images, then verify readiness, version identity and policy lookup.
+Real-model CPU qualification and application smoke are separate gates for LLM mode.
+Rollback must preserve new records and a compatible schema, not delete volumes.
 \end{itemize}
 
-\subheading{Finish the checkpoint without expanding the architecture}
-\begin{enumerate}
-\item Confirm the full team roster and recheck the HTTPS URL before class. Keep the VM
-running for the agreed demonstration; update the report if its public IP changes.
-\item Refresh deployment/diagram evidence against the exact selected release. Clearly
-label installed, experimental and planned components; retain the guided/model distinction.
-\item Add required CI checks for main, complete a disposable two-version rollback
-exercise, and add versioned release notes. These strengthen delivery without new agents,
-training, Kubernetes or automatic production promotion.
-\end{enumerate}
-
-\subheading{Representative code and operator references}
-\begin{tabularx}{\linewidth}{@{}p{0.36\linewidth}Y@{}}
-\toprule
-\textbf{Concern} & \textbf{Repository reference (links pinned to source snapshot)} \\
+\heading{What is verified, and what remains?}
+\begin{tabularx}{\linewidth}{@{}p{.23\linewidth}Y@{}}
+\toprule\textbf{Evidence level} & \textbf{Status as of this draft} \\
 \midrule
-UI / workflow & \src{frontend/src/ApparelApp.tsx}{\codefile{frontend/src/ApparelApp.tsx}};
-\src{app/services/apparel_service.py}{\codefile{app/services/apparel_service.py}} \\
-Analytic / policy & \src{app/extractors/apparel_llm.py}{\codefile{app/extractors/apparel_llm.py}};
-\src{app/policy/apparel.py}{\codefile{app/policy/apparel.py}} \\
-Delivery / verification & \src{.github/workflows/ci.yml}{\codefile{.github/workflows/ci.yml}};
-\src{scripts/deploy_release.py}{\codefile{scripts/deploy_release.py}};
-\src{scripts/smoke_apparel.py}{\codefile{scripts/smoke_apparel.py}} \\
-Operator handoff & \src{docs/apparel-runbook.md}{\codefile{docs/apparel-runbook.md}};
-\src{scripts/check_rollback.py}{\codefile{scripts/check_rollback.py}} \\
-\bottomrule
-\end{tabularx}
+Earlier cloud prototype & Public HTTPS interaction verified October 24 for the guided
+release, not the latest checklist/4B candidate. VM access is not live while shelved. \\
+Latest local candidate & Checklist, collective declaration, exception handling and
+fallback implemented. Last local backend run: 462 tests, lint and types passed.
+This is not a new GitHub CI run or real-model cloud qualification. \\
+Model and evaluation & Structured output and evidence checks exist, but recent 4B
+diagnostics still show unsupported facts. Benchmark work is paused; no formal quality
+approval is claimed. Planned comparison: frozen rules vs. model-assisted extraction,
+using precision/recall and request latency, not inferred dialogue-turn savings. \\
+Before submission & Publish a tested candidate pair, explicitly select 4B (the current
+deployment template defaults to 8B), satisfy the LLM deployment gate, verify public
+HTTPS, persistence and fallback, then replace this draft's pending status. \\
+\bottomrule\end{tabularx}
+
+\heading{Practical limits and next steps}
+One VM has no failover or zero-downtime upgrades. A monitoring dashboard, off-host
+backup retention and a two-release rollback rehearsal remain open. Only synthetic
+accounts and orders are supported; there are no real refunds or physical inspections.
+Recheck public HTTPS after unshelving. Candidate source: \texttt{e835d76} plus local
+changes, not yet a published release.
+\label{report-end}
 \end{document}
