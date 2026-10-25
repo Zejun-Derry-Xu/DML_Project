@@ -5,17 +5,25 @@ This directory contains an English LaTeX draft for DSAN 6700 Deliverable 2.
 `output/pdf/returnflow-midpoint.pdf`; both architecture diagrams are native TikZ
 inside the source, so there are no external figure assets to lose or regenerate.
 
-**2026-10-25 concise rewrite:** the report now prioritizes two architecture diagrams,
-the Process / Execution / State table, and a short interaction example. The selected
-target is Qwen3 4B with the checklist-led conversation, not the earlier individual
-questions or the deployment template's default 8B. The source and exported PDF are
-updated together. The newest local candidate is NOT yet cloud-verified; the historical
-HTTPS entry is explicitly labelled and must be rechecked before submission.
+**2026-10-25 narrative revision:** the open source now integrates Process / Execution /
+State into natural paragraphs rather than a question-by-question table. Both diagrams
+use descriptive responsibility names; three coloured examples distinguish Qwen's
+semantic/action interpretation from deterministic format, evidence and business checks.
+The selected target remains Qwen3 4B with the checklist-led conversation. The newest
+local candidate is NOT yet cloud-verified; the historical HTTPS entry must be rechecked.
+
+**2026-10-25 synchronized export:** the source and exported
+`output/pdf/returnflow-midpoint.pdf` now contain the same three-page narrative revision,
+replacing the table-based report from commit `863f5be`. The two diagrams' spacing was
+checked in the exported pages. This report-only update does not deploy application code.
 
 ## Scope and evidence
 
-- Three pages: solution architecture and design table; technical architecture and
-  request/API flow; prototype example, delivery/testing and evidence limits.
+- Three pages: solution architecture and lifecycle narrative; technical architecture,
+  request flow and delivery; three coloured extraction/declaration examples and limits.
+- Extraction explanation matches the local apparel path: Qwen interprets intent and
+  reason together. The report does NOT claim a return-keyword regex hands the remaining
+  sentence to Qwen. Narrow order-pattern/control checks are described separately.
 - Confirmed team: Zejun Xu, Peixuan Ji, Shuchen Liu.
 - Current diagram describes local `e835d76` plus uncommitted candidate changes,
   including checklist declarations and the extraction 2.1 candidate. Historic source
