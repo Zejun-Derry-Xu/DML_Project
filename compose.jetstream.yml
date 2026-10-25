@@ -30,7 +30,7 @@ services:
       DEMO_SESSION_SECRET: ${DEMO_SESSION_SECRET:?Generate a private demo session secret}
       DEMO_COOKIE_SECURE: ${DEMO_COOKIE_SECURE:-false}
       LLM_PROVIDER: ollama
-      LLM_MODEL: ${LLM_MODEL:-qwen3:8b}
+      LLM_MODEL: ${LLM_MODEL:-qwen3:4b}
       LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0}
       LLM_BASE_URL: http://ollama:11434/v1
       LLM_TIMEOUT_SECONDS: 60
