@@ -28,6 +28,7 @@ from app.extractors.base import ExtractorError
 from app.policy.apparel import CONDITIONS, VERSION, load_apparel_policy, precheck
 from app.repositories.order_repository import OrderRepository
 from app.repositories.return_repository import ReturnRepository
+from app.services.apparel_questions import collection_fields, collection_prompt
 from app.services.order_service import to_snapshot
 
 WORKFLOW = "apparel-1"
@@ -120,7 +121,9 @@ class ApparelService:
         order = self._order(case.order_number)
         return next((i for i in order.items if i.id == case.item_id), None)
 
-    async def chat(self, session_id: UUID, message: str) -> CaseResponse:
+    async def chat(
+        self, session_id: UUID, message: str, in_reply_to_question_id: UUID | None = None
+    ) -> CaseResponse:
         case = self._new_or_owned(session_id)
         if case.workflow_version != WORKFLOW or case.status in TERMINAL:
             return self.response(case)
@@ -181,24 +184,63 @@ class ApparelService:
         pending: str | None,
         *,
         message_id: str | None = None,
-    ) -> None:
+    ) -> Extraction:
         extractor = LLMFactExtractor(self.settings)
         started = perf_counter()
         observations = dict(case.field_observations)
         degraded = False
+        question = self.returns.pending_question(case.session_id)
+        collection = observations.get("_collection", {})
+        requested = (
+            collection.get("fields", [pending])
+            if question and pending and collection.get("question_id") == str(question.id)
+            else [pending]
+            if pending
+            else []
+        )
+        ambiguous_group_reply = len(requested) > 1 and message.strip().casefold().rstrip(".!?") in {
+            "yes",
+            "no",
+            "yep",
+            "nope",
+        }
+        if pending == "condition_checklist" and message.strip().casefold().rstrip(".!?。！？") in {
+            "yes",
+            "no",
+            "okay",
+            "ok",
+            "sure",
+            "嗯",
+            "可以",
+            "好",
+            "好的",
+            "行",
+        }:
+            # A vague acknowledgment is not a scoped declaration of four conditions.
+            ambiguous_group_reply = True
         try:
-            result = await extractor.extract(
-                message,
-                {
-                    "question": PROMPTS.get(pending or "", "Describe the return"),
-                    "target": pending,
-                    "selected_item": case.item_name,
-                    "known_facts_reference_only": {
-                        k: {"value": v.get("value"), "state": v.get("state")}
-                        for k, v in observations.items()
-                        if not k.startswith("_")
+            result = (
+                Extraction(intent="unclear", intent_evidence="", facts=[])
+                if ambiguous_group_reply
+                else await extractor.extract(
+                    message,
+                    {
+                        "question": question.prompt
+                        if question and question.field == pending
+                        else PROMPTS.get(pending or "", "Describe the return"),
+                        "target": pending,
+                        "requested_fields": requested,
+                        "current_checklist": observations.get("_checklist")
+                        if question and question.field == "condition_checklist"
+                        else None,
+                        "selected_item": case.item_name,
+                        "known_facts_reference_only": {
+                            k: {"value": v.get("value"), "state": v.get("state")}
+                            for k, v in observations.items()
+                            if not k.startswith("_")
+                        },
                     },
-                },
+                )
             )
         except ExtractorError:
             degraded = True
@@ -218,6 +260,16 @@ class ApparelService:
         supplied = set()
         for fact in result.facts:
             if fact.state == "not_mentioned":
+                continue
+            if (
+                self.settings.collection_style == "checklist"
+                and result.checklist_reply.kind == "all_clear"
+                and fact.field in CONDITIONS
+                and fact.state == "stated"
+                and fact.value
+                == load_apparel_policy(case.policy_version).required_conditions[fact.field]
+            ):
+                # Aggregate claims have their own authenticated scope and provenance.
                 continue
             supplied.add(fact.field)
             if fact.field in {"order_number", "item_name"}:
@@ -251,15 +303,22 @@ class ApparelService:
             observations[fact.field] = entry
             if state == "known":
                 self._set_value(case, fact.field, fact.value)
-        if pending and pending not in supplied and pending != "confirm_return":
-            old = observations.get(pending, {})
-            attempts = old.get("attempts", 0) + 1
-            observations[pending] = {
-                **old,
-                "attempts": attempts,
-                "state": "unknown" if attempts >= 2 else "missing",
-            }
+        # A partial answer is progress, not a failed answer to every other field.
+        # Only two no-progress replies exhaust the currently requested details.
+        progress = any(field in supplied for field in requested)
+        if not progress and self.settings.collection_style != "checklist":
+            for field in requested:
+                if field == "confirm_return" or field in supplied:
+                    continue
+                old = observations.get(field, {})
+                attempts = old.get("attempts", 0) + 1
+                observations[field] = {
+                    **old,
+                    "attempts": attempts,
+                    "state": "unknown" if attempts >= 2 else "missing",
+                }
         observations["_degraded"] = degraded
+        observations["_ambiguous_group_reply"] = ambiguous_group_reply
         case.field_observations = observations
         self.db.add(
             ToolCallRecord(
@@ -276,6 +335,7 @@ class ApparelService:
                 latency_ms=round((perf_counter() - started) * 1000),
             )
         )
+        return result
 
     @staticmethod
     def _set_value(case: ReturnCaseRecord, field: str, value: Any) -> None:
@@ -402,9 +462,26 @@ class ApparelService:
                     {"value": "no", "label": "No"},
                     {"value": "unknown", "label": "I'm not sure"},
                 ]
-        prompt = PROMPTS[field]
+        option_prompt = PROMPTS[field]
         if case.field_observations.get(field, {}).get("state") == "conflict":
-            prompt = "Your statements differ. Please confirm: " + prompt
+            option_prompt = "Your statements differ. Please confirm: " + option_prompt
+        fields = collection_fields(
+            field,
+            {
+                key: value.get("state", "missing")
+                for key, value in case.field_observations.items()
+                if not key.startswith("_")
+            },
+            enabled=self.settings.extraction_mode == "llm"
+            and self.settings.collection_style == "conversational"
+            and not case.field_observations.get("_degraded", False),
+        )
+        prompt = collection_prompt(fields, option_prompt)
+        if len(fields) > 1 and case.field_observations.get("_ambiguous_group_reply"):
+            prompt += (
+                " A single yes or no does not tell me which details you mean. "
+                "Please name them, or use the quick answers."
+            )
         question = QuestionRequestRecord(
             id=uuid4(),
             session_id=case.session_id,
@@ -418,6 +495,14 @@ class ApparelService:
             expires_at=datetime.now(UTC) + timedelta(minutes=10),
         )
         self.db.add(question)
+        case.field_observations = {
+            **case.field_observations,
+            "_collection": {
+                "question_id": str(question.id),
+                "fields": fields,
+                "option_prompt": option_prompt,
+            },
+        }
         case.pending_question, case.status = field, "awaiting_user"
         case.decision = "eligible" if field == "confirm_return" else "need_more_information"
         case.decision_reason = "ELIGIBLE" if field == "confirm_return" else "MISSING_INFORMATION"
@@ -504,17 +589,12 @@ class ApparelService:
         # Recheck required facts, including current configuration, before the atomic claim.
         policy = load_apparel_policy(case.policy_version)
         obs = case.field_observations
-        if (
-            not case.reason_text
-            or any(
-                obs.get(f, {}).get("state") != "known" or obs[f].get("value") != expected
-                for f, expected in policy.required_conditions.items()
-            )
-            or any(
-                obs.get(f, {}).get("value")
-                or obs.get(f, {}).get("state") in {"unknown", "conflict"}
-                for f in ("reported_defect", "reported_wrong_item")
-            )
+        if any(
+            obs.get(f, {}).get("state") != "known" or obs[f].get("value") != expected
+            for f, expected in policy.required_conditions.items()
+        ) or any(
+            obs.get(f, {}).get("value") or obs.get(f, {}).get("state") in {"unknown", "conflict"}
+            for f in ("reported_defect", "reported_wrong_item")
         ):
             return self._ticket(case, "UNRESOLVED_INFORMATION")
         if case.decision != "eligible" or not case.item_id or not case.order_id:
@@ -592,6 +672,8 @@ class ApparelService:
     def response(self, case: ReturnCaseRecord) -> CaseResponse:
         readonly = case.workflow_version != WORKFLOW
         pending = self.returns.pending_question(case.session_id) if not readonly else None
+        collection = case.field_observations.get("_collection", {})
+        matching_collection = pending and collection.get("question_id") == str(pending.id)
         ticket = self.db.scalar(
             select(SupportTicketRecord).where(SupportTicketRecord.return_case_id == case.id)
         )
@@ -642,7 +724,13 @@ class ApparelService:
                 options=pending.options,
                 allow_free_text=pending.allow_free_text,
                 status=pending.status,
-                expires_at=pending.expires_at,
+                expires_at=aware(pending.expires_at),
+                requested_fields=collection.get("fields", [pending.field])
+                if matching_collection
+                else [pending.field],
+                option_prompt=collection.get("option_prompt")
+                if matching_collection
+                else pending.prompt,
             )
             if pending
             else None,
@@ -677,3 +765,13 @@ class ApparelService:
             if ticket
             else None,
         )
+
+
+def build_apparel_service(
+    db: Session, customer: CustomerRecord, settings: Settings
+) -> ApparelService:
+    if settings.collection_style == "checklist":
+        from app.services.checklist_service import ChecklistService
+
+        return ChecklistService(db, customer, settings)
+    return ApparelService(db, customer, settings)

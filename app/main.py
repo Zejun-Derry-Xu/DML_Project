@@ -177,6 +177,7 @@ def create_app() -> FastAPI:
                     "schema": "0004",
                     "policy_sha256": policy_hash,
                     "extraction_mode": settings.extraction_mode,
+                    "collection_style": settings.collection_style,
                     "model": settings.llm_model,
                 }
             )

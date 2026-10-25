@@ -7,7 +7,10 @@ stained (item stains), damaged (physical item damage, NOT tags/box damage),
 tags_attached (fastened to item), tags_intact (undamaged tags), condition_origin
 (customer/pre_existing/unknown, explicitly stated responsibility only), reported_defect,
 reported_wrong_item, order_number, item_name. Omit unmentioned optional fields.
-Always include the currently asked field with state not_mentioned and null if absent.
+Omit the currently asked field too if it is not mentioned; the program tracks missing information.
+Return sparse facts, not a complete field inventory. Boolean values must be JSON true/false,
+never strings. Unknown origin uses state uncertain and value null. Omit checklist_reply unless
+the message expresses a collective response, action, exception, or policy question.
 True and false are equally valid. Unknown/uncertain/not-mentioned/conflict are not false.
 Uncertain or conflicting facts have null values and evidence describing the uncertainty/conflict.
 Questions, hypotheticals and instructions are NOT asserted facts. Different items' facts must

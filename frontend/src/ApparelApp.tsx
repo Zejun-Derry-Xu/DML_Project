@@ -3,10 +3,11 @@ import type { FormEvent } from "react";
 import { answerQuestion, askPolicy, demoCustomers, resumeCase, selectDemoCustomer, sendMessage } from "./api";
 import type { DemoCustomer } from "./api";
 import type { CaseResponse, ChatMessage, PolicyExplanation } from "./types";
+import { FACT_LABELS, quickAnswerLabel, quickAnswerPrompt, showQuickAnswers } from "./apparelExperience";
 
 const welcome: ChatMessage = {
   id: "welcome", role: "assistant",
-  content: "Hi! Describe your clothing return. You can select an order — no order number to remember.",
+  content: "Hi! Tell me what you want to return. A reason is optional. After we find your item, I will show the conditions together — you can confirm them all or tell me just the exceptions. I will check the order and deadline for you.",
 };
 
 function displayFact(value: unknown): string {
@@ -30,10 +31,15 @@ export default function ApparelApp() {
   const [error, setError] = useState("");
   const [policyQuestion, setPolicyQuestion] = useState("");
   const [policy, setPolicy] = useState<PolicyExplanation | null>(null);
-  const end = useRef<HTMLDivElement>(null);
-  const input = useRef<HTMLInputElement>(null);
+  const latestMessage = useRef<HTMLElement>(null);
+  const checklistStep = useRef<HTMLElement>(null);
+  const input = useRef<HTMLTextAreaElement>(null);
   useEffect(() => { demoCustomers().then(setAccounts).catch((e: Error) => setError(e.message)); }, []);
-  useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, current]);
+  useEffect(() => {
+    if (current?.question?.field === "condition_checklist" && !busy) {
+      checklistStep.current?.scrollIntoView({ behavior: "auto", block: "start" });
+    } else latestMessage.current?.scrollIntoView({ behavior: "auto", block: "start" });
+  }, [messages, current, busy]);
 
   async function select(id: string) {
     setBusy(true); setError("");
@@ -42,7 +48,7 @@ export default function ApparelApp() {
       const key = `returnflow-apparel-${id}`;
       const saved = sessionStorage.getItem(key);
       const next = saved ?? crypto.randomUUID();
-      setAccount(user); setSession(next); setCurrent(null); setMessages([welcome]);
+      setAccount(user); setSession(next); setCurrent(null); setMessages([welcome]); setDraft(""); setPolicy(null);
       sessionStorage.setItem(key, next);
       if (saved) {
         try {
@@ -63,20 +69,25 @@ export default function ApparelApp() {
   }
 
   async function run(action: () => Promise<CaseResponse>, label: string) {
-    if (busy) return;
+    if (busy) return false;
     setBusy(true); setError("");
-    setMessages((old) => [...old, { id: crypto.randomUUID(), role: "user", content: label }]);
+    const outgoingId = crypto.randomUUID();
+    setMessages((old) => [...old, { id: outgoingId, role: "user", content: label }]);
     try {
       const result = await action(); setCurrent(result);
       setMessages((old) => [...old, { id: crypto.randomUUID(), role: "assistant", content: result.reply }]);
-    } catch (e) { setError(e instanceof Error ? e.message : "Request failed"); }
+      return true;
+    } catch (e) {
+      setMessages((old) => old.filter((message) => message.id !== outgoingId));
+      setError(e instanceof Error ? e.message : "Request failed"); return false;
+    }
     finally { setBusy(false); }
   }
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault(); const text = draft.trim();
     if (!text || !account || busy) return;
-    setDraft(""); void run(() => sendMessage(session, "", text), text);
+    if (await run(() => sendMessage(session, "", text, current?.question?.question_id), text)) setDraft("");
   }
 
   async function queryPolicy(e: FormEvent) {
@@ -92,7 +103,7 @@ export default function ApparelApp() {
     <header className="topbar"><a className="brand" href="/">↩ ReturnFlow</a>
       <button className="restart" onClick={restart} disabled={busy || !account}>New return</button></header>
     <section className="hero"><p className="eyebrow">APPAREL RETURN ASSISTANT</p>
-      <h1>A smoother way back.</h1><p>Fictional accounts. Customer-reported pre-screening, not physical inspection.</p></section>
+      <h1>A smoother way back.</h1><p>Tell us the story. We will check the details.</p></section>
     <section className="policy-help">
       <label>Demo account (not real authentication) <select aria-label="Demo account" disabled={busy}
         value={account?.id ?? ""} onChange={(e) => void select(e.target.value)}>
@@ -103,31 +114,64 @@ export default function ApparelApp() {
     <section className="workspace" aria-label="Return conversation">
       <div className="trust-strip"><span>Policy-checked decisions</span><span>Nothing submitted until you confirm</span></div>
       <div className="conversation" aria-live="polite">
-        {messages.map((m) => <article className={`message ${m.role}`} key={m.id}><p>{m.content}</p></article>)}
-        {current?.degraded && <p role="status" className="policy-warning">Language extraction is unavailable. Use the cards; unresolved information goes to simulated support.</p>}
-        {current?.question && !busy && <div className="question-card">
-          <p className="card-label">{current.question.prompt}</p>
+        {messages.map((m, index) => <article ref={index === messages.length - 1 ? latestMessage : undefined} className={`message ${m.role}`} key={m.id}><p>{m.content}</p></article>)}
+        {current?.degraded && <p role="status" className="policy-warning">Natural-language understanding is currently off or unavailable. Review the displayed conditions and use the explicit choices below. We will not guess what a free-text answer means.</p>}
+        {current?.question && !["confirm_return", "condition_checklist"].includes(current.question.field) && !busy && <details className="question-card" key={current.question.question_id}
+          open={showQuickAnswers(current.question, current.degraded)}>
+          <summary>{["order_id", "item_id"].includes(current.question.field) ? "Choose your item or order"
+            : current.degraded ? "Quick answers" : "Prefer quick answers?"}</summary>
+          <p className="card-label">{quickAnswerPrompt(current.question)}</p>
           <div className="options">{current.question.options.map((o) => <button key={o.value}
-            onClick={() => void run(() => answerQuestion(session, current.question!.question_id, o.value), o.label)}>
+            onClick={() => void run(() => answerQuestion(session, current.question!.question_id, o.value), quickAnswerLabel(current.question!, o.label))}>
             <strong>{o.label}</strong>{o.description && <span>{o.description}</span>}
           </button>)}
-            {current.question.allow_free_text && <button onClick={() => input.current?.focus()}>Other — type an answer</button>}
-          </div></div>}
+            {current.question.allow_free_text && !current.degraded && <button onClick={() => input.current?.focus()}>Answer in my own words</button>}
+          </div>
+          {(current.question.requested_fields?.length ?? 0) > 1 && <p className="free-text-note">These buttons answer only the question immediately above, not all the details in the conversation.</p>}
+          </details>}
         {current && Object.keys(current.facts).length > 0 && <details open={current.question?.field === "confirm_return"}>
           <summary>Review reported facts</summary><dl>{Object.entries(current.facts).map(([key, value]) =>
-            <div key={key}><dt>{key.replaceAll("_", " ")}</dt><dd>{displayFact(value)}</dd></div>)}</dl>
+            <div key={key}><dt>{FACT_LABELS[key] ?? key.replaceAll("_", " ")}</dt><dd>{displayFact(value)}</dd></div>)}</dl>
         </details>}
-        {current?.policy_evidence.map((c) => <aside key={c.clause_id} className="policy-evidence">
-          <strong>{c.clause_id} · {c.policy_version}</strong><p>{c.content}</p></aside>)}
+        {!!current?.policy_evidence.length && <details className="policy-evidence"><summary>Policy behind this step</summary>
+          {current.policy_evidence.map((c) => <aside key={c.clause_id}>
+            <strong>{c.clause_id} · {c.policy_version}</strong><p>{c.content}</p></aside>)}
+          </details>}
+        {current?.question?.field === "confirm_return" && !busy && <section className="question-card" aria-label="Confirm return">
+          <p>Check the summary above before submitting. Nothing has been submitted yet.</p>
+          <div className="options">{current.question.options.map((o) => <button key={o.value}
+            onClick={() => void run(() => answerQuestion(session, current.question!.question_id, o.value), o.label)}>
+            <strong>{o.label}</strong>
+          </button>)}</div>
+        </section>}
         {current?.support_ticket && <aside className="result-card"><h2>Simulated support ticket</h2>
           <p>{current.support_ticket.id}</p><p>{current.support_ticket.notice}</p></aside>}
         {current?.return_request && <aside className="result-card"><h2>Simulated RMA</h2><p>{current.return_request.rma_number}</p></aside>}
-        {busy && <p role="status">Working…</p>}<div ref={end} />
+        {busy && <p role="status">Working…</p>}
       </div>
+      {current?.question?.field === "condition_checklist" && !busy && <section ref={checklistStep} className="question-card checklist" aria-label="Return conditions">
+        <h2>Check these conditions together</h2>
+        <p>For <strong>{String(current.facts.item_name ?? "your selected item")}</strong> · {String(current.facts.order_number ?? "")}</p>
+        <p>Confirm that none of these problems apply:</p>
+        <ul>{current.question.checklist_items?.map((item) => <li key={item.field}>{item.problem}</li>)}</ul>
+        <p>You can tell me only the exceptions or what you are unsure about. The confirmation below declares all these problems absent and submits a simulated return request. No money is transferred.</p>
+        <div className="options">{current.question.options.map((o) => <button key={o.value}
+          onClick={() => void run(() => answerQuestion(session, current.question!.question_id, o.value), o.label)}>
+          <strong>{o.label}</strong>
+        </button>)}</div>
+      </section>}
       {error && <p className="error" role="alert">{error}</p>}
-      <form className="composer" onSubmit={submit}><div className="message-input"><input ref={input}
+      <form className="composer" onSubmit={(e) => void submit(e)}>
+        <p id="return-description-hint" className="composer-hint">Your own words are welcome. Describe what you know; you do not need to know the policy.</p>
+        <div className="message-input"><textarea ref={input}
         value={draft} onChange={(e) => setDraft(e.target.value)} aria-label="Message" maxLength={4000}
-        placeholder={terminal ? "Start a new return to continue" : "Describe your return or answer in your own words…"}
+        rows={3} aria-describedby="return-description-hint"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+            e.preventDefault(); e.currentTarget.form?.requestSubmit();
+          }
+        }}
+        placeholder={terminal ? "Start a new return to continue" : "Tell me about your return…"}
         disabled={!account || busy || !!terminal} /><button disabled={!account || busy || !!terminal || !draft.trim()}>Send →</button></div></form>
     </section>
     <section className="policy-help"><h2>Questions about our apparel policy?</h2>
@@ -139,6 +183,6 @@ export default function ApparelApp() {
       {policy && <div><p>{policy.answer}</p><p>{policy.policy_version} · {policy.generator_used}</p>
         {policy.citations.map((c) => <p key={c.clause_id}>{c.clause_id}: {c.content}</p>)}
         {policy.warning && <p role="status">{policy.warning}</p>}</div>}
-    </section><footer>Fictional demonstration only. No real refunds or external support notifications.</footer>
+    </section><footer>Fictional demonstration only. Customer-reported pre-screening, not physical inspection. No real refunds or external support notifications.</footer>
   </main>;
 }

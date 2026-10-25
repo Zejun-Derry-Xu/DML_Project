@@ -9,7 +9,7 @@ from app.config import get_settings
 from app.db.models import CustomerRecord
 from app.db.session import get_db
 from app.errors import AppError
-from app.services.apparel_service import ApparelService
+from app.services.apparel_service import build_apparel_service
 from app.services.case_service import CaseService
 from app.services.demo_identity import optional_demo_customer
 
@@ -33,15 +33,18 @@ def create_return(
 ) -> CaseResponse:
     if get_settings().workflow_mode == "apparel":
         assert customer is not None
-        service = ApparelService(db, customer, get_settings())
+        service = build_apparel_service(db, customer, get_settings())
         owned_case = service.owned(payload.session_id)
         confirmation = service.returns.question(payload.confirmation_question_id)
         if (
             owned_case.status == "return_created"
             and confirmation
             and confirmation.session_id == owned_case.session_id
-            and confirmation.field == "confirm_return"
-            and confirmation.selected_value == "confirm"
+            and (confirmation.field, confirmation.selected_value)
+            in {
+                ("confirm_return", "confirm"),
+                ("condition_checklist", "attest_and_submit"),
+            }
         ):
             return service.response(owned_case)
         raise AppError("CONFIRMATION_REQUIRED", "Answer the current confirmation card first.", 409)
@@ -79,7 +82,7 @@ def get_return_case(
 ) -> CaseResponse:
     if get_settings().workflow_mode == "apparel":
         assert customer is not None
-        return ApparelService(db, customer, get_settings()).resume(session_id)
+        return build_apparel_service(db, customer, get_settings()).resume(session_id)
     case, question, request = CaseService(db).resume(session_id)
     return present_case(case, question, request)
 
@@ -92,6 +95,6 @@ def resume_return_case(
 ) -> CaseResponse:
     if get_settings().workflow_mode == "apparel":
         assert customer is not None
-        return ApparelService(db, customer, get_settings()).resume(session_id)
+        return build_apparel_service(db, customer, get_settings()).resume(session_id)
     case, question, request = CaseService(db).resume(session_id)
     return present_case(case, question, request)

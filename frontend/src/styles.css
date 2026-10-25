@@ -19,7 +19,7 @@ body {
     linear-gradient(180deg, #f7f5ee 0%, #eeece3 100%);
 }
 
-button, input { font: inherit; }
+button, input, textarea { font: inherit; }
 button { cursor: pointer; }
 
 .shell { min-height: 100vh; }
@@ -139,6 +139,7 @@ button { cursor: pointer; }
   border-radius: 4px 16px 16px 16px;
   background: #eef2ed;
   line-height: 1.55;
+  white-space: pre-line;
 }
 
 .message.user p {
@@ -156,6 +157,24 @@ button { cursor: pointer; }
 }
 
 .question-card .card-label, .result .card-label { margin: 0 0 10px; }
+.question-card summary, .policy-evidence summary {
+  cursor: pointer;
+  color: #214336;
+  font-weight: 600;
+}
+.question-card[open] summary { margin-bottom: 14px; }
+.checklist h2 { margin-top: 0; font-size: 18px; }
+.workspace > .checklist { margin: 20px 22px; scroll-margin-top: 16px; }
+.checklist p, .checklist li { line-height: 1.5; }
+.checklist li + li { margin-top: 6px; }
+.checklist .options { grid-template-columns: 1fr; }
+.question-card .card-label { text-transform: none; letter-spacing: 0; font-size: 14px; }
+.workspace details:not(.question-card):not(.policy-evidence) { margin: 10px 44px 20px; }
+.workspace dl { margin-bottom: 0; }
+.workspace dl > div { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 6px 0; }
+.workspace dt { color: #627069; }
+.workspace dd { margin: 0; overflow-wrap: anywhere; }
+button:focus-visible, summary:focus-visible { outline: 3px solid #397253; outline-offset: 4px; }
 .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
 
 .options button {
@@ -218,6 +237,7 @@ button { cursor: pointer; }
 .error { margin: 0 28px 14px; padding: 10px 13px; border-radius: 9px; color: #912e24; background: #fff0ed; font-size: 13px; }
 
 .composer { padding: 18px 22px 22px; border-top: 1px solid #e6e8e2; background: #fbfbf8; }
+.composer-hint { margin: 0 0 10px; color: #627069; font-size: 13px; line-height: 1.5; }
 .composer label > span { display: block; margin: 0 0 6px 4px; color: #67746e; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 .composer label > input {
   width: 100%;
@@ -234,6 +254,18 @@ button { cursor: pointer; }
 .message-input { display: flex; gap: 9px; }
 .message-input input { flex: 1; min-width: 0; padding: 14px 16px; border: 1px solid #d7dcd7; border-radius: 12px; background: #fff; outline: none; }
 .message-input input:focus { border-color: #397253; box-shadow: 0 0 0 3px #39725318; }
+.message-input textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid #d7dcd7;
+  border-radius: 12px;
+  background: #fff;
+  color: #16251f;
+  line-height: 1.5;
+  resize: vertical;
+}
+.message-input textarea:focus { outline: 2px solid #397253; outline-offset: 1px; }
 .message-input button { padding: 0 20px; color: #fff; background: #c56f37; border: 0; border-radius: 12px; font-weight: 700; }
 .message-input button:hover:not(:disabled) { background: #ad5c2a; }
 .message-input button:disabled { opacity: 0.45; cursor: not-allowed; }

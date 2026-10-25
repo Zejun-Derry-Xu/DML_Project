@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     workflow_mode: Literal["legacy", "apparel"] = "apparel"
     extraction_mode: Literal["llm", "guided"] = "llm"
+    collection_style: Literal["checklist", "conversational", "individual"] = "checklist"
     demo_enabled: bool = False
     demo_session_secret: str = ""
     demo_cookie_secure: bool = False

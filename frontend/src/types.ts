@@ -13,6 +13,9 @@ export type Question = {
   allow_free_text: boolean;
   status: string;
   expires_at: string;
+  requested_fields?: string[];
+  option_prompt?: string | null;
+  checklist_items?: { field: string; problem: string; expected_value: boolean }[];
 };
 
 export type ReturnRequest = {

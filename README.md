@@ -12,6 +12,8 @@ Old cases stay read-only. No real refunds or real authentication are implemented
 - [Current architecture and source map](docs/apparel-architecture.md)
 - [Manual deployment, shutdown, backup and guarded rollback](docs/apparel-runbook.md)
 - [Verification ledger and pending work](docs/apparel-delivery-status.md)
+- [Natural-language-first interaction and local UX verification](docs/natural-language-experience.md)
+- [Current checklist declaration, inline policy help and one-step simulated submission](docs/checklist-experience.md)
 
 For a 16 GB Mac, start without Docker or a model:
 

@@ -27,6 +27,8 @@ def demo(client, db_session, monkeypatch):
     monkeypatch.setattr(settings, "demo_enabled", True)
     monkeypatch.setattr(settings, "demo_session_secret", "x" * 64)
     monkeypatch.setattr(settings, "extraction_mode", "guided")
+    # Historical interaction baseline. Checklist behavior has its own API tests.
+    monkeypatch.setattr(settings, "collection_style", "conversational")
     seed_demo(db_session)
     db_session.commit()
     result = client.post(
@@ -320,3 +322,174 @@ def test_immediate_human_and_cancel(demo):
     assert not result["question"]
     result = chat(demo, str(uuid4()), "cancel")
     assert result["state"] == "cancelled"
+
+
+def scripted_collection(monkeypatch, responses, contexts):
+    """Protocol fixture only: not real-model accuracy, latency or a user study."""
+    monkeypatch.setattr(get_settings(), "extraction_mode", "llm")
+
+    async def fake(self, message, context):
+        contexts.append(context)
+        values = responses.get(message, {})
+        return Extraction(
+            intent="unclear",
+            intent_evidence="",
+            facts=[
+                Observation(
+                    field=k,
+                    value=v,
+                    evidence=message,
+                    state="uncertain" if v is None else "stated",
+                )
+                for k, v in values.items()
+            ],
+        )
+
+    monkeypatch.setattr(LLMFactExtractor, "extract", fake)
+
+
+def test_complete_intake_skips_collection_cards_but_never_confirmation(demo, monkeypatch):
+    message = "It is too small. No stains or damage; the tags are attached and undamaged."
+    contexts = []
+    scripted_collection(monkeypatch, {message: {"reason_text": "too small", **GOOD}}, contexts)
+    initial = chat(demo, str(uuid4()), message)
+    assert initial["question"]["field"] == "order_id"
+    result = answer(demo, initial, "DEMO-1001")
+    assert result["question"]["field"] == "confirm_return"
+    assert result["return_request"] is None
+    assert len(contexts) == 1  # replay original intake after owned item selection
+    not_submitted = chat(demo, result["session_id"], "yes")
+    assert not_submitted["return_request"] is None
+    assert not_submitted["question"]["field"] == "confirm_return"
+    assert answer(demo, not_submitted, "confirm")["state"] == "return_created"
+
+
+def test_partial_natural_answers_only_reask_remaining_details_and_survive_refresh(
+    demo, monkeypatch
+):
+    contexts = []
+    scripted_collection(
+        monkeypatch,
+        {
+            "too small": {"reason_text": "too small"},
+            "No stains or damage.": {"stained": False, "damaged": False},
+            "Tags are attached and undamaged.": {"tags_attached": True, "tags_intact": True},
+        },
+        contexts,
+    )
+    result = start(demo)
+    assert result["question"]["requested_fields"] == ["reason_text", *GOOD]
+    result = chat(demo, result["session_id"], "too small")
+    old_question = result["question"]
+    assert old_question["requested_fields"] == list(GOOD)
+    assert old_question["option_prompt"] == "Does the clothing have any stains?"
+    result = chat(demo, result["session_id"], "No stains or damage.")
+    assert contexts[-1]["question"] == old_question["prompt"]
+    assert contexts[-1]["requested_fields"] == list(GOOD)
+    assert result["question"]["requested_fields"] == ["tags_attached", "tags_intact"]
+    assert "stains" not in result["question"]["prompt"]
+    assert result["facts"]["stained"]["value"] is False
+    assert result["facts"]["damaged"]["value"] is False
+    restored = demo.get(f"/api/v1/return-cases/{result['session_id']}").json()
+    assert restored["question"] == result["question"]
+    assert (
+        demo.post(
+            f"/api/v1/questions/{old_question['question_id']}/answer",
+            json={"session_id": result["session_id"], "selected_value": "no"},
+        ).status_code
+        == 409
+    )
+    result = chat(demo, result["session_id"], "Tags are attached and undamaged.")
+    assert contexts[-1]["known_facts_reference_only"]["stained"]["value"] is False
+    assert result["question"]["field"] == "confirm_return"
+    assert result["return_request"] is None
+
+
+def test_group_card_answers_exactly_one_condition(demo, monkeypatch):
+    scripted_collection(monkeypatch, {"too small": {"reason_text": "too small"}}, [])
+    result = chat(demo, start(demo)["session_id"], "too small")
+    assert len(result["question"]["requested_fields"]) == 4
+    result = answer(demo, result, "no")
+    assert result["facts"]["stained"]["value"] is False
+    assert "damaged" not in result["facts"]
+    assert result["question"]["requested_fields"] == ["damaged", "tags_attached", "tags_intact"]
+    assert result["question"]["option_prompt"].startswith("Is the clothing itself damaged")
+    assert result["decision"] != "eligible"
+
+
+def test_unknown_is_not_reasked_and_remaining_known_information_is_collected(demo, monkeypatch):
+    scripted_collection(
+        monkeypatch,
+        {
+            "too small": {"reason_text": "too small"},
+            "No stains or damage, but I cannot tell if the tags are attached.": {
+                "stained": False,
+                "damaged": False,
+                "tags_attached": None,
+            },
+            "The tags are undamaged.": {"tags_intact": True},
+        },
+        [],
+    )
+    result = chat(demo, start(demo)["session_id"], "too small")
+    result = chat(
+        demo,
+        result["session_id"],
+        "No stains or damage, but I cannot tell if the tags are attached.",
+    )
+    assert result["question"]["requested_fields"] == ["tags_intact"]
+    result = chat(demo, result["session_id"], "The tags are undamaged.")
+    assert result["state"] == "escalated"
+    assert result["support_ticket"] and not result["return_request"]
+
+
+def test_two_no_progress_group_replies_do_not_loop_or_approve(demo, monkeypatch):
+    scripted_collection(monkeypatch, {}, [])
+    result = start(demo)
+    result = chat(demo, result["session_id"], "hmm")
+    assert result["question"]
+    result = chat(demo, result["session_id"], "hmm")
+    assert result["state"] == "escalated" and not result["return_request"]
+
+
+def test_bare_yes_to_mixed_group_is_not_four_facts(demo, monkeypatch):
+    contexts = []
+    scripted_collection(monkeypatch, {"too small": {"reason_text": "too small"}}, contexts)
+    result = chat(demo, start(demo)["session_id"], "too small")
+    calls = len(contexts)
+    result = chat(demo, result["session_id"], "yes")
+    assert len(contexts) == calls
+    assert "single yes or no" in result["question"]["prompt"]
+    assert all(result["facts"][field].get("value") is None for field in GOOD)
+    assert result["decision"] != "eligible"
+
+
+def test_group_model_outage_restores_individual_quick_answers(demo, monkeypatch):
+    from app.extractors.base import ExtractorError
+
+    scripted_collection(monkeypatch, {"too small": {"reason_text": "too small"}}, [])
+    result = chat(demo, start(demo)["session_id"], "too small")
+
+    async def unavailable(*args, **kwargs):
+        raise ExtractorError("offline")
+
+    monkeypatch.setattr(LLMFactExtractor, "extract", unavailable)
+    result = chat(demo, result["session_id"], "The shirt looks okay.")
+    assert result["degraded"] is True
+    assert result["question"]["requested_fields"] == ["stained"]
+    assert result["question"]["prompt"] == result["question"]["option_prompt"]
+    assert not result["return_request"]
+
+
+def test_individual_baseline_switch_does_not_change_model_or_policy(demo, monkeypatch):
+    contexts = []
+    scripted_collection(monkeypatch, {"too small": {"reason_text": "too small"}}, contexts)
+    settings = get_settings()
+    monkeypatch.setattr(settings, "collection_style", "individual")
+    model = settings.llm_model
+    result = chat(demo, start(demo)["session_id"], "too small")
+    assert result["question"]["requested_fields"] == ["stained"]
+    assert result["question"]["prompt"] == "Does the clothing have any stains?"
+    assert result["policy_version"] == "apparel-1.0.0"
+    assert settings.llm_model == model
+    assert result["decision"] != "eligible"

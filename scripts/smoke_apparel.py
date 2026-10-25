@@ -65,6 +65,7 @@ def smoke(
                         "tags_attached": "yes",
                         "tags_intact": "yes",
                         "confirm_return": "confirm",
+                        "condition_checklist": "attest_and_submit",
                     }[field]
                     response = client.post(
                         f"/api/v1/questions/{q['question_id']}/answer",
@@ -78,7 +79,7 @@ def smoke(
                 assert not require_model or not case["degraded"]
                 steps += 1
             assert case["state"] == "return_created", case
-            checks.append("owned_guided_flow_to_simulated_rma")
+            checks.append("owned_conversation_to_simulated_rma")
         return {
             "checks": checks,
             "passed": len(checks),
@@ -87,6 +88,7 @@ def smoke(
             "model_quality_tested": False,
             "model_transport_exercised": require_model,
             "model": body["model"],
+            "collection_style": body.get("collection_style", "historical"),
             "session_id": session_id,
         }
 

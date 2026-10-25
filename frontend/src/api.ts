@@ -9,11 +9,12 @@ async function request<T = CaseResponse>(path: string, init?: RequestInit): Prom
     ...init,
     credentials: "include",
     headers: { "Content-Type": "application/json", ...init?.headers },
-  });
-  const body = (await response.json()) as T & ErrorEnvelope;
+  }).catch(() => { throw new Error("ReturnFlow is temporarily unreachable. Please try again."); });
+  const body = (await response.json().catch(() => null)) as (T & ErrorEnvelope) | null;
   if (!response.ok) {
-    throw new Error(body.error?.message ?? "ReturnFlow could not complete the request.");
+    throw new Error(body?.error?.message ?? "ReturnFlow could not complete the request. Please try again.");
   }
+  if (body === null) throw new Error("ReturnFlow sent an incomplete response. Please try again.");
   return body;
 }
 
@@ -21,6 +22,7 @@ export function sendMessage(
   sessionId: string,
   customerEmail: string,
   message: string,
+  inReplyToQuestionId?: string,
 ): Promise<CaseResponse> {
   return request("/api/v1/chat", {
     method: "POST",
@@ -28,6 +30,7 @@ export function sendMessage(
       session_id: sessionId,
       customer_email: customerEmail,
       message,
+      in_reply_to_question_id: inReplyToQuestionId,
     }),
   });
 }

@@ -32,6 +32,12 @@ class QuestionOptionResponse(BaseModel):
     description: str | None = None
 
 
+class ChecklistItemResponse(BaseModel):
+    field: str
+    problem: str
+    expected_value: bool
+
+
 class QuestionResponse(BaseModel):
     question_id: UUID
     field: str
@@ -41,6 +47,9 @@ class QuestionResponse(BaseModel):
     allow_free_text: bool
     status: str
     expires_at: datetime
+    requested_fields: list[str] = Field(default_factory=list)
+    option_prompt: str | None = None
+    checklist_items: list[ChecklistItemResponse] = Field(default_factory=list)
 
 
 class ReturnRequestResponse(BaseModel):
@@ -96,6 +105,7 @@ class ChatRequest(BaseModel):
     session_id: UUID = Field(default_factory=uuid4)
     message: str = Field(min_length=1, max_length=4000)
     customer_email: str | None = None
+    in_reply_to_question_id: UUID | None = None
 
 
 class AnswerRequest(BaseModel):

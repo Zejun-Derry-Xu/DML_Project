@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from app.config import Settings
 from app.extractors.base import ExtractorError
 
-VERSION = "apparel-extraction-1.0.0"
+VERSION = "apparel-extraction-2.1.0"
 BOOLEAN_FIELDS = {
     "used",
     "stained",
@@ -34,17 +34,106 @@ class Observation(BaseModel):
     evidence: str
 
 
+class ChecklistReply(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["none", "all_clear", "uncertain", "exception"] = "none"
+    evidence: str = ""
+    submit_requested: bool = False
+    submit_evidence: str = ""
+    policy_question: str = ""
+    topics: list[Literal["condition", "tags", "origin", "window", "tag_cleanliness"]] = Field(
+        default_factory=list, max_length=5
+    )
+
+
 class Extraction(BaseModel):
     model_config = ConfigDict(extra="forbid")
     intent: Literal["return", "cancel", "human", "other", "unclear"]
     intent_evidence: str
     facts: list[Observation] = Field(max_length=12)
+    checklist_reply: ChecklistReply = Field(default_factory=ChecklistReply)
+
+
+def generation_schema() -> dict[str, Any]:
+    """Bind field/state/value at generation time; retain the historical internal DTO.
+
+    Provider grammar is not a semantic authority. The existing exact-evidence and
+    duplicate/type checks still run after generation, including for older payloads.
+    """
+    schema = Extraction.model_json_schema()
+
+    def branch(fields: list[str], value: dict[str, Any], states: list[str]) -> dict[str, Any]:
+        return {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "field": {"type": "string", "enum": fields},
+                "value": value,
+                "state": {"type": "string", "enum": states},
+                "evidence": {"type": "string", "minLength": 1},
+            },
+            "required": ["field", "value", "state", "evidence"],
+        }
+
+    schema["properties"]["facts"] = {
+        "type": "array",
+        "maxItems": 12,
+        "items": {
+            "anyOf": [
+                branch(sorted(BOOLEAN_FIELDS), {"type": "boolean"}, ["stated"]),
+                branch(
+                    ["condition_origin"],
+                    {
+                        "type": "string",
+                        "enum": ["customer", "pre_existing"],
+                    },
+                    ["stated"],
+                ),
+                branch(
+                    ["reason_text", "order_number", "item_name"],
+                    {
+                        "type": "string",
+                        "minLength": 1,
+                    },
+                    ["stated"],
+                ),
+                branch(sorted(FIELDS), {"type": "null"}, ["uncertain", "conflict"]),
+            ]
+        },
+    }
+    # Observation's permissive union remains an internal/backward-compatible DTO,
+    # but is not advertised as the model's field-independent generation contract.
+    schema.get("$defs", {}).pop("Observation", None)
+    return schema
 
 
 def validate_extraction(
     body: Any, message: str, *, diagnostics: list[dict[str, str]] | None = None
 ) -> tuple[Extraction, list[str]]:
     result = Extraction.model_validate(body, strict=True)
+    reply = result.checklist_reply
+    if message.strip().casefold().rstrip(".!?。！？") in {
+        "yes",
+        "okay",
+        "ok",
+        "sure",
+        "嗯",
+        "可以",
+        "好",
+        "好的",
+        "行",
+    }:
+        reply.kind, reply.submit_requested = "none", False
+    if reply.kind != "none" and (not reply.evidence.strip() or reply.evidence not in message):
+        reply.kind = "none"
+    if reply.submit_requested and (
+        not reply.submit_evidence.strip() or reply.submit_evidence not in message
+    ):
+        reply.submit_requested = False
+    if not reply.policy_question.strip() or reply.policy_question not in message:
+        reply.policy_question = ""
+        if reply.kind != "exception":
+            reply.topics = []
     accepted = []
     rejected = []
     seen = set()
@@ -105,7 +194,13 @@ class LLMFactExtractor:
         self.max_attempts = 2
 
     def build_payload(self, message: str, context: dict[str, Any]) -> dict[str, Any]:
-        instructions = (Path(__file__).parent / "specs/apparel-llm-v1.md").read_text()
+        spec = (
+            "apparel-checklist-v2.md"
+            if self.settings.collection_style == "checklist"
+            else "apparel-llm-v1.md"
+        )
+        instructions = (Path(__file__).parent / "specs" / spec).read_text()
+        schema = generation_schema()
         return {
             "model": self.settings.llm_model,
             "think": False,
@@ -118,12 +213,12 @@ class LLMFactExtractor:
                         {
                             "context_only": context,
                             "current_customer_message_untrusted": message,
-                            "schema": Extraction.model_json_schema(),
+                            "schema": schema,
                         }
                     ),
                 },
             ],
-            "format": Extraction.model_json_schema(),
+            "format": schema,
             "options": {
                 "temperature": self.settings.llm_temperature,
                 "seed": self.settings.llm_seed,
