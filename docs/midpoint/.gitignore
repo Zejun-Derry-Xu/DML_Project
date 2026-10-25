@@ -1,4 +1,5 @@
-# Keep the reviewed PDF; do not commit compiler caches or temporary renders.
+# Report source lives at the repository root; ignore generated local exports.
+output/
 *.aux
 *.log
 *.out

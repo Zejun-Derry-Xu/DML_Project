@@ -1,5 +1,8 @@
 # ReturnFlow
 
+**Midpoint report:** [LaTeX source](returnflow-midpoint.tex).
+GitHub displays the source; use a LaTeX editor to compile and preview the report.
+
 ## Current candidate: apparel / LLM-first / manual delivery
 
 The current `codex/extraction-harness-v1` candidate extends the apparel workflow with fictional

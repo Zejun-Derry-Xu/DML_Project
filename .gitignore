@@ -27,3 +27,10 @@ backups/
 .deploy.lock
 deploy.log
 model-qualification.json
+
+# Midpoint report: track only the standalone LaTeX source, not build artifacts.
+/returnflow-midpoint.pdf
+/returnflow-midpoint.aux
+/returnflow-midpoint.log
+/returnflow-midpoint.out
+/returnflow-midpoint.synctex.gz
