@@ -2,8 +2,7 @@
 \usepackage[margin=0.65in,headheight=14pt,footskip=22pt]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern,microtype}
-\usepackage{xcolor,tikz,enumitem,fancyhdr,hyperref}
-\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{xcolor,graphicx,enumitem,fancyhdr,hyperref}
 \hypersetup{colorlinks=true,urlcolor=blue!55!black,linkcolor=blue!55!black,
 pdftitle={ReturnFlow: Midpoint Architecture},pdfauthor={Zejun Xu, Peixuan Ji, Shuchen Liu}}
 \newcommand{\TeamMembers}{Zejun Xu, Peixuan Ji, Shuchen Liu}
@@ -43,20 +42,6 @@ pdftitle={ReturnFlow: Midpoint Architecture},pdfauthor={Zejun Xu, Peixuan Ji, Sh
 \newcommand{\examplequote}[1]{\begingroup\setlength{\fboxsep}{8pt}
 \colorbox{bluewash}{\parbox{\dimexpr\linewidth-16pt\relax}{\large\raggedright
 \textquotedblleft{}#1\textquotedblright{}}}\endgroup\par}
-\tikzset{
-box/.style={draw=ink!40,rounded corners=4pt,fill=white,align=center,
-font=\sffamily\small,inner sep=6pt,minimum height=1.0cm},
-smallbox/.style={box,font=\sffamily\footnotesize,inner sep=5pt},
-request/.style={-{Stealth[length=2mm]},draw=live,line width=1pt},
-modelpath/.style={-{Stealth[length=2mm]},draw=semantic,line width=1pt},
-label/.style={font=\sffamily\footnotesize,text=muted,align=center},
-layer/.style={rounded corners=3pt,draw=ink!22,line width=.5pt},
-layername/.style={anchor=west,font=\sffamily\bfseries\footnotesize},
-module/.style={box,font=\sffamily\footnotesize,inner sep=5pt,minimum height=.95cm},
-opsflow/.style={-{Stealth[length=1.7mm]},draw=rule!85,dashed,line width=.7pt},
-releaseflow/.style={-{Stealth[length=1.7mm]},draw=storage,dashed,line width=.7pt},
-edgehint/.style={font=\sffamily\scriptsize,fill=white,inner sep=2pt,align=center,text=ink}}
-
 \begin{document}
 {\LARGE\bfseries ReturnFlow: describe the return, not the form}\par
 \textbf{Team:} \TeamMembers\hfill\textbf{Midpoint check-in}\par
@@ -77,77 +62,9 @@ shows the remaining conditions together. They can answer them collectively or de
 an exception; they do not need to complete a separate card for every condition.
 
 \begin{center}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\path[use as bounding box] (0,-8.9) rectangle (17.7,.1);
-\draw[layer,fill=greenwash] (0,0) rectangle (17.7,-1.9);
-\node[layername,text=storage] at (.2,-.28) {3. BUILD \& DELIVERY / maintain and release};
-\node[module,text width=3.55cm,draw=storage!60] (maintain) at (2.15,-1.13)
-{\textbf{Maintain policy and tests}\\Version code and configuration};
-\node[module,text width=3.55cm,draw=storage!60] (verify) at (6.6,-1.13)
-{\textbf{Verify automatically}\\Unit, API, database, image smoke};
-\node[module,text width=3.55cm,draw=storage!60] (package) at (11.05,-1.13)
-{\textbf{Prepare a release}\\Tested image pair + manifest};
-\node[module,text width=3.55cm,draw=storage!60] (deploy) at (15.5,-1.13)
-{\textbf{Approve deployment}\\Back up, migrate, switch, check};
-\draw[releaseflow] (maintain)--(verify);
-\draw[releaseflow] (verify)--(package);
-\draw[releaseflow] (package)--(deploy);
-
-\draw[layer,fill=bluewash] (0,-2.65) rectangle (17.7,-5.9);
-\node[layername,text=live] at (.2,-2.94) {1. APPLICATION USE / complete a return};
-\node[module,text width=2.55cm,draw=live!60] (describe) at (1.7,-3.88)
-{\textbf{Describe the request}\\Choose owned order and item};
-\node[module,text width=2.55cm,draw=live!60] (purchase) at (5.27,-3.88)
-{\textbf{Check the purchase}\\Ownership, delivery, deadline,\\duplicate return};
-\node[module,text width=2.55cm,draw=live!60] (conditions) at (8.84,-3.88)
-{\textbf{Show all conditions}\\One checklist, not\\one question per condition};
-\node[module,text width=2.55cm,draw=live!60] (understand) at (12.41,-3.88)
-{\textbf{Understand the reply}\\Facts, declaration\\and submission intent};
-\node[module,text width=2.55cm,draw=live!60] (finish) at (15.98,-3.88)
-{\textbf{Complete the case}\\Simulated return,\\refusal or support ticket};
-\draw[request] (describe)--(purchase);
-\draw[request] (purchase)--(conditions);
-\draw[request] (conditions)--(understand);
-\draw[request] (understand)--node[edgehint,above] {clear}(finish);
-\node[module,text width=6.0cm,minimum height=.85cm,draw=live!60] (explain) at (11.65,-5.25)
-{\textbf{Explain the relevant policy}\\Clarify only the exception that affects the decision};
-\draw[request] (understand.south)--node[edgehint,right] {exception / unsure}(explain.north);
-\draw[request] (explain.east)-|(finish.south);
-\draw[request] (purchase.north)--++(0,.32)-|node[edgehint,pos=.35,above]
-{purchase rule fails}(finish.north);
-\draw[releaseflow] (deploy.south)--++(0,-.25)-|node[edgehint,pos=.5,above]
-{approved update}(conditions.north);
-
-\draw[layer,fill=goldwash] (0,-6.65) rectangle (8.55,-8.85);
-\node[layername,text=rule] at (.2,-6.96) {2. MONITOR \& MEASURE / operate and improve};
-\node[module,text width=2.05cm,draw=rule!60] (health) at (1.45,-7.91)
-{\textbf{Check operation}\\Service alive;\\database ready};
-\node[module,text width=2.05cm,draw=rule!60] (usage) at (4.27,-7.91)
-{\textbf{Record usage}\\Latency, errors\\and outcomes};
-\node[module,text width=2.05cm,draw=rule!60] (review) at (7.09,-7.91)
-{\textbf{Review manually}\\Find failure paths\\and improvements};
-\draw[opsflow] (health)--(usage);
-\draw[opsflow] (usage)--(review);
-\draw[opsflow] (conditions.south)--++(0,-1.72)-|node[edgehint,pos=.75,above]
-{operational signals}(usage.north);
-\draw[opsflow] (review.north)--++(0,.55)-|(.1,-2.28)-|(verify.south);
-
-\draw[layer,fill=statewash] (9,-6.65) rectangle (17.7,-8.85);
-\node[layername] at (9.2,-6.96) {4. STATE / survive restart and release};
-\node[module,text width=1.65cm] (business) at (10.15,-7.91)
-{\textbf{Business data}\\Orders, cases,\\consent, returns};
-\node[module,text width=1.65cm] at (12.3,-7.91)
-{\textbf{Model files}\\Weights and\\model identity};
-\node[module,text width=1.65cm] (assets) at (14.45,-7.91)
-{\textbf{Release assets}\\Code, policy,\\images, manifest};
-\node[module,text width=1.65cm] at (16.6,-7.91)
-{\textbf{Private records}\\Settings, secrets\\and backups};
-\draw[opsflow] (understand.south east)--++(0,-1.6)-|node[edgehint,pos=.75,above]
-{save case + consent}(business.north);
-\end{tikzpicture}
+\includegraphics[width=\linewidth,height=0.42\textheight,keepaspectratio]{SA.png}
 \end{center}
-{\footnotesize Blue solid: customer request path.\quad
-Green dashed: release flow.\quad Amber dashed: records and operational feedback.}
+{\footnotesize Figure 1. Solution architecture: application use, monitoring, delivery and persistent state.}
 
 The intended normal path has a clear finish: after the order checks and checklist,
 \emph{none of these problems apply, and submit} expresses the declaration and submission
@@ -173,90 +90,9 @@ language. A policy file and clause search run \emph{inside} the application serv
 they are not additional containers.
 
 \begin{center}
-\begin{tikzpicture}[x=1cm,y=1cm]
-\path[use as bounding box] (0,-11.7) rectangle (17.7,.1);
-\node[module,text width=6.2cm,draw=live!60] (browser) at (6.0,-.55)
-{\textbf{Customer browser} / natural language, order selection and declaration};
-\draw[layer,fill=bluewash] (0,-1.35) rectangle (11.9,-3.05);
-\node[layername,text=live] at (.2,-1.62) {1. ACCESS \& PRESENTATION};
-\node[module,text width=4.3cm,draw=live!60] (proxy) at (2.6,-2.32)
-{\textbf{Exosphere HTTPS proxy}\\Public entry; forwards HTTP to port 5173};
-\node[module,text width=4.3cm,draw=live!60] (web) at (9.05,-2.32)
-{\textbf{Container 1: frontend}\\React UI; Nginx forwards API requests};
-\draw[request] (browser.south)--++(0,-.13)-|(proxy.north);
-\draw[request,<->] (proxy)--(web);
-
-\draw[layer,fill=greenwash] (0,-3.55) rectangle (11.9,-5.45);
-\node[layername,text=storage] at (.2,-3.83) {2. APPLICATION / all three modules share container 2: FastAPI};
-\node[module,text width=3.15cm,draw=storage!60] (api) at (1.95,-4.65)
-{\textbf{API endpoints}\\Messages, question answers\\and saved-case recovery};
-\node[module,text width=3.15cm,draw=storage!60] (workflow) at (5.95,-4.65)
-{\textbf{Conversation controller}\\Ownership, checklist binding,\\state, consent, idempotency};
-\node[module,text width=3.15cm,draw=storage!60] (validate) at (9.95,-4.65)
-{\textbf{Extraction validation}\\JSON types, source evidence,\\conflicts and stale replies};
-\draw[request] (web.south)--++(0,-.2)-|node[edgehint,pos=.45,above]
-{JSON /api/v1}(api.north);
-\draw[request] (api)--(workflow);
-\draw[request] (validate)--(workflow);
-
-\draw[layer,fill=purplewash] (0,-6.15) rectangle (11.9,-8.15);
-\node[layername,text=semantic] at (.2,-6.43) {3. CORE ANALYTICS / separate interpretation from authorization};
-\node[module,text width=4.3cm,draw=semantic!65] (model) at (2.6,-7.35)
-{\textbf{Container 4: Ollama / Qwen3 4B}\\Interpret intent, reason and conditions;\\never decide eligibility};
-\node[module,text width=4.3cm,draw=semantic!65] (policy) at (9.05,-7.35)
-{\textbf{Policy rules + clause retrieval}\\Inside FastAPI: rules decide;\\retrieval supplies cited explanations};
-\draw[modelpath] (workflow.south west)--++(0,-.3)-|node[edgehint,pos=.55,above]
-{message + context}(model.north);
-\draw[modelpath] (model.west)--(-.3,-7.35)--(-.3,-5.8)-|node[edgehint,pos=.6,above]
-{candidates + evidence}(validate.south);
-\draw[request,<->] (workflow.south east)--++(0,-.13)-|node[edgehint,pos=.55,above]
-{check / explain}(policy.north);
-
-\draw[layer,fill=statewash] (0,-8.75) rectangle (11.9,-11.65);
-\node[layername] at (.2,-9.03) {4. DATA \& PERSISTENCE};
-\node[module,text width=3.15cm] (weights) at (1.95,-9.93)
-{\textbf{Model volume}\\Cached weights\\and model identity};
-\node[module,text width=3.15cm] (policyfile) at (5.95,-9.93)
-{\textbf{Versioned policy JSON}\\Packaged with the API image};
-\node[module,text width=3.15cm] (db) at (9.95,-9.93)
-{\textbf{Container 3: PostgreSQL}\\Orders, cases, declarations,\\simulated returns and tickets};
-\node[font=\sffamily\footnotesize,text=muted,align=center] at (5.95,-11.15)
-{Database volume preserves business records across container replacement.\\Settings, secrets and database backups stay outside Git.};
-\draw[request] (weights.north)--++(0,.22)-|(model.south);
-\draw[request] (policyfile.north)--++(0,.22)-|(policy.south);
-\draw[request,<->] (api.west)--(-.6,-4.65)--(-.6,-8.46)-|node[edgehint,pos=.75,above]
-{private SQL: db:5432}(db.north);
-
-\draw[layer,fill=goldwash] (12.35,-6.15) rectangle (17.7,-11.65);
-\node[layername,text=rule] at (12.55,-6.43) {5. OPERATIONS};
-\node[module,text width=4.35cm,draw=rule!60] (signals) at (15.02,-7.45)
-{\textbf{API health checks + records}\\/health, /ready, /metrics\\Request logs, errors and latency};
-\node[module,text width=4.35cm,draw=rule!60] (operator) at (15.02,-9.43)
-{\textbf{Manual operation}\\Inspect status; investigate failures;\\back up and rehearse recovery};
-\draw[opsflow] (signals)--(operator);
-\draw[opsflow] (validate.east)--++(.2,0)-|(signals.north);
-
-\draw[layer,fill=redwash] (12.35,0) rectangle (17.7,-5.45);
-\node[layername,text=red!45!black] at (12.55,-.28) {6. DELIVERY / manual promotion};
-\node[module,text width=4.35cm,draw=red!40] (git) at (15.02,-.94)
-{\textbf{Git branch and code review}};
-\node[module,text width=4.35cm,draw=red!40] (ci) at (15.02,-2.14)
-{\textbf{GitHub Actions}\\Code / database tests; frontend build;\\HTTP smoke of built images};
-\node[module,text width=4.35cm,draw=red!40] (ghcr) at (15.02,-3.43)
-{\textbf{GHCR + release manifest}\\Tested API/frontend image pair};
-\node[module,text width=4.35cm,draw=red!40] (deploy) at (15.02,-4.72)
-{\textbf{Human-approved deploy script}\\Back up, migrate, switch, verify};
-\draw[releaseflow] (git)--(ci);
-\draw[releaseflow] (ci)--(ghcr);
-\draw[releaseflow] (ghcr)--(deploy);
-\draw[releaseflow] (deploy.west)--(12.08,-4.72)--(12.08,-3.3)-|(web.south east);
-\draw[releaseflow] (deploy.south west)--++(0,-.34)-|node[edgehint,pos=.5,above]
-{update API image + configuration}(validate.south east);
-\end{tikzpicture}
+\includegraphics[width=\linewidth,height=0.46\textheight,keepaspectratio]{TA.png}
 \end{center}
-{\footnotesize Solid arrows: runtime requests/data. Dashed arrows: delivery/operations.
-The proxy is external; the four containers run on one CPU-only Jetstream2 VM.\\
-Only Nginx port 5173 is public; API host access is loopback; database and model ports stay private.}
+{\footnotesize Figure 2. Technical architecture: service layers, persistence, operations and manual delivery.}
 
 A message travels from the browser through Nginx to \code{POST /api/v1/chat}.
 The server checks the account and selected order, then supplies the current message,
