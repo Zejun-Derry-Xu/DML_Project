@@ -9,8 +9,8 @@ pdftitle={ReturnFlow: Midpoint Architecture},pdfauthor={Zejun Xu, Peixuan Ji, Sh
 \newcommand{\TeamMembers}{Zejun Xu, Peixuan Ji, Shuchen Liu}
 \newcommand{\ReportDate}{October 25, 2026}
 \newcommand{\RepoURL}{https://github.com/Zejun-Derry-Xu/DML_Project}
-% Historical endpoint; replace only after the selected 4B/checklist cloud acceptance.
-\newcommand{\ApplicationURL}{https://http-149-165-174-228-5173.proxy-js2-iu.exosphere.app/}
+% Public entry verified for the deployed course demo on October 25, 2026.
+\newcommand{\ApplicationURL}{https://http-149-165-169-223-5173.proxy-js2-iu.exosphere.app/}
 \definecolor{ink}{HTML}{19384A}
 \definecolor{live}{HTML}{285FB6}
 \definecolor{semantic}{HTML}{7046A0}
@@ -25,7 +25,7 @@ pdftitle={ReturnFlow: Midpoint Architecture},pdfauthor={Zejun Xu, Peixuan Ji, Sh
 \setlist[itemize]{leftmargin=1.2em,itemsep=2pt,topsep=3pt}
 \pagestyle{fancy}\fancyhf{}
 \fancyhead[L]{\small\textbf{ReturnFlow} / DSAN 6700}
-\fancyhead[R]{\small Midpoint architecture / Candidate draft}
+\fancyhead[R]{\small Midpoint architecture / Deployed prototype}
 \fancyfoot[L]{\footnotesize\ReportDate}
 \fancyfoot[R]{\footnotesize\thepage\ / \pageref*{report-end}}
 \renewcommand{\headrulewidth}{0.3pt}
@@ -51,11 +51,12 @@ label/.style={font=\sffamily\footnotesize,text=muted,align=center}}
 {\LARGE\bfseries ReturnFlow: describe the return, not the form}\par
 \textbf{Team:} \TeamMembers\hfill\textbf{Midpoint check-in}\par
 \textbf{Repository:} \url{\RepoURL}\par
-\textbf{Jetstream2 demo entry (earlier prototype, verified October 24):}\par
+\textbf{Jetstream2 course demo (public entry verified October 25):}\par
 {\small\url{\ApplicationURL}}\par
-\notice{This report describes our latest local checklist-led design with Qwen3 4B.
-The earlier guided prototype was accessible at the URL above. The VM is now shelved;
-the new release and its public URL still need cloud acceptance before submission.}
+\notice{Our checklist-led prototype is deployed on Jetstream2 with Qwen3 4B.
+This midpoint report focuses on the user journey, service architecture and repeatable
+delivery process. All accounts, support tickets and return requests are simulated;
+no real payments or refunds are processed.}
 
 \heading{1. Solution architecture: a conversation with a clear finish}
 A customer should be able to say what went wrong in their own words instead of
@@ -97,8 +98,8 @@ After use: review failures, response times and outcomes; deliver a checked updat
 \end{tikzpicture}
 \end{center}
 
-The normal path has a clear finish: after the order checks and checklist, an explicit
-\emph{none of these problems apply, and submit} can supply the declaration and submission
+The intended normal path has a clear finish: after the order checks and checklist,
+\emph{none of these problems apply, and submit} expresses the declaration and submission
 request together. Saying only \emph{all clear} does not authorize submission. If tags
 were removed or a condition is uncertain, the system explains the relevant policy and
 asks only what is needed to resolve that exception. It never promises a real refund.
@@ -176,9 +177,11 @@ images with an isolated database. Approved triggers publish the same API/fronten
 image pair and a version manifest to GHCR. A human then promotes the release:
 back up the database, migrate, switch images and check readiness, version identity
 and a policy response. This is continuous delivery with manual promotion, not
-automatic production deployment. A guided image smoke does not qualify the real
-model. Separate volumes preserve database records and downloaded weights; rollback
-must retain compatible records and schema instead of deleting a volume.
+automatic production deployment. Separate volumes preserve database records and
+downloaded weights; rollback must retain compatible records and schema instead of
+deleting a volume. Cloud checks verified the public page, release identity, policy
+lookup, order isolation and duplicate-safe button submission. A database backup was
+also restored into an isolated test database without overwriting live records.
 
 \newpage
 \heading{3. Prototype: what the sentence means, and who extracts it}
@@ -186,7 +189,7 @@ Our latest path uses \textbf{model-assisted field extraction}, not simply a list
 keywords removed from a sentence. Qwen receives field definitions, examples and a
 JSON schema. It identifies the intent and copies a reason span or interprets an
 explicit condition. Program rules then validate that output and decide what to do.
-The examples below illustrate the contract, \textbf{not newly measured Qwen results}.
+The examples below illustrate the extraction and workflow contract.
 Assume the customer is using a fictional account; condition replies refer to the
 selected item and current question.
 
@@ -204,10 +207,9 @@ reason is an exact part of the quoted evidence and that the intent also has evid
 The system therefore selects/checks the owned item and shows one conditions checklist,
 rather than approving immediately.
 
-In this current path, both the request and the reason are interpreted by Qwen.
-It would be inaccurate to describe it as a regex catching \emph{return} and passing
-only the remaining words to the model. The older rule extractor is retained for
-comparison, not as this production language pipeline.
+Both the request and the reason are interpreted by Qwen; the sentence is not split
+by a regex that removes \emph{return} first. The older rule extractor remains a
+comparison baseline rather than the deployed language-understanding path.
 
 \heading{Example 2: a format rule is not a condition rule}
 \examplequote{For \fixedrule{ORD-1001}, the \semanticspan{original tags are still attached},
@@ -233,13 +235,17 @@ simulated return with duplicate protection. Without an explicit submission reque
 it asks for confirmation; if the model is unavailable, an explicitly labelled button
 can perform declaration and submission without pretending to understand free text.
 
-\heading{Current limits and the next deployment step}
-The local candidate has automated workflow checks, but real-model interpretation
-can still be wrong even with valid JSON and a real quotation. It is not formally
-qualified, and the examples above are not an accuracy claim. We will deploy the
-selected 4B/checklist release only after its matching cloud checks, then update the
-public URL and verified status. The deployment template currently defaults to 8B,
-so the operator must explicitly select 4B. This remains a single-VM synthetic demo:
-no real refunds, production login or staffed support service is claimed.
+\heading{Next steps: faster responses, smoother interaction and stronger evaluation}
+The deployed prototype establishes the service and delivery architecture, while
+CPU inference remains a bottleneck: one natural-language submission test reached
+the 60-second deadline; the explicit button fallback completed successfully.
+Structured output and evidence checks also do not guarantee correct interpretation.
+Next, we plan to replace self-hosted inference with a hosted model API through an
+adapter, retaining the business workflow and deployment pipeline. We will improve
+the checklist wording and exception handling through user feedback, and build a
+human-authored, reviewed test set covering ordinary requests, missing information
+and exceptions. Reproducible tests will compare extraction coverage, unsupported
+values and response time; user studies will examine interaction effort.
+These are next-stage goals, not completed performance claims.
 \label{report-end}
 \end{document}
