@@ -203,7 +203,12 @@ def test_llm_deploy_without_qualification_is_rejected_before_pull(deployment, mo
                 stdout=json.dumps(
                     {
                         "services": {
-                            "api": {"environment": {"EXTRACTION_MODE": "llm"}},
+                            "api": {
+                                "environment": {
+                                    "EXTRACTION_MODE": "llm",
+                                    "LLM_MODEL": "qwen3:4b",
+                                }
+                            },
                             "ollama": {"image": "ollama/ollama@sha256:" + "3" * 64},
                         }
                     }
