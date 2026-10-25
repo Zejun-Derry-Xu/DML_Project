@@ -23,7 +23,8 @@ this is not a public production storefront.
 
 The normal LLM path still requires matching reviewed CPU qualification. If the owner
 explicitly chooses an unqualified **synthetic** demo despite known extraction errors,
-the operator may pass `--unqualified-demo-commit EXACT_40_HEX_RELEASE_COMMIT` to the
+the operator may pass `--unqualified-demo-commit EXACT_40_HEX_RELEASE_COMMIT` and
+`--unqualified-demo-model-digest EXACT_64_HEX_INSTALLED_MODEL_DIGEST` to the
 deployment script. This is not model qualification: the deploy log and installed
 release mark `unqualified_owner_approved_course_demo`. The option requires
 `ENVIRONMENT=jetstream-demo` and `DEMO_ENABLED=true`, matches only that release, and

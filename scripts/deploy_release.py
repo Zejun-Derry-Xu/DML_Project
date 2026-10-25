@@ -162,14 +162,22 @@ def deploy(args: argparse.Namespace) -> None:
             args.rollback,
         )
         if demo_exception:
+            model_digest = getattr(args, "unqualified_demo_model_digest", "") or ""
+            if not re.fullmatch(r"[a-f0-9]{64}", model_digest):
+                raise ValueError("Unqualified demo requires an explicitly pinned model digest")
             release["model_quality_status"] = "unqualified_owner_approved_course_demo"
+            release["deployed_model_digest"] = model_digest
             log("owner-approved-unqualified-course-demo", release["commit"])
             print("WARNING: owner-approved course demo; model is NOT quality-qualified.")
         elif args.qualification is None:
             raise ValueError(
                 "LLM deployment requires a reviewed CPU qualification report; guided is default"
             )
-        q = {} if demo_exception else json.loads(args.qualification.read_text())
+        q = (
+            {"model_digest": model_digest}
+            if demo_exception
+            else json.loads(args.qualification.read_text())
+        )
         if not demo_exception and (
             q.get("status") != "passed"
             or q.get("platform") != "jetstream-cpu"
@@ -248,7 +256,7 @@ def deploy(args: argparse.Namespace) -> None:
         if api_env.get("EXTRACTION_MODE") == "llm":
             status = read_json("http://127.0.0.1:8000/model/status")
             if status.get("digest") != q["model_digest"]:
-                raise DeployError(4, "Loaded model manifest differs from qualified model")
+                raise DeployError(4, "Loaded model manifest differs from approved pinned model")
         wait_for_release(release)
         run(
             compose
@@ -310,6 +318,7 @@ def main() -> None:
         "--unqualified-demo-commit",
         help="Owner-approved synthetic course demo ONLY; exact commit, not quality qualification",
     )
+    parser.add_argument("--unqualified-demo-model-digest", help="Exact installed demo model digest")
     args = parser.parse_args()
     with (ROOT / ".deploy.lock").open("a") as lock:
         try:

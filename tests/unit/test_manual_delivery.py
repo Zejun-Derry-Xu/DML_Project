@@ -222,6 +222,54 @@ def test_llm_deploy_without_qualification_is_rejected_before_pull(deployment, mo
     assert not any(c[:2] == ["docker", "pull"] for c in calls)
 
 
+@pytest.mark.parametrize("matches", [True, False])
+def test_demo_exception_retains_backup_switch_smoke_and_exact_model_check(
+    deployment, monkeypatch, matches
+):
+    root, args, calls, fake = deployment
+    args.unqualified_demo_commit = COMMIT
+    args.unqualified_demo_model_digest = "4" * 64
+
+    def model_config(command, **kwargs):
+        if "config" in command:
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                stdout=json.dumps(
+                    {
+                        "services": {
+                            "api": {
+                                "environment": {
+                                    "EXTRACTION_MODE": "llm",
+                                    "LLM_MODEL": "qwen3:4b",
+                                    "ENVIRONMENT": "jetstream-demo",
+                                    "DEMO_ENABLED": "true",
+                                }
+                            },
+                            "ollama": {"image": "ollama/ollama@sha256:" + "3" * 64},
+                        }
+                    }
+                ),
+            )
+        return fake(command, **kwargs)
+
+    monkeypatch.setattr(delivery, "run", model_config)
+    monkeypatch.setattr(
+        delivery, "read_json", lambda url: {"digest": ("4" if matches else "5") * 64}
+    )
+    if matches:
+        delivery.deploy(args)
+        installed = json.loads((root / ".current-release.json").read_text())
+        assert installed["model_quality_status"] == "unqualified_owner_approved_course_demo"
+        assert installed["model_qualified"] is False
+        assert any("pg_dump" in c for c in calls)
+        assert any("scripts.smoke_apparel" in c for c in calls)
+    else:
+        with pytest.raises(delivery.DeployError, match="approved pinned model"):
+            delivery.deploy(args)
+        assert not (root / ".current-release.json").exists()
+
+
 def test_metrics_include_false_and_never_score_unreviewed_absence():
     result = summary(
         [
