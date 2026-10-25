@@ -63,6 +63,29 @@ def log(event: str, commit: str) -> None:
         )
 
 
+def demo_exception_allowed(
+    release_commit: str,
+    api_env: dict[str, Any],
+    acknowledged_commit: str | None,
+    rollback: bool = False,
+) -> bool:
+    """Explicit owner-approved synthetic demo, never a qualification result.
+
+    Ordinary deployments retain the reviewed qualification gate. An exception is
+    bound to one exact commit and cannot authorize production data or a rollback.
+    """
+    if acknowledged_commit is None:
+        return False
+    if (
+        acknowledged_commit != release_commit
+        or rollback
+        or api_env.get("ENVIRONMENT") != "jetstream-demo"
+        or str(api_env.get("DEMO_ENABLED", "")).lower() != "true"
+    ):
+        raise ValueError("Unqualified demo approval must match this synthetic release")
+    return True
+
+
 def deploy(args: argparse.Namespace) -> None:
     release = json.loads(args.manifest.read_text())
     validate_release(release)
@@ -130,12 +153,22 @@ def deploy(args: argparse.Namespace) -> None:
             r"ollama/ollama@sha256:[a-f0-9]{64}", full_model_config["services"]["ollama"]["image"]
         ):
             raise ValueError("LLM deployment requires a pinned official Ollama image digest")
-        if args.qualification is None:
+        demo_exception = demo_exception_allowed(
+            release["commit"],
+            api_env,
+            getattr(args, "unqualified_demo_commit", None),
+            args.rollback,
+        )
+        if demo_exception:
+            release["model_quality_status"] = "unqualified_owner_approved_course_demo"
+            log("owner-approved-unqualified-course-demo", release["commit"])
+            print("WARNING: owner-approved course demo; model is NOT quality-qualified.")
+        elif args.qualification is None:
             raise ValueError(
                 "LLM deployment requires a reviewed CPU qualification report; guided is default"
             )
-        q = json.loads(args.qualification.read_text())
-        if (
+        q = {} if demo_exception else json.loads(args.qualification.read_text())
+        if not demo_exception and (
             q.get("status") != "passed"
             or q.get("platform") != "jetstream-cpu"
             or q.get("commit") != release["commit"]
@@ -271,6 +304,10 @@ def main() -> None:
     parser.add_argument("--seed-demo", action="store_true")
     parser.add_argument("--rollback", action="store_true")
     parser.add_argument("--qualification", type=Path)
+    parser.add_argument(
+        "--unqualified-demo-commit",
+        help="Owner-approved synthetic course demo ONLY; exact commit, not quality qualification",
+    )
     args = parser.parse_args()
     with (ROOT / ".deploy.lock").open("a") as lock:
         try:
