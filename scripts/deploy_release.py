@@ -141,7 +141,9 @@ def deploy(args: argparse.Namespace) -> None:
         run(compose + ["config", "--format", "json"], capture_output=True, text=True).stdout
     )
     api_env = rendered["services"]["api"]["environment"]
-    if api_env.get("EXTRACTION_MODE") == "llm":
+    provider = str(api_env.get("LLM_PROVIDER") or "ollama")
+    use_ollama = api_env.get("EXTRACTION_MODE") == "llm" and provider != "dashscope"
+    if use_ollama:
         if release.get("model_name") != api_env.get("LLM_MODEL"):
             raise ValueError("Release model does not match the operator's configured model")
         full_model_config = json.loads(
@@ -190,6 +192,9 @@ def deploy(args: argparse.Namespace) -> None:
         ):
             raise ValueError("Qualification does not match this CPU release, policy and model")
         compose += ["--profile", "model"]
+    elif api_env.get("EXTRACTION_MODE") == "llm" and provider == "dashscope":
+        if not str(api_env.get("DASHSCOPE_API_KEY") or "").strip():
+            raise ValueError("DashScope deployment requires DASHSCOPE_API_KEY in the private .env")
     try:
         for image in (release["api_image"], release["frontend_image"]):
             run(["docker", "pull", image], stdout=subprocess.DEVNULL)
@@ -249,14 +254,16 @@ def deploy(args: argparse.Namespace) -> None:
     atomic_text(env_file, candidate.read_text())
     atomic_text(ROOT / ".pending-release.json", json.dumps(release, indent=2))
     try:
-        services = ["db", "api", "frontend"] + (
-            ["ollama"] if api_env.get("EXTRACTION_MODE") == "llm" else []
-        )
+        services = ["db", "api", "frontend"] + (["ollama"] if use_ollama else [])
         run(compose + ["up", "-d", "--no-build", "--wait"] + services)
-        if api_env.get("EXTRACTION_MODE") == "llm":
+        if use_ollama:
             status = read_json("http://127.0.0.1:8000/model/status")
             if status.get("digest") != q["model_digest"]:
                 raise DeployError(4, "Loaded model manifest differs from approved pinned model")
+        elif provider == "dashscope" and api_env.get("EXTRACTION_MODE") == "llm":
+            status = read_json("http://127.0.0.1:8000/model/status")
+            if status.get("status") != "available" or status.get("inference_tested") is not False:
+                raise DeployError(4, "DashScope probe did not report the configured model")
         wait_for_release(release)
         run(
             compose

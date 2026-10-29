@@ -119,6 +119,29 @@ docker compose --env-file .env --env-file .release.env -f compose.jetstream.yml 
 For an already qualified LLM installation, include `--profile model` before `up`
 and add `ollama` to the service names. Starting Ollama does not download the model.
 
+### Hosted Qwen Flash instead of Ollama
+
+Do not start the `model` profile when `LLM_PROVIDER=dashscope`. In the VM private
+`.env` (mode `600`, never committed), set:
+
+```env
+LLM_PROVIDER=dashscope
+DASHSCOPE_API_KEY=<key created in the same region as the base URL>
+LLM_MODEL=qwen3.7-flash
+LLM_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+DASHSCOPE_RESPONSE_FORMAT=auto
+```
+
+The API container receives `DASHSCOPE_API_KEY` from that file. The frontend image
+does not. If `LLM_MODEL` is left as `qwen3:4b` or `qwen3:8b`, the API calls
+`qwen3.7-flash`. If `LLM_BASE_URL` is left as the Ollama address, the API uses the
+Singapore compatible-mode URL above. Override the base URL for a workspace domain
+or for US (Virginia): `https://dashscope-us.aliyuncs.com/compatible-mode/v1` or
+`https://{WorkspaceId}.us-east-1.maas.aliyuncs.com/compatible-mode/v1`. Keys do not
+work across regions. Return to CPU Ollama with `LLM_PROVIDER=ollama`,
+`LLM_MODEL=qwen3:4b`, `LLM_BASE_URL=http://ollama:11434/v1`, and `--profile model`.
+`/model/status` lists the hosted model and still reports `inference_tested: false`.
+
 On the Mac (replace `CURRENT_HOST` with the verified current IP or working DNS):
 
 ```bash

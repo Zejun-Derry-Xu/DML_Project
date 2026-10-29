@@ -20,6 +20,8 @@ from app.api.v1.returns import router as returns_router
 from app.config import get_settings
 from app.db.session import SessionLocal, database_is_ready
 from app.errors import AppError
+from app.extractors.dashscope import resolved_model
+from app.extractors.model_status import probe_model
 from app.observability.logging import configure_logging
 from app.observability.metrics import HTTP_LATENCY, HTTP_REQUESTS
 from app.services.question_cleanup_service import cleanup_loop
@@ -119,24 +121,7 @@ def create_app() -> FastAPI:
 
     @application.get("/model/status", tags=["operations"])
     async def model_status() -> dict[str, object]:
-        import httpx
-
-        try:
-            async with httpx.AsyncClient(timeout=2) as client:
-                result = await client.get(
-                    settings.llm_base_url.removesuffix("/v1").rstrip("/") + "/api/tags"
-                )
-                result.raise_for_status()
-                models = result.json().get("models", [])
-            model = next((m for m in models if m.get("name") == settings.llm_model), None)
-            return {
-                "status": "available" if model else "missing_model",
-                "model": settings.llm_model,
-                "digest": model.get("digest") if model else None,
-                "inference_tested": False,
-            }
-        except (httpx.HTTPError, ValueError, TypeError, AttributeError):
-            return {"status": "unavailable", "model": settings.llm_model, "inference_tested": False}
+        return await probe_model(settings)
 
     @application.get("/metrics", tags=["operations"], response_model=None)
     def metrics() -> Response:
@@ -178,7 +163,7 @@ def create_app() -> FastAPI:
                     "policy_sha256": policy_hash,
                     "extraction_mode": settings.extraction_mode,
                     "collection_style": settings.collection_style,
-                    "model": settings.llm_model,
+                    "model": resolved_model(settings),
                 }
             )
         except SQLAlchemyError:

@@ -15,9 +15,16 @@ class Settings(BaseSettings):
     question_ttl_minutes: int = 10
     question_cleanup_interval_seconds: int = 60
     llm_provider: str = "rules"
-    llm_model: str = "qwen3:8b"
+    # Ollama tag used by the Jetstream demo. DashScope rewrites the 4b/8b tags
+    # to qwen3.7-flash; set LLM_MODEL explicitly for any other hosted id.
+    llm_model: str = "qwen3:4b"
     llm_base_url: str = "http://localhost:11434/v1"
     llm_api_key: str = ""
+    # Backend only. Never put this in the frontend, git, or logs.
+    dashscope_api_key: str = ""
+    # auto tries json_schema, then json_object on HTTP 400. Singapore still
+    # documents json_schema as unsupported for some models.
+    dashscope_response_format: Literal["auto", "json_schema", "json_object"] = "auto"
     llm_timeout_seconds: float = 60.0
     policy_retriever: Literal["lexical", "qdrant"] = "lexical"
     policy_generator: Literal["extractive", "ollama"] = "extractive"
