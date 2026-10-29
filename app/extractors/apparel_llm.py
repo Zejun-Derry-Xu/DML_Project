@@ -5,15 +5,26 @@ import json
 import re
 from pathlib import Path
 from time import monotonic
-from typing import Any, Literal
+from typing import Any, Literal, NoReturn
 
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from app.config import Settings
 from app.extractors.base import ExtractorError
+from app.extractors.dashscope import (
+    build_payload as build_dashscope_payload,
+)
+from app.extractors.dashscope import (
+    chat_completions_url,
+    completion_text,
+    initial_response_format,
+    usage_counts,
+)
 
 VERSION = "apparel-extraction-2.1.0"
+# Nginx proxy_read_timeout is 70s. Stay inside that so one extraction can finish.
+EXTRACTION_BUDGET_SECONDS = 60
 BOOLEAN_FIELDS = {
     "used",
     "stained",
@@ -247,12 +258,33 @@ class LLMFactExtractor:
         self.last_trace = {}
         if self.settings.extraction_mode == "guided":
             raise ExtractorError("Guided mode: natural-language semantics are unavailable")
-        if self.settings.llm_provider != "ollama":
-            raise ExtractorError("Apparel LLM mode requires the configured Ollama provider")
+        if self.settings.llm_provider == "ollama":
+            return await self._extract_ollama(message, context)
+        if self.settings.llm_provider == "dashscope":
+            return await self._extract_dashscope(message, context)
+        raise ExtractorError(
+            "Apparel LLM mode requires the configured Ollama or DashScope provider"
+        )
+
+    def _budget(self) -> float:
+        return monotonic() + min(EXTRACTION_BUDGET_SECONDS, self.settings.llm_timeout_seconds)
+
+    def _fail(self, last_error: Exception | None) -> NoReturn:
+        self.last_trace["error"] = type(last_error).__name__ if last_error else "deadline"
+        if isinstance(last_error, ValidationError):
+            self.last_trace["schema_errors"] = [
+                {"location": list(error["loc"]), "type": error["type"]}
+                for error in last_error.errors(include_input=False)
+            ]
+        elif isinstance(last_error, ValueError) and str(last_error).startswith("wire_"):
+            self.last_trace["contract_error"] = str(last_error)
+        raise ExtractorError("Grounded apparel extraction unavailable") from last_error
+
+    async def _extract_ollama(self, message: str, context: dict[str, Any]) -> Extraction:
         payload = self.build_payload(message, context)
         if self.capture_diagnostics:
             self.last_trace["request"] = payload
-        deadline = monotonic() + min(60, self.settings.llm_timeout_seconds)
+        deadline = self._budget()
         last_error: Exception | None = None
         for attempt in range(self.max_attempts):
             remaining = deadline - monotonic()
@@ -300,12 +332,102 @@ class LLMFactExtractor:
             ) as error:
                 last_error = error
                 break
-        self.last_trace["error"] = type(last_error).__name__ if last_error else "deadline"
-        if isinstance(last_error, ValidationError):
-            self.last_trace["schema_errors"] = [
-                {"location": list(e["loc"]), "type": e["type"]}
-                for e in last_error.errors(include_input=False)
-            ]
-        elif isinstance(last_error, ValueError) and str(last_error).startswith("wire_"):
-            self.last_trace["contract_error"] = str(last_error)
-        raise ExtractorError("Grounded apparel extraction unavailable") from last_error
+        self._fail(last_error)
+
+    async def _extract_dashscope(self, message: str, context: dict[str, Any]) -> Extraction:
+        if not self.settings.dashscope_api_key.strip():
+            self.last_trace["stage"] = "auth"
+            self._fail(ExtractorError("missing_api_key"))
+        schema = generation_schema()
+        fmt = initial_response_format(self.settings.dashscope_response_format)
+        instructions = (
+            Path(__file__).parent
+            / "specs"
+            / (
+                "apparel-checklist-v2.md"
+                if self.settings.collection_style == "checklist"
+                else "apparel-llm-v1.md"
+            )
+        ).read_text()
+        deadline = self._budget()
+        headers = {
+            "Authorization": f"Bearer {self.settings.dashscope_api_key}",
+            "Content-Type": "application/json",
+        }
+        last_error: Exception | None = None
+        for attempt in range(self.max_attempts):
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                break
+            payload = build_dashscope_payload(
+                self.settings, instructions, message, context, schema, fmt
+            )
+            if self.capture_diagnostics:
+                self.last_trace["request"] = payload
+            try:
+                self.last_trace["stage"] = "transport"
+                self.last_trace["transport_attempts"] = attempt + 1
+                self.last_trace["response_format"] = fmt
+                async with asyncio.timeout(remaining):
+                    async with httpx.AsyncClient(timeout=remaining) as client:
+                        response = await client.post(
+                            chat_completions_url(self.settings),
+                            json=payload,
+                            headers=headers,
+                        )
+                        if (
+                            response.status_code == 400
+                            and self.settings.dashscope_response_format == "auto"
+                            and fmt == "json_schema"
+                        ):
+                            # Singapore documents json_schema as not supported yet.
+                            fmt = "json_object"
+                            self.last_trace["structured_output"] = "json_object_fallback"
+                            self.last_trace["response_format"] = fmt
+                            payload = build_dashscope_payload(
+                                self.settings, instructions, message, context, schema, fmt
+                            )
+                            if self.capture_diagnostics:
+                                self.last_trace["request"] = payload
+                            response = await client.post(
+                                chat_completions_url(self.settings),
+                                json=payload,
+                                headers=headers,
+                            )
+                        if response.status_code == 429 or response.status_code >= 500:
+                            raise _RetryableStatus(response.status_code)
+                        response.raise_for_status()
+                        body = response.json()
+                self.last_usage = usage_counts(body)
+                result = self.decode_response(completion_text(body), message)
+                if self.capture_diagnostics:
+                    self.last_trace["accepted"] = result.model_dump(mode="json")
+                self.last_trace["stage"] = "complete"
+                return result
+            except (
+                _RetryableStatus,
+                httpx.ConnectError,
+                httpx.ReadError,
+                httpx.RemoteProtocolError,
+            ) as error:
+                last_error = error
+                if attempt + 1 < self.max_attempts:
+                    await asyncio.sleep(min(0.2, max(0, deadline - monotonic())))
+            except (
+                httpx.HTTPError,
+                TimeoutError,
+                ValueError,
+                KeyError,
+                IndexError,
+                TypeError,
+                ValidationError,
+            ) as error:
+                last_error = error
+                break
+        self._fail(last_error)
+
+
+class _RetryableStatus(Exception):
+    def __init__(self, status_code: int) -> None:
+        self.status_code = status_code
+        super().__init__(f"retryable HTTP {status_code}")

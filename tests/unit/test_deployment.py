@@ -26,6 +26,16 @@ def test_api_stays_loopback_and_data_and_model_have_no_host_port():
         assert re.search(r"^    ports:", service_block(name), re.M) is None
 
 
+def test_dashscope_key_is_private_to_the_api_service():
+    api = service_block("api")
+    assert "DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}" in api
+    assert "LLM_PROVIDER: ${LLM_PROVIDER:-ollama}" in api
+    assert "DASHSCOPE" not in service_block("frontend")
+    assert "DASHSCOPE" not in service_block("db")
+    assert "sk-" not in (ROOT / "compose.jetstream.yml").read_text()
+    assert 'profiles: ["model"]' in service_block("ollama")
+
+
 def test_public_frontend_keeps_same_origin_api_proxy():
     nginx = (ROOT / "frontend/nginx/default.conf").read_text()
     assert "proxy_pass http://api:8000;" in nginx

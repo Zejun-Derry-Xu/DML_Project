@@ -41,12 +41,14 @@ class OpenAICompatibleExtractor:
         api_key: str = "",
         timeout_seconds: float = 60.0,
         retries: int = 1,
+        disable_thinking: bool = False,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.api_key = api_key
         self.timeout_seconds = timeout_seconds
         self.retries = retries
+        self.disable_thinking = disable_thinking
 
     async def extract(
         self,
@@ -82,6 +84,8 @@ class OpenAICompatibleExtractor:
                 },
             },
         }
+        if self.disable_thinking:
+            payload["enable_thinking"] = False
         last_error: Exception | None = None
         deadline = monotonic() + self.timeout_seconds
         for attempt in range(min(self.retries, 1) + 1):

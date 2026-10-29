@@ -25,6 +25,7 @@ from app.db.models import (
 from app.errors import AppError
 from app.extractors.apparel_llm import BOOLEAN_FIELDS, Extraction, LLMFactExtractor, Observation
 from app.extractors.base import ExtractorError
+from app.extractors.dashscope import resolved_model
 from app.policy.apparel import CONDITIONS, VERSION, load_apparel_policy, precheck
 from app.repositories.order_repository import OrderRepository
 from app.repositories.return_repository import ReturnRepository
@@ -326,7 +327,7 @@ class ApparelService:
                 tool_name="apparel_llm_extractor",
                 arguments={"message_length": len(message), "pending_question": pending},
                 result={
-                    "model": self.settings.llm_model,
+                    "model": resolved_model(self.settings),
                     "degraded": degraded,
                     "rejected_fields": extractor.rejected_fields,
                     "usage": extractor.last_usage,

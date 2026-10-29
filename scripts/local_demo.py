@@ -67,9 +67,9 @@ def stop_children(children: list[subprocess.Popen[Any]]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--database", type=Path, default=ROOT / "data/local_demo/returnflow.db")
-    parser.add_argument("--provider", choices=("rules", "ollama"), default="ollama")
+    parser.add_argument("--provider", choices=("rules", "ollama", "dashscope"), default="ollama")
     parser.add_argument("--workflow", choices=("apparel", "legacy"), default="apparel")
-    parser.add_argument("--model", default="qwen3:8b")
+    parser.add_argument("--model", default=None)
     parser.add_argument("--api-port", type=int, default=8000)
     parser.add_argument("--ui-port", type=int, default=5173)
     parser.add_argument("--api-only", action="store_true")
@@ -90,13 +90,26 @@ def main() -> None:
         parser.error("Install Node.js and run npm ci in frontend/, or choose --api-only")
     database = args.database.resolve()
     database.parent.mkdir(parents=True, exist_ok=True)
+    inherited_base = os.environ.get("LLM_BASE_URL", "")
     environment = demo_environment(database, args.provider, args.api_port, args.ui_port)
+    if args.provider == "dashscope":
+        model = args.model or "qwen3.7-flash"
+        ollama_bases = {"", "http://127.0.0.1:11434/v1", "http://localhost:11434/v1"}
+        base_url = (
+            "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+            if inherited_base.rstrip("/") in ollama_bases
+            else inherited_base.rstrip("/")
+        )
+    else:
+        model = args.model or "qwen3:4b"
+        base_url = environment["LLM_BASE_URL"]
     environment.update(
         WORKFLOW_MODE=args.workflow,
         DEMO_ENABLED="true",
         DEMO_SESSION_SECRET=os.environ.get("DEMO_SESSION_SECRET") or secrets.token_hex(32),
         EXTRACTION_MODE="guided" if args.provider == "rules" else "llm",
-        LLM_MODEL=args.model,
+        LLM_MODEL=model,
+        LLM_BASE_URL=base_url,
     )
     subprocess.run(
         [sys.executable, "-m", "alembic", "upgrade", "head"],

@@ -37,8 +37,9 @@ make demo-guided
 
 Choose a fictional account, describe a return, select an order and use the answer
 cards. `Ctrl+C` stops this invocation's API/UI; its SQLite DB remains. With a separately
-running Ollama and sufficient memory, `make demo` requests Qwen3 8B. The target is
-**not yet qualified** on Jetstream CPU. A missing model degrades to guided cards, not
+running Ollama and sufficient memory, `make demo` requests local `qwen3:4b`.
+Pass `--model qwen3:8b` only when that machine can hold it. The CPU target is
+**not yet qualified** on Jetstream. A missing model degrades to guided cards, not
 semantic keyword extraction. Do not load 8B just to demonstrate the UI on a busy Mac.
 
 The historical sections below describe the earlier MVP/evaluation architecture.
@@ -172,6 +173,29 @@ LLM_BASE_URL=http://localhost:11434/v1
 
 When the API runs inside Compose, the default model URL is
 `http://host.docker.internal:11434/v1`, preserving Apple Silicon/Metal acceleration on macOS.
+
+Hosted Qwen Flash uses Alibaba Cloud Model Studio. The official model id is
+`qwen3.7-flash` (currently the alias of snapshot `qwen3.7-flash-2026-07-15`).
+Put the key only in the backend environment, never in the frontend or git:
+
+```env
+LLM_PROVIDER=dashscope
+LLM_MODEL=qwen3.7-flash
+LLM_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+DASHSCOPE_API_KEY=your-region-key
+DASHSCOPE_RESPONSE_FORMAT=auto
+```
+
+Locally that is `.env` (copied from `.env.example`). On Jetstream2 it is the private
+`.env` next to `compose.jetstream.yml` (`chmod 600`); do not start the `model`
+profile. The default base URL is Singapore. A key from another region will not
+work there. US (Virginia) is `https://dashscope-us.aliyuncs.com/compatible-mode/v1`
+or `https://{WorkspaceId}.us-east-1.maas.aliyuncs.com/compatible-mode/v1`. Singapore
+workspace domains use `ap-southeast-1`. `auto` sends `json_schema` and, on HTTP 400,
+falls back to `json_object` (the prompt contains JSON). The API still validates
+the reply with the existing extraction schema. Switch back with `LLM_PROVIDER=ollama`
+and the local base URL above. One extraction stays inside a 60-second budget;
+Nginx `proxy_read_timeout` stays 70 seconds.
 
 ## Quality checks
 

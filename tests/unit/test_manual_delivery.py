@@ -270,6 +270,75 @@ def test_demo_exception_retains_backup_switch_smoke_and_exact_model_check(
         assert not (root / ".current-release.json").exists()
 
 
+def test_dashscope_deploy_skips_ollama_and_does_not_log_the_key(deployment, monkeypatch):
+    root, args, calls, fake = deployment
+    secret = "dashscope-test-key-do-not-log"
+
+    def model_config(command, **kwargs):
+        if "config" in command:
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                stdout=json.dumps(
+                    {
+                        "services": {
+                            "api": {
+                                "environment": {
+                                    "EXTRACTION_MODE": "llm",
+                                    "LLM_PROVIDER": "dashscope",
+                                    "LLM_MODEL": "qwen3.7-flash",
+                                    "DASHSCOPE_API_KEY": secret,
+                                }
+                            }
+                        }
+                    }
+                ),
+            )
+        return fake(command, **kwargs)
+
+    monkeypatch.setattr(delivery, "run", model_config)
+    monkeypatch.setattr(
+        delivery,
+        "read_json",
+        lambda url: {"status": "available", "inference_tested": False},
+    )
+    delivery.deploy(args)
+    up = next(command for command in calls if "up" in command)
+    assert "ollama" not in up
+    assert "--profile" not in up
+    assert secret not in (root / "deploy.log").read_text()
+
+
+def test_dashscope_deploy_requires_a_private_key_before_pull(deployment, monkeypatch):
+    _, args, calls, fake = deployment
+
+    def model_config(command, **kwargs):
+        if "config" in command:
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                stdout=json.dumps(
+                    {
+                        "services": {
+                            "api": {
+                                "environment": {
+                                    "EXTRACTION_MODE": "llm",
+                                    "LLM_PROVIDER": "dashscope",
+                                    "DASHSCOPE_API_KEY": "",
+                                }
+                            }
+                        }
+                    }
+                ),
+            )
+        return fake(command, **kwargs)
+
+    monkeypatch.setattr(delivery, "run", model_config)
+    with pytest.raises(ValueError, match="DASHSCOPE_API_KEY"):
+        delivery.deploy(args)
+    assert not any(command[:2] == ["docker", "pull"] for command in calls)
+
+
 def test_metrics_include_false_and_never_score_unreviewed_absence():
     result = summary(
         [
